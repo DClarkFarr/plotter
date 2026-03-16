@@ -87,7 +87,24 @@ class App {
       throw new Error("MONGO_URL is not configured.");
     }
 
-    this.db = await connectToMongo(mongoUrl);
+    const connectionTimeoutMs = 5000;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      const timer = setTimeout(() => {
+        clearTimeout(timer);
+        reject(
+          new Error("MongoDB connection attempt timed out after 5 seconds."),
+        );
+      }, connectionTimeoutMs);
+    });
+
+    try {
+      this.db = await Promise.race([connectToMongo(mongoUrl), timeoutPromise]);
+      console.log("MongoDB connection succeeded.");
+    } catch (error) {
+      throw error instanceof Error
+        ? error
+        : new Error("MongoDB connection attempt failed.");
+    }
   }
 
   private getCorsAllowedOrigins(): string[] {
