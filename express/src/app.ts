@@ -1,7 +1,11 @@
 import express, { Application, Request, Response } from "express";
 
+import dotenv from "dotenv";
+
+dotenv.config({ path: [".env.local", ".env"] });
+
 const app: Application = express();
-const PORT: number = 3000;
+const PORT: number = Number(process.env.PORT) || 1000;
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World with TypeScript and Express!");
