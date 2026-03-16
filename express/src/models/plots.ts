@@ -1,11 +1,13 @@
-import { Collection, Document } from "mongodb";
+import { Collection } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
+import { BaseModelBlueprint, ModelBlueprint, ModelDocument } from "./types";
 
-export interface PlotDocument extends Document {
+export interface PlotDefinition extends BaseModelBlueprint {
   title: string;
-  createdAt: Date;
-  updatedAt?: Date;
 }
+
+export type PlotBlueprint = ModelBlueprint<PlotDefinition>;
+export type PlotDocument = ModelDocument<PlotDefinition>;
 
 export const getPlotsCollection = (): Collection<PlotDocument> =>
   getCollection<PlotDocument>(COLLECTIONS.plots);
