@@ -5,7 +5,7 @@ dotenv.config({ path: [".env.local", ".env"] });
 import { app } from "./utils/app";
 
 import { apiRouter } from "./routers/apiRouter";
-import { webRouter } from "./routers/webrouter";
+import { webRouter } from "./routers/webRouter";
 
 const startServer = async () => {
   app.setupEnvironment();
