@@ -3,11 +3,13 @@ export type AppMode = "development" | "production" | "test";
 export interface EnvConfig {
   readonly PORT: number;
   readonly MODE: AppMode;
+  readonly MONGO_URL: string;
 }
 
 const DEFAULT_ENV: EnvConfig = {
   PORT: 1000,
   MODE: "development",
+  MONGO_URL: "",
 };
 
 let currentEnv: EnvConfig = { ...DEFAULT_ENV };
@@ -24,6 +26,7 @@ export const env: Readonly<EnvConfig> = new Proxy({} as EnvConfig, {
 export interface ConfigureEnvInput {
   PORT?: number | string | undefined;
   MODE?: AppMode | string | undefined;
+  MONGO_URL?: string | undefined;
 }
 
 const parsePort = (value: number | string | undefined): number => {
@@ -49,12 +52,21 @@ const parseMode = (value: AppMode | string | undefined): AppMode => {
   return DEFAULT_ENV.MODE;
 };
 
+const parseMongoUrl = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MONGO_URL;
+};
+
 export const configureEnv = (
   input: ConfigureEnvInput = {},
 ): Readonly<EnvConfig> => {
   currentEnv = {
     PORT: parsePort(input.PORT),
     MODE: parseMode(input.MODE),
+    MONGO_URL: parseMongoUrl(input.MONGO_URL),
   };
 
   return env;

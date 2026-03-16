@@ -2,12 +2,14 @@ import express, { Application } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import { Db } from "mongodb";
 import { configureEnv, env } from "./env";
+import { connectToMongo } from "../services/mongoService";
 
 class App {
   private static instance: App | null = null;
   public readonly api: Application;
-  public db: unknown | null = null;
+  public db: Db | null = null;
 
   private constructor() {
     this.api = express();
@@ -74,7 +76,18 @@ class App {
     configureEnv({
       MODE: process.env.MODE,
       PORT: process.env.PORT,
+      MONGO_URL: process.env.MONGO_URL,
     });
+  }
+
+  public async setupDatabase(): Promise<void> {
+    const mongoUrl = env.MONGO_URL;
+
+    if (!mongoUrl) {
+      throw new Error("MONGO_URL is not configured.");
+    }
+
+    this.db = await connectToMongo(mongoUrl);
   }
 
   private getCorsAllowedOrigins(): string[] {
