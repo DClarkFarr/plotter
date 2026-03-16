@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { Db } from "mongodb";
 import { configureEnv, env } from "./env";
 import { connectToMongo } from "../services/mongoService";
+import { setDb } from "./db";
 
 class App {
   private static instance: App | null = null;
@@ -99,6 +100,7 @@ class App {
 
     try {
       this.db = await Promise.race([connectToMongo(mongoUrl), timeoutPromise]);
+      setDb(this.db);
       console.log("MongoDB connection succeeded.");
     } catch (error) {
       throw error instanceof Error

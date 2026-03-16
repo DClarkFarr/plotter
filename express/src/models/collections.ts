@@ -1,15 +1,11 @@
-import { Collection, Db, Document } from "mongodb";
+import { Collection, Document } from "mongodb";
+import { db } from "../utils/db";
 
 export const getCollection = <T extends Document>(
-  db: Db,
   name: string,
-): Collection<T> => db.collection<T>(name);
+): Collection<T> => db!.collection<T>(name);
 
-export interface PlotDocument extends Document {
-  title?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export const getPlotsCollection = (db: Db): Collection<PlotDocument> =>
-  getCollection<PlotDocument>(db, "plots");
+export const COLLECTIONS = {
+  plots: "plots",
+  sessions: "sessions",
+} as const;
