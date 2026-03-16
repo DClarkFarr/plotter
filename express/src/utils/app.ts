@@ -1,4 +1,8 @@
 import express, { Application } from "express";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import helmet from "helmet";
 import { configureEnv, env } from "./env";
 
 class App {
@@ -22,8 +26,8 @@ class App {
     // Session setup will be added when auth is implemented.
   }
 
-  public setupRoutes(): void {
-    // Route wiring will be added when routes are defined.
+  public setupCookies(): void {
+    this.api.use(cookieParser());
   }
 
   public listen(): void {
