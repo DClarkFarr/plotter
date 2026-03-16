@@ -1,5 +1,4 @@
 import express, { Application } from "express";
-import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
@@ -30,6 +29,39 @@ class App {
     this.api.use(cookieParser());
   }
 
+  public setupSecurity(): void {
+    this.api.use(helmet());
+  }
+
+  public setupCors(): void {
+    const allowedOrigins = this.getCorsAllowedOrigins();
+
+    this.api.use(
+      cors({
+        origin: (origin, callback) => {
+          if (!origin) {
+            callback(null, true);
+            return;
+          }
+
+          if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
+          }
+
+          callback(
+            new Error(
+              `CORS blocked for origin: ${origin}. Allowed origins: ${allowedOrigins.join(
+                ", ",
+              )}`,
+            ),
+          );
+        },
+        credentials: true,
+      }),
+    );
+  }
+
   public listen(): void {
     const port = env.PORT;
 
@@ -43,6 +75,14 @@ class App {
       MODE: process.env.MODE,
       PORT: process.env.PORT,
     });
+  }
+
+  private getCorsAllowedOrigins(): string[] {
+    if (env.MODE === "production") {
+      return ["https://plotter.danielsjunk.com"];
+    }
+
+    return ["http://localhost:5173"];
   }
 }
 

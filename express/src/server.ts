@@ -9,6 +9,10 @@ import { webRouter } from "./routers/webrouter";
 
 app.setupEnvironment();
 
+app.setupSecurity();
+
+app.setupCors();
+
 app.setupCookies();
 
 app.api.use("/api", apiRouter);
