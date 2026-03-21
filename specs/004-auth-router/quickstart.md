@@ -13,6 +13,8 @@ Set the MongoDB connection string in `.env.local` or `.env`:
 MONGO_URL=mongodb://localhost:27017/plotter
 PORT=1000
 MODE=development
+SESSION_SECRET=change-me
+SESSION_COOKIE_NAME=plotter.sid
 ```
 
 ## Run

@@ -18,6 +18,8 @@ const startServer = async () => {
 
   await app.setupDatabase();
 
+  app.setupSessions();
+
   app.api.use("/api", apiRouter);
   app.api.use("/", webRouter);
 

@@ -15,6 +15,7 @@ export interface UserDefinition extends BaseModelBlueprint {
   lastName: string;
   email: string;
   passwordHash: string;
+  passwordChangedAt: Date;
 }
 
 export type UserBlueprint = ModelBlueprint<UserDefinition>;
@@ -94,6 +95,7 @@ export interface UpdateUserInput {
   lastName?: string;
   email?: string;
   passwordHash?: string;
+  passwordChangedAt?: Date;
 }
 
 export const updateUserById = async (

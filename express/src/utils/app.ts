@@ -3,9 +3,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import { Db } from "mongodb";
+import session from "express-session";
 import { configureEnv, env } from "./env";
 import { connectToMongo } from "./mongo";
 import { setDb } from "./db";
+import { MongoSessionStore } from "./sessionStore";
 
 class App {
   private static instance: App | null = null;
@@ -25,7 +27,13 @@ class App {
   }
 
   public setupSessions(): void {
-    // Session setup will be added when auth is implemented.
+    if (!env.SESSION_SECRET) {
+      throw new Error("SESSION_SECRET is not configured.");
+    }
+
+    const sessionOptions = this.getSessionOptions();
+
+    this.api.use(session(sessionOptions));
   }
 
   public setupCookies(): void {
@@ -78,6 +86,8 @@ class App {
       MODE: process.env.MODE,
       PORT: process.env.PORT,
       MONGO_URL: process.env.MONGO_URL,
+      SESSION_SECRET: process.env.SESSION_SECRET,
+      SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME,
     });
   }
 
@@ -115,6 +125,26 @@ class App {
     }
 
     return ["http://localhost:5173", "http://localhost:4000"];
+  }
+
+  private getSessionOptions(): session.SessionOptions {
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const inactivityWindowMs = 7 * oneDayMs;
+
+    return {
+      name: env.SESSION_COOKIE_NAME,
+      secret: env.SESSION_SECRET,
+      store: new MongoSessionStore(),
+      resave: false,
+      saveUninitialized: false,
+      rolling: true,
+      cookie: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: env.MODE === "production",
+        maxAge: inactivityWindowMs,
+      },
+    };
   }
 }
 

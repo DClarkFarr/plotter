@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import {
   createSession as createSessionModel,
   CreateSessionInput,
+  endSessionsByUserId as endSessionsByUserIdModel,
   SessionDocument,
 } from "../models/sessions";
 import { getUserById } from "../models/users";
@@ -18,4 +19,11 @@ export const createSession = async (
 ): Promise<SessionDocument> => {
   await assertUserExists(input.userId);
   return createSessionModel(input);
+};
+
+export const endSessionsByUserId = async (
+  userId: string | ObjectId,
+): Promise<number> => {
+  await assertUserExists(userId);
+  return endSessionsByUserIdModel(userId);
 };

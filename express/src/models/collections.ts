@@ -12,4 +12,6 @@ export const COLLECTIONS = {
   plots: "plots",
   scenes: "scenes",
   sessions: "sessions",
+  passwordResets: "passwordResets",
+  authAttempts: "authAttempts",
 } as const;

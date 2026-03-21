@@ -114,6 +114,26 @@ export const updateSessionById = async (
   return result?.value ?? null;
 };
 
+export const updateSessionByToken = async (
+  token: string,
+  updates: UpdateSessionInput,
+): Promise<SessionDocument | null> => {
+  const collection = getSessionsCollection();
+  const updatePayload: Partial<SessionDefinition> = { ...updates };
+
+  if (updates.expiresAt) {
+    assertNotExpired(updates.expiresAt);
+  }
+
+  const result = await collection.findOneAndUpdate(
+    { token },
+    { $set: { ...updatePayload, ...touchTimestamps() } },
+    { returnDocument: "after" },
+  );
+
+  return result?.value ?? null;
+};
+
 export const endSessionById = async (
   id: string | ObjectId,
 ): Promise<boolean> => {
@@ -130,4 +150,14 @@ export const endSessionByToken = async (token: string): Promise<boolean> => {
   const result = await collection.deleteOne({ token });
 
   return result.deletedCount === 1;
+};
+
+export const endSessionsByUserId = async (
+  userId: string | ObjectId,
+): Promise<number> => {
+  const collection = getSessionsCollection();
+  const resolvedUserId = ensureObjectId(userId, "userId");
+  const result = await collection.deleteMany({ userId: resolvedUserId });
+
+  return result.deletedCount ?? 0;
 };

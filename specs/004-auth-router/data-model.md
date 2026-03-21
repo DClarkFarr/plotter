@@ -52,6 +52,7 @@
   - `identifier` (email)
   - `ipAddress`
   - `type` (login | reset)
+  - `type` (login | reset | signup)
   - `count`
   - `windowExpiresAt` (short TTL)
   - `createdAt`, `updatedAt`

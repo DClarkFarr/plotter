@@ -4,12 +4,16 @@ export interface EnvConfig {
   readonly PORT: number;
   readonly MODE: AppMode;
   readonly MONGO_URL: string;
+  readonly SESSION_SECRET: string;
+  readonly SESSION_COOKIE_NAME: string;
 }
 
 const DEFAULT_ENV: EnvConfig = {
   PORT: 1000,
   MODE: "development",
   MONGO_URL: "",
+  SESSION_SECRET: "",
+  SESSION_COOKIE_NAME: "plotter.sid",
 };
 
 let currentEnv: EnvConfig = { ...DEFAULT_ENV };
@@ -27,6 +31,8 @@ export interface ConfigureEnvInput {
   PORT?: number | string | undefined;
   MODE?: AppMode | string | undefined;
   MONGO_URL?: string | undefined;
+  SESSION_SECRET?: string | undefined;
+  SESSION_COOKIE_NAME?: string | undefined;
 }
 
 const parsePort = (value: number | string | undefined): number => {
@@ -60,6 +66,22 @@ const parseMongoUrl = (value: string | undefined): string => {
   return DEFAULT_ENV.MONGO_URL;
 };
 
+const parseSessionSecret = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.SESSION_SECRET;
+};
+
+const parseSessionCookieName = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.SESSION_COOKIE_NAME;
+};
+
 export const configureEnv = (
   input: ConfigureEnvInput = {},
 ): Readonly<EnvConfig> => {
@@ -67,6 +89,8 @@ export const configureEnv = (
     PORT: parsePort(input.PORT),
     MODE: parseMode(input.MODE),
     MONGO_URL: parseMongoUrl(input.MONGO_URL),
+    SESSION_SECRET: parseSessionSecret(input.SESSION_SECRET),
+    SESSION_COOKIE_NAME: parseSessionCookieName(input.SESSION_COOKIE_NAME),
   };
 
   return env;
