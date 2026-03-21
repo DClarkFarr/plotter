@@ -114,7 +114,7 @@ class App {
       return ["https://plotter.danielsjunk.com"];
     }
 
-    return ["http://localhost:5173"];
+    return ["http://localhost:5173", "http://localhost:4000"];
   }
 }
 
