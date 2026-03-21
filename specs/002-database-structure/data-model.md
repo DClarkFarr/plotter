@@ -36,6 +36,7 @@
 - `users`: array of permission objects
   - `userId`: ObjectId (ref Users)
   - `role`: "owner" | "editor"
+- `deletedAt`: Date?
 - `createdAt`: Date
 - `updatedAt`: Date?
 
@@ -43,6 +44,7 @@
 
 - At least one `users` entry with `role = "owner"`.
 - All `userId` references must exist.
+- `deletedAt` set indicates a soft-deleted story (excluded by default queries).
 
 **Indexes**
 
@@ -86,6 +88,7 @@
 
 - `storyId` must exist.
 - `horizontalIndex` must be >= 0.
+- Ordering conflicts are resolved by shifting existing plots down to make room.
 
 **Indexes**
 
@@ -113,6 +116,7 @@
 - `plotId` must exist.
 - All `tags` references must exist and belong to the same story.
 - `verticalIndex` must be >= 0.
+- Ordering conflicts are resolved by shifting existing scenes down to make room.
 
 **Indexes**
 

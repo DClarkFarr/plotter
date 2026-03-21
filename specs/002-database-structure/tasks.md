@@ -23,8 +23,8 @@ description: "Task list for Database Structure feature"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Update collection registry in express/src/models/collections.ts for users, stories, tags, plots, scenes, sessions
-- [ ] T002 [P] Extend shared model types for ids and timestamps in express/src/models/types.ts
+- [x] T001 Update collection registry in express/src/models/collections.ts for users, stories, tags, plots, scenes, sessions
+- [x] T002 [P] Extend shared model types for ids and timestamps in express/src/models/types.ts
 
 ---
 
@@ -34,8 +34,8 @@ description: "Task list for Database Structure feature"
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Add ObjectId validation/coercion helpers in express/src/models/types.ts for shared use
-- [ ] T004 Add createdAt/updatedAt helper utilities in express/src/models/types.ts to standardize timestamps
+- [x] T003 Add ObjectId validation/coercion helpers in express/src/models/types.ts for shared use
+- [x] T004 Add createdAt/updatedAt helper utilities in express/src/models/types.ts to standardize timestamps
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -49,13 +49,13 @@ description: "Task list for Database Structure feature"
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Create user model types and collection getter in express/src/models/users.ts
-- [ ] T006 [US1] Implement user CRUD and unique email index setup in express/src/models/users.ts
-- [ ] T007 [P] [US1] Create story model types and collection getter in express/src/models/stories.ts
-- [ ] T008 [US1] Implement story CRUD, permission helpers, and indexes in express/src/models/stories.ts
-- [ ] T008a [US1] Add soft-delete fields (for example, deletedAt) and ensure list/get helpers exclude soft-deleted stories by default in express/src/models/stories.ts
-- [ ] T008b [US1] Add story restore helper to clear deletedAt in express/src/models/stories.ts (optional)
-- [ ] T009 [US1] Add user existence validation for story permissions in express/src/models/stories.ts
+- [x] T005 [P] [US1] Create user model types and collection getter in express/src/models/users.ts
+- [x] T006 [US1] Implement user CRUD and unique email index setup in express/src/models/users.ts
+- [x] T007 [P] [US1] Create story model types and collection getter in express/src/models/stories.ts
+- [x] T008 [US1] Implement story CRUD, permission helpers, and indexes in express/src/models/stories.ts
+- [x] T008a [US1] Add soft-delete fields (for example, deletedAt) and ensure list/get helpers exclude soft-deleted stories by default in express/src/models/stories.ts
+- [x] T008b [US1] Add story restore helper to clear deletedAt in express/src/models/stories.ts (optional)
+- [x] T009 [US1] Add user existence validation for story permissions in express/src/models/stories.ts
 
 **Checkpoint**: User Story 1 should be functional and independently testable
 
@@ -69,14 +69,14 @@ description: "Task list for Database Structure feature"
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Expand plot schema/types and collection getter in express/src/models/plots.ts
-- [ ] T011 [US2] Implement plot CRUD, storyId checks, and indexes in express/src/models/plots.ts
-- [ ] T011a [US2] Implement stable insert reindexing for plot ordering (shift existing items down on insert/move) in express/src/models/plots.ts
-- [ ] T012 [P] [US2] Create tag model types and collection getter in express/src/models/tags.ts
-- [ ] T013 [US2] Implement tag CRUD and storyId/name indexes in express/src/models/tags.ts
-- [ ] T014 [P] [US2] Create scene model types and collection getter in express/src/models/scenes.ts
-- [ ] T015 [US2] Implement scene CRUD, tag validation, and indexes in express/src/models/scenes.ts
-- [ ] T015a [US2] Implement stable insert reindexing for scene ordering (shift existing items down on insert/move) in express/src/models/scenes.ts
+- [x] T010 [P] [US2] Expand plot schema/types and collection getter in express/src/models/plots.ts
+- [x] T011 [US2] Implement plot CRUD, storyId checks, and indexes in express/src/models/plots.ts
+- [x] T011a [US2] Implement stable insert reindexing for plot ordering (shift existing items down on insert/move) in express/src/models/plots.ts
+- [x] T012 [P] [US2] Create tag model types and collection getter in express/src/models/tags.ts
+- [x] T013 [US2] Implement tag CRUD and storyId/name indexes in express/src/models/tags.ts
+- [x] T014 [P] [US2] Create scene model types and collection getter in express/src/models/scenes.ts
+- [x] T015 [US2] Implement scene CRUD, tag validation, and indexes in express/src/models/scenes.ts
+- [x] T015a [US2] Implement stable insert reindexing for scene ordering (shift existing items down on insert/move) in express/src/models/scenes.ts
 
 **Checkpoint**: User Story 2 should be functional and independently testable
 
@@ -90,9 +90,9 @@ description: "Task list for Database Structure feature"
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Create session model types and collection getter in express/src/models/sessions.ts
-- [ ] T017 [US3] Implement session CRUD, token lookup, and TTL index in express/src/models/sessions.ts
-- [ ] T017a [US3] Enforce expiresAt validation in session lookup helpers (reject expired tokens) in express/src/models/sessions.ts
+- [x] T016 [P] [US3] Create session model types and collection getter in express/src/models/sessions.ts
+- [x] T017 [US3] Implement session CRUD, token lookup, and TTL index in express/src/models/sessions.ts
+- [x] T017a [US3] Enforce expiresAt validation in session lookup helpers (reject expired tokens) in express/src/models/sessions.ts
 
 **Checkpoint**: User Story 3 should be functional and independently testable
 
@@ -102,7 +102,7 @@ description: "Task list for Database Structure feature"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T018 [P] Align documentation fields with implementation in specs/002-database-structure/data-model.md
+- [x] T018 [P] Align documentation fields with implementation in specs/002-database-structure/data-model.md
 - [ ] T019 Run quickstart validation steps and update specs/002-database-structure/quickstart.md with any adjustments
 
 ---

@@ -6,6 +6,10 @@ export const getCollection = <T extends Document>(
 ): Collection<T> => db!.collection<T>(name);
 
 export const COLLECTIONS = {
+  users: "users",
+  stories: "stories",
+  tags: "tags",
   plots: "plots",
+  scenes: "scenes",
   sessions: "sessions",
 } as const;
