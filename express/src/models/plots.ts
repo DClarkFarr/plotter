@@ -8,7 +8,6 @@ import {
   ModelDocument,
   touchTimestamps,
 } from "./types";
-import { getStoriesCollection } from "./stories";
 
 export interface PlotDefinition extends BaseModelBlueprint {
   title: string;
@@ -33,19 +32,7 @@ export const ensurePlotIndexes = async (): Promise<void> => {
   );
 };
 
-const assertStoryExists = async (storyId: ObjectId): Promise<void> => {
-  const stories = getStoriesCollection();
-  const story = await stories.findOne({
-    _id: storyId,
-    deletedAt: { $exists: false },
-  });
-
-  if (!story) {
-    throw new Error("Story not found");
-  }
-};
-
-const shiftPlotIndices = async (
+export const shiftPlotIndices = async (
   storyId: ObjectId,
   fromIndex: number,
   excludeId?: ObjectId,
@@ -81,9 +68,6 @@ export const createPlot = async (
     throw new Error("horizontalIndex must be >= 0");
   }
 
-  await assertStoryExists(storyId);
-  await shiftPlotIndices(storyId, input.horizontalIndex);
-
   const payload: PlotDocument = {
     _id: new ObjectId(),
     title: input.title,
@@ -113,6 +97,21 @@ export const listPlots = async (
     : {};
 
   return collection.find(filter).limit(limit).toArray();
+};
+
+export const listPlotsByIds = async (
+  ids: Array<string | ObjectId>,
+): Promise<PlotDocument[]> => {
+  const collection = getPlotsCollection();
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "plotId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection.find({ _id: { $in: uniqueIds } }).toArray();
 };
 
 export const getPlotById = async (
@@ -156,19 +155,10 @@ export const updatePlotById = async (
 
   if (updates.storyId !== undefined) {
     updatePayload.storyId = ensureObjectId(updates.storyId, "storyId");
-    await assertStoryExists(updatePayload.storyId);
   }
 
-  if (updates.horizontalIndex !== undefined) {
-    if (updates.horizontalIndex < 0) {
-      throw new Error("horizontalIndex must be >= 0");
-    }
-
-    const current = await collection.findOne({ _id: plotId });
-    if (current) {
-      const storyId = updatePayload.storyId ?? current.storyId;
-      await shiftPlotIndices(storyId, updates.horizontalIndex, plotId);
-    }
+  if (updates.horizontalIndex !== undefined && updates.horizontalIndex < 0) {
+    throw new Error("horizontalIndex must be >= 0");
   }
 
   const result = await collection.findOneAndUpdate(

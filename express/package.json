@@ -7,7 +7,8 @@
     "start": "ts-node src/server.ts",
     "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
     "build": "tsc",
-    "serve": "node dist/server.js"
+    "serve": "node dist/server.js",
+    "check:model-imports": "ts-node scripts/check-model-imports.ts"
   },
   "keywords": [],
   "author": "",

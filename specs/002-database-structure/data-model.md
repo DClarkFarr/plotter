@@ -7,6 +7,12 @@
 - `updatedAt`: optional `Date` for mutable collections.
 - Relative IDs use `ObjectId` references (stored as `ObjectId` values).
 
+## Service and Model Boundaries
+
+- Models expose CRUD and single-collection helpers only.
+- Cross-collection validation and orchestration live in domain services.
+- If a model method needs related data, the service passes the related document as input.
+
 ## Users
 
 **Fields**

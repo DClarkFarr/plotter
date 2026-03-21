@@ -23,7 +23,8 @@ export type UserDocument = ModelDocument<UserDefinition>;
 export const getUsersCollection = (): Collection<UserDocument> =>
   getCollection<UserDocument>(COLLECTIONS.users);
 
-const normalizeEmail = (email: string): string => email.trim().toLowerCase();
+export const normalizeEmail = (email: string): string =>
+  email.trim().toLowerCase();
 
 export const ensureUserIndexes = async (): Promise<void> => {
   const collection = getUsersCollection();
@@ -57,16 +58,26 @@ export const listUsers = async (
   return collection.find({}).limit(limit).toArray();
 };
 
+export const listUsersByIds = async (
+  ids: Array<string | ObjectId>,
+): Promise<UserDocument[]> => {
+  const collection = getUsersCollection();
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "userId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection.find({ _id: { $in: uniqueIds } }).toArray();
+};
+
 export const createUser = async (
   user: UserDefinition,
 ): Promise<UserDocument> => {
   const collection = getUsersCollection();
   const normalizedEmail = normalizeEmail(user.email);
-
-  const existing = await collection.findOne({ email: normalizedEmail });
-  if (existing) {
-    throw new Error("Email already in use");
-  }
 
   const payload: ModelInsertInput<UserDefinition> = {
     ...user,
@@ -94,14 +105,6 @@ export const updateUserById = async (
 
   if (updates.email) {
     const normalizedEmail = normalizeEmail(updates.email);
-    const existing = await collection.findOne({
-      email: normalizedEmail,
-      _id: { $ne: userId },
-    });
-
-    if (existing) {
-      throw new Error("Email already in use");
-    }
 
     updates = { ...updates, email: normalizedEmail };
   }

@@ -4,7 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { Db } from "mongodb";
 import { configureEnv, env } from "./env";
-import { connectToMongo } from "../services/mongoService";
+import { connectToMongo } from "./mongo";
 import { setDb } from "./db";
 
 class App {

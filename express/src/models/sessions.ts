@@ -9,7 +9,6 @@ import {
   ModelInsertInput,
   touchTimestamps,
 } from "./types";
-import { getUsersCollection } from "./users";
 
 export interface SessionDefinition extends BaseModelBlueprint {
   userId: ObjectId;
@@ -28,15 +27,6 @@ export const ensureSessionIndexes = async (): Promise<void> => {
   const collection = getSessionsCollection();
   await collection.createIndex({ token: 1 }, { unique: true });
   await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-};
-
-const assertUserExists = async (userId: ObjectId): Promise<void> => {
-  const users = getUsersCollection();
-  const user = await users.findOne({ _id: userId });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
 };
 
 const assertNotExpired = (expiresAt: Date): void => {
@@ -59,7 +49,6 @@ export const createSession = async (
   const userId = ensureObjectId(input.userId, "userId");
 
   assertNotExpired(input.expiresAt);
-  await assertUserExists(userId);
 
   const payload: ModelInsertInput<SessionDefinition> = {
     userId,

@@ -1,14 +1,80 @@
-import { getPlotsCollection, PlotDocument } from "../models/plots";
+import { ObjectId } from "mongodb";
+import {
+  createPlot as createPlotModel,
+  getPlotById,
+  PlotDocument,
+  shiftPlotIndices,
+  updatePlotById as updatePlotByIdModel,
+} from "../models/plots";
+import { getStoryById } from "../models/stories";
+import { ensureObjectId } from "../models/types";
 
-export interface ListPlotsOptions {
-  limit?: number;
+export interface CreatePlotInput {
+  title: string;
+  description: string;
+  color: string;
+  storyId: string | ObjectId;
+  horizontalIndex: number;
 }
 
-export const listPlots = async (
-  options: ListPlotsOptions = {},
-): Promise<PlotDocument[]> => {
-  const collection = getPlotsCollection();
-  const limit = options.limit ?? 50;
+export const createPlot = async (
+  input: CreatePlotInput,
+): Promise<PlotDocument> => {
+  if (input.horizontalIndex < 0) {
+    throw new Error("horizontalIndex must be >= 0");
+  }
 
-  return collection.find({}).limit(limit).toArray();
+  const storyId = ensureObjectId(input.storyId, "storyId");
+  const story = await getStoryById(storyId);
+
+  if (!story) {
+    throw new Error("Story not found");
+  }
+
+  await shiftPlotIndices(story._id, input.horizontalIndex);
+
+  return createPlotModel({
+    ...input,
+    storyId: story._id,
+  });
+};
+
+export interface UpdatePlotInput {
+  title?: string;
+  description?: string;
+  color?: string;
+  storyId?: string | ObjectId;
+  horizontalIndex?: number;
+}
+
+export const updatePlotById = async (
+  id: string | ObjectId,
+  updates: UpdatePlotInput,
+): Promise<PlotDocument | null> => {
+  const current = await getPlotById(id);
+  if (!current) {
+    return null;
+  }
+
+  let targetStoryId = current.storyId;
+  if (updates.storyId !== undefined) {
+    const storyId = ensureObjectId(updates.storyId, "storyId");
+    const story = await getStoryById(storyId);
+    if (!story) {
+      throw new Error("Story not found");
+    }
+    targetStoryId = story._id;
+  }
+
+  if (updates.horizontalIndex !== undefined) {
+    if (updates.horizontalIndex < 0) {
+      throw new Error("horizontalIndex must be >= 0");
+    }
+    await shiftPlotIndices(targetStoryId, updates.horizontalIndex, current._id);
+  }
+
+  return updatePlotByIdModel(id, {
+    ...updates,
+    ...(updates.storyId !== undefined && { storyId: targetStoryId }),
+  });
 };

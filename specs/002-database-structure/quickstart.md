@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide MongoDB models and CRUD helpers for users, stories, tags, plots, scenes, and sessions.
+Provide MongoDB models with CRUD-only helpers and domain services that orchestrate multi-collection workflows.
 
 ## Run Backend Locally
 
@@ -15,3 +15,4 @@ Provide MongoDB models and CRUD helpers for users, stories, tags, plots, scenes,
 - Create a user and verify unique email enforcement.
 - Create a story with an owner permission, then create a plot and scene under it.
 - Create a session with a token and confirm it expires after `expiresAt`.
+- Run the model import check to confirm no model-to-model imports remain.

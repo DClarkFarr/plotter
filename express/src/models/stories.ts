@@ -9,7 +9,6 @@ import {
   ModelInsertInput,
   touchTimestamps,
 } from "./types";
-import { getUsersCollection } from "./users";
 
 export type StoryRole = "owner" | "editor";
 
@@ -36,7 +35,7 @@ export const ensureStoryIndexes = async (): Promise<void> => {
   await collection.createIndex({ "users.userId": 1 });
 };
 
-const normalizePermissions = (
+export const normalizeStoryPermissions = (
   permissions: Array<{ userId: string | ObjectId; role: StoryRole }>,
 ): StoryPermission[] =>
   permissions.map((permission) => ({
@@ -44,30 +43,12 @@ const normalizePermissions = (
     role: permission.role,
   }));
 
-const assertHasOwner = (permissions: StoryPermission[]): void => {
+export const assertHasOwner = (permissions: StoryPermission[]): void => {
   const hasOwner = permissions.some(
     (permission) => permission.role === "owner",
   );
   if (!hasOwner) {
     throw new Error("Story must include an owner permission");
-  }
-};
-
-export const validateStoryPermissionsUsers = async (
-  permissions: StoryPermission[],
-): Promise<void> => {
-  const collection = getUsersCollection();
-  const ids = Array.from(
-    new Set(permissions.map((permission) => permission.userId.toHexString())),
-  ).map((value) => new ObjectId(value));
-
-  if (ids.length === 0) {
-    throw new Error("Story must include at least one user permission");
-  }
-
-  const count = await collection.countDocuments({ _id: { $in: ids } });
-  if (count !== ids.length) {
-    throw new Error("Story permissions include unknown users");
   }
 };
 
@@ -96,6 +77,28 @@ export const listStories = async (
   return collection.find(filter).limit(limit).toArray();
 };
 
+export const listStoriesByIds = async (
+  ids: Array<string | ObjectId>,
+  options: { includeDeleted?: boolean } = {},
+): Promise<StoryDocument[]> => {
+  const collection = getStoriesCollection();
+  const includeDeleted = options.includeDeleted ?? false;
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "storyId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  const filter = {
+    _id: { $in: uniqueIds },
+    ...buildStoryFilter(includeDeleted),
+  };
+
+  return collection.find(filter).toArray();
+};
+
 export const getStoryById = async (
   id: string | ObjectId,
   options: { includeDeleted?: boolean } = {},
@@ -119,10 +122,9 @@ export const createStory = async (
   input: CreateStoryInput,
 ): Promise<StoryDocument> => {
   const collection = getStoriesCollection();
-  const permissions = normalizePermissions(input.users);
+  const permissions = normalizeStoryPermissions(input.users);
 
   assertHasOwner(permissions);
-  await validateStoryPermissionsUsers(permissions);
 
   const payload: ModelInsertInput<StoryDefinition> = {
     title: input.title,
@@ -160,9 +162,8 @@ export const updateStoryById = async (
   }
 
   if (updates.users) {
-    const permissions = normalizePermissions(updates.users);
+    const permissions = normalizeStoryPermissions(updates.users);
     assertHasOwner(permissions);
-    await validateStoryPermissionsUsers(permissions);
     updatePayload.users = permissions;
   }
 

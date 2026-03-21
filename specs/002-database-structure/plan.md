@@ -1,4 +1,4 @@
-# Implementation Plan: Database Structure
+# Implementation Plan: Database Structure Refactor
 
 **Branch**: `[002-database-structure]` | **Date**: 2026-03-21 | **Spec**: [specs/002-database-structure/spec.md](specs/002-database-structure/spec.md)
 **Input**: Feature specification from `/specs/002-database-structure/spec.md`
@@ -7,25 +7,19 @@
 
 ## Summary
 
-Define MongoDB data models and CRUD helpers for users, stories, tags, plots, scenes, and sessions. Add indexes for uniqueness and lookup performance, and enforce referential checks at the model/service boundary to prevent invalid story, plot, tag, or user references.
+Refactor Express data access to enforce strict model boundaries: models stay CRUD-only with no cross-model imports, while domain services orchestrate multi-collection workflows using model functions. Add an automated check to prevent model-to-model imports and update services to comply with “no direct MongoDB calls.”
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: TypeScript 5.9 (Node.js)  
-**Primary Dependencies**: Express 5.2, MongoDB Node driver 6.16  
+**Language/Version**: Node.js + TypeScript 5.9  
+**Primary Dependencies**: Express 5.2, MongoDB driver 6.16, ts-node, nodemon  
 **Storage**: MongoDB  
-**Testing**: Not configured (no automated tests)  
-**Target Platform**: Node.js server (local dev + production deployment)  
-**Project Type**: Web service (Express API)  
-**Performance Goals**: CRUD operations under 200ms p95 for normal load  
-**Constraints**: MongoDB queries must live in `express/src/models`; validation on all inputs  
-**Scale/Scope**: ~10k users, stories with 10s-100s of plots/scenes
+**Testing**: No automated test framework configured  
+**Target Platform**: Node.js server (macOS/Linux deploy targets)  
+**Project Type**: Web service (Express API) with separate React frontend  
+**Performance Goals**: <200ms p95 for standard API requests  
+**Constraints**: Models are CRUD-only and must not import other models; services orchestrate workflows; services never call MongoDB driver directly  
+**Scale/Scope**: Single API service with a single MongoDB database; moderate early-stage scale
 
 ## Constitution Check
 
@@ -65,29 +59,44 @@ express/
 ├── src/
 │   ├── models/
 │   ├── services/
-│   └── routers/
+│   ├── routers/
+│   └── utils/
 
 web/
 ├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
+│   ├── assets/
+│   ├── App.tsx
+│   └── main.tsx
 ```
 
-**Structure Decision**: Express backend in `express/src` with models and services; React frontend in `web/src`. This feature only touches backend models and supporting services.
+**Structure Decision**: Use the existing Express backend in express/ and the React frontend in web/. This refactor only touches express/src/models and express/src/services.
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-| --------- | ---------- | ------------------------------------ |
-| None      | N/A        | N/A                                  |
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
 
-## Post-Design Constitution Check
+## Plan
 
-- Stack guardrails honored (Express + MongoDB backend in `express/`).
-- Clean Architecture boundaries preserved (models only for DB access).
-- Routing and services remain thin; CRUD helpers live in models.
-- Input validation and security requirements remain in scope for services/routers.
-- Performance target (<200ms p95) maintained via indexed lookups.
+### Phase 0: Research and Decisions
+
+- Confirm service/model boundaries, enforcement strategy, and service organization (documented in research.md).
+
+### Phase 1: Design and Refactor Plan
+
+- Define domain services and responsibilities (StoryService, PlotService, SceneService, UserService, SessionService, TagService).
+- Map current cross-model imports and move their logic to services.
+- Ensure models expose only CRUD and single-collection helpers; any multi-collection logic receives required related documents as input.
+- Add automated enforcement to prevent model-to-model imports.
+
+### Phase 2: Implementation Steps
+
+1. Update model modules to remove cross-model imports and adjust signatures to accept related documents where needed.
+2. Create/expand domain services to orchestrate multi-collection workflows using model functions only.
+3. Update existing services to avoid direct MongoDB driver calls (use model functions instead).
+4. Add lint/CI check to forbid model-to-model imports and document how to run it.
+5. Validate behavior with smoke tests (create story, plot, scene, tags, session).

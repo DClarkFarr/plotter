@@ -15,6 +15,11 @@
 - Q: When a story is deleted, what should happen to its tags, plots, and scenes? -> A: Soft delete story, keep related items.
 - Q: How should an expired session token be treated when used? -> A: Reject as unauthorized/expired.
 - Q: When an email is already used by another user, what should happen? -> A: Reject creation/update with a duplicate email.
+- Q: Where should cross-collection validation and orchestration live? -> A: Services only; models are CRUD-only and must not import other models.
+- Q: Should model files be refactored to remove cross-model imports with logic moved into services? -> A: Yes; remove cross-model imports and move that logic into /services.
+- Q: Should multi-collection helper methods live in services even for read-only logic? -> A: Yes; move all multi-collection helpers (reads or writes) into services.
+- Q: Should we enforce the no model-to-model import rule automatically? -> A: Yes; add a lint or CI check to forbid model-to-model imports.
+- Q: How should services be organized? -> A: By domain (StoryService, PlotService, SceneService, UserService, SessionService, TagService).
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -88,6 +93,19 @@ As a user, I start a session when I sign in and the session ends when it expires
 - **FR-014**: System MUST soft delete stories without deleting related tags, plots, or scenes.
 - **FR-015**: System MUST reject expired session tokens as unauthorized.
 - **FR-016**: System MUST reject create/update actions with a duplicate email.
+- **FR-017**: Cross-collection validation and orchestration MUST live in services; model modules provide CRUD-only operations and MUST NOT import other model modules.
+- **FR-018**: Model files MUST not import other model modules; any cross-collection logic MUST be moved into service modules under /services.
+- **FR-019**: All multi-collection helper methods (including read-only helpers) MUST live in services.
+- **FR-020**: The codebase MUST include an automated check (lint/CI) that forbids model-to-model imports.
+- **FR-021**: Services MUST be organized by domain (StoryService, PlotService, SceneService, UserService, SessionService, TagService).
+
+## Constraints
+
+- Model modules are CRUD-only and must not import other model modules; multi-collection logic is owned by services.
+- Refactor existing model modules to remove cross-model imports and relocate their multi-collection logic into services.
+- Multi-collection helpers (read or write) are service responsibilities, not model responsibilities.
+- Enforce the model import rule with automated checks (lint or CI).
+- Organize services by domain (StoryService, PlotService, SceneService, UserService, SessionService, TagService).
 
 ### Key Entities _(include if feature involves data)_
 

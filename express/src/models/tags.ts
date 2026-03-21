@@ -9,7 +9,6 @@ import {
   ModelInsertInput,
   touchTimestamps,
 } from "./types";
-import { getStoriesCollection } from "./stories";
 
 export interface TagDefinition extends BaseModelBlueprint {
   name: string;
@@ -31,18 +30,6 @@ export const ensureTagIndexes = async (): Promise<void> => {
   await collection.createIndex({ storyId: 1, name: 1 }, { unique: true });
 };
 
-const assertStoryExists = async (storyId: ObjectId): Promise<void> => {
-  const stories = getStoriesCollection();
-  const story = await stories.findOne({
-    _id: storyId,
-    deletedAt: { $exists: false },
-  });
-
-  if (!story) {
-    throw new Error("Story not found");
-  }
-};
-
 export interface CreateTagInput {
   name: string;
   color: string;
@@ -56,8 +43,6 @@ export const createTag = async (
 ): Promise<TagDocument> => {
   const collection = getTagsCollection();
   const storyId = ensureObjectId(input.storyId, "storyId");
-
-  await assertStoryExists(storyId);
 
   const payload: ModelInsertInput<TagDefinition> = {
     name: input.name,
@@ -87,6 +72,21 @@ export const listTags = async (
     : {};
 
   return collection.find(filter).limit(limit).toArray();
+};
+
+export const listTagsByIds = async (
+  ids: Array<string | ObjectId>,
+): Promise<TagDocument[]> => {
+  const collection = getTagsCollection();
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "tagId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection.find({ _id: { $in: uniqueIds } }).toArray();
 };
 
 export const getTagById = async (
@@ -130,7 +130,6 @@ export const updateTagById = async (
 
   if (updates.storyId) {
     updatePayload.storyId = ensureObjectId(updates.storyId, "storyId");
-    await assertStoryExists(updatePayload.storyId);
   }
 
   const result = await collection.findOneAndUpdate(

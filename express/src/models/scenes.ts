@@ -9,8 +9,6 @@ import {
   ModelInsertInput,
   touchTimestamps,
 } from "./types";
-import { getPlotsCollection } from "./plots";
-import { getTagsCollection } from "./tags";
 
 export interface SceneTodoItem {
   text: string;
@@ -42,41 +40,7 @@ export const ensureSceneIndexes = async (): Promise<void> => {
   );
 };
 
-const assertPlotExists = async (plotId: ObjectId) => {
-  const plots = getPlotsCollection();
-  const plot = await plots.findOne({ _id: plotId });
-
-  if (!plot) {
-    throw new Error("Plot not found");
-  }
-
-  return plot;
-};
-
-const assertTagsBelongToStory = async (
-  storyId: ObjectId,
-  tagIds: ObjectId[],
-): Promise<void> => {
-  if (tagIds.length === 0) {
-    return;
-  }
-
-  const tags = getTagsCollection();
-  const uniqueIds = Array.from(
-    new Set(tagIds.map((id) => id.toHexString())),
-  ).map((value) => new ObjectId(value));
-
-  const count = await tags.countDocuments({
-    _id: { $in: uniqueIds },
-    storyId,
-  });
-
-  if (count !== uniqueIds.length) {
-    throw new Error("Scene tags must belong to the same story");
-  }
-};
-
-const shiftSceneIndices = async (
+export const shiftSceneIndices = async (
   plotId: ObjectId,
   fromIndex: number,
   excludeId?: ObjectId,
@@ -113,14 +77,9 @@ export const createScene = async (
   if (input.verticalIndex < 0) {
     throw new Error("verticalIndex must be >= 0");
   }
-
-  const plot = await assertPlotExists(plotId);
   const tagIds = (input.tags ?? []).map((tagId) =>
     ensureObjectId(tagId, "tagId"),
   );
-
-  await assertTagsBelongToStory(plot.storyId, tagIds);
-  await shiftSceneIndices(plotId, input.verticalIndex);
 
   const payload: ModelInsertInput<SceneDefinition> = {
     title: input.title,
@@ -183,7 +142,6 @@ export const updateSceneById = async (
   const collection = getScenesCollection();
   const sceneId = ensureObjectId(id, "sceneId");
   const updatePayload: Partial<SceneDefinition> = {};
-  const current = await collection.findOne({ _id: sceneId });
 
   if (updates.title !== undefined) {
     updatePayload.title = updates.title;
@@ -205,7 +163,6 @@ export const updateSceneById = async (
   if (updates.plotId) {
     plotId = ensureObjectId(updates.plotId, "plotId");
     updatePayload.plotId = plotId;
-    await assertPlotExists(plotId);
   }
 
   if (updates.verticalIndex !== undefined) {
@@ -214,22 +171,10 @@ export const updateSceneById = async (
     }
 
     updatePayload.verticalIndex = updates.verticalIndex;
-
-    if (current) {
-      const targetPlotId = plotId ?? current.plotId;
-      await shiftSceneIndices(targetPlotId, updates.verticalIndex, sceneId);
-    }
   }
 
   if (updates.tags) {
-    const targetPlotId = plotId ?? current?.plotId;
-    const plot = targetPlotId ? await assertPlotExists(targetPlotId) : null;
-    const storyId = plot?.storyId;
     const tagIds = updates.tags.map((tagId) => ensureObjectId(tagId, "tagId"));
-
-    if (storyId) {
-      await assertTagsBelongToStory(storyId, tagIds);
-    }
 
     updatePayload.tags = tagIds;
   }
