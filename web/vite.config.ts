@@ -3,6 +3,8 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
+import flowbiteReact from "flowbite-react/plugin/vite";
+import Icons from "unplugin-icons/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,7 +14,9 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     tailwindcss(),
+    Icons({ compiler: "jsx", jsx: "react" }),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
+    flowbiteReact(),
   ],
 });

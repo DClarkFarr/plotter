@@ -11,14 +11,21 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/react-query": "^5.94.5",
+    "@tanstack/react-router": "^1.168.1",
+    "flowbite-react": "^0.12.17",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.2",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@eslint/js": "^9.39.4",
+    "@iconify-json/mdi": "^1.2.3",
     "@rolldown/plugin-babel": "^0.2.1",
+    "@svgr/core": "^8.1.0",
+    "@svgr/plugin-jsx": "^8.1.0",
     "@tanstack/router-plugin": "^1.167.2",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^24.12.0",
@@ -32,6 +39,7 @@
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
+    "unplugin-icons": "^23.0.1",
     "vite": "^8.0.1"
   }
 }
