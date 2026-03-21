@@ -1,50 +1,68 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: N/A (template) -> 1.0.0
+- Modified principles: N/A (initial adoption)
+- Added sections: None (template populated)
+- Removed sections: None
+- Templates requiring updates: .specify/templates/plan-template.md (updated), .specify/templates/spec-template.md (updated), .specify/templates/tasks-template.md (updated), .specify/templates/commands/*.md (⚠ missing)
+- Follow-up TODOs: TODO(RATIFICATION_DATE): original adoption date not provided
+-->
+
+# Plotter Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Stack Guardrails (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+The backend MUST remain a Node.js + TypeScript Express server in the express/ directory
+with MongoDB as the only database. The frontend MUST remain a React app in web/ using
+TanStack Router, Flowbite React where reasonable, Tailwind CSS for base styles, and
+unplugin-icons with Material UI icon packs as needed. Do not introduce other frameworks.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Clean Architecture Boundaries
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+All features MUST adhere to Clean Architecture separation across Domain, Application,
+and Infrastructure layers. Business rules live in services; API routing is orchestration
+only. Any cross-layer dependency MUST be explicit and justified.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Routing, Services, and Data Access Discipline
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Routes MUST be defined via Express routers. Services MUST compose actions and hold
+workflow logic. All MongoDB queries MUST live in models/ and be exported as consistent,
+clean functions. No MongoDB queries outside models/.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Security-First Input and Error Handling
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Every user input MUST be validated and sanitized. Error handling MUST use an elegant
+try/catch flow with a global middleware fallback. Development mode MUST surface root
+causes; production MUST obfuscate sensitive database or system errors.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Performance and Environment Awareness
+
+API response times MUST remain under 200ms for normal load. Frontend routing and XHR
+clients MUST support distinct base URLs for localhost + Vite, localhost + server build,
+and production domain deployments.
+
+## Architecture & Code Structure
+
+- APIs MUST be RESTful and use JSON for requests and responses.
+- Service Locator is prohibited; use constructor-based dependency injection.
+- Database manipulation must be grouped in models/ with no direct queries elsewhere.
+- Services must compose utils and data methods for workflows; routers remain thin.
+
+## Quality, Documentation & Workflow
+
+- No automated testing is required for now unless explicitly requested.
+- All generated commit messages MUST follow Conventional Commits format.
+- Before writing code, ask clarifying questions for any spec ambiguity.
+- spec.md must remain technology-agnostic; technical details belong in plan.md.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes other guidance; deviations require explicit approval and
+  documented justification in the plan.
+- All plans and tasks must include a Constitution Check against the Core Principles.
+- Amendments require documentation, consensus of maintainers, and a semantic version bump.
+- Compliance is reviewed during PRs and release readiness checks.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date not provided | **Last Amended**: 2026-03-21

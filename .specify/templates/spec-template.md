@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+> Keep this spec technology-agnostic. Library and stack details belong in plan.md.
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
