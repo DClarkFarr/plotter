@@ -32,6 +32,9 @@
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - Stack guardrails honored (Express + MongoDB backend in express/, React in web/).
+- Frontend library mandates followed: TanStack Router for routing, TanStack Query for
+  server state, Zustand for client state, Flowbite React for UI components, Tailwind CSS
+  for styles, unplugin-icons for icons. No alternative libraries introduced.
 - Clean Architecture boundaries enforced; routing remains thin.
 - Routes use Express router; services compose workflow; models own MongoDB queries.
 - Input validation and error handling follow security-first requirements.

@@ -1,11 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: N/A (template) -> 1.0.0
-- Modified principles: N/A (initial adoption)
-- Added sections: None (template populated)
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: I. Stack Guardrails — expanded frontend library mandates;
+    TanStack Query and Zustand added with designated purposes; future library
+    placeholders noted for animation, drag-and-drop, and rich text editor.
+- Added sections: None
 - Removed sections: None
-- Templates requiring updates: .specify/templates/plan-template.md (updated), .specify/templates/spec-template.md (updated), .specify/templates/tasks-template.md (updated), .specify/templates/commands/*.md (⚠ missing)
-- Follow-up TODOs: TODO(RATIFICATION_DATE): original adoption date not provided
+- Templates requiring updates:
+    .specify/templates/plan-template.md ✅ (Constitution Check updated)
+    .specify/templates/spec-template.md ✅ (no changes required)
+    .specify/templates/tasks-template.md ✅ (no changes required)
+- Follow-up TODOs:
+    TODO(RATIFICATION_DATE): original adoption date not provided
+    TODO(ANIMATION_LIBRARY): motion or equivalent not yet decided — amend Principle I when selected
+    TODO(DND_LIBRARY): drag-and-drop library not yet decided — amend Principle I when selected
+    TODO(RTE_LIBRARY): rich text editor library not yet decided — amend Principle I when selected
 -->
 
 # Plotter Constitution
@@ -15,9 +24,26 @@ Sync Impact Report
 ### I. Stack Guardrails (NON-NEGOTIABLE)
 
 The backend MUST remain a Node.js + TypeScript Express server in the express/ directory
-with MongoDB as the only database. The frontend MUST remain a React app in web/ using
-TanStack Router, Flowbite React where reasonable, Tailwind CSS for base styles, and
-unplugin-icons with Material UI icon packs as needed. Do not introduce other frameworks.
+with MongoDB as the only database. The frontend MUST remain a React app in the web/
+directory and MUST use the following libraries for their designated purposes:
+
+- **Routing**: TanStack Router (`@tanstack/react-router`) MUST be used for all
+  client-side routing. Do not introduce alternative routing solutions.
+- **Server State**: TanStack Query (`@tanstack/react-query`) MUST be used for all
+  data fetching, caching, and server mutations. Remote data MUST NOT be managed in
+  Zustand or local component state.
+- **Client State**: Zustand MUST be used for all non-server, non-URL application state
+  (e.g., UI state, ephemeral session data). Do not introduce Redux or other state
+  management libraries.
+- **UI Components**: Flowbite React MUST be used for UI components where a suitable
+  component exists. Custom components MUST be composed from Tailwind CSS utilities.
+- **Styles**: Tailwind CSS MUST be the sole styling mechanism. Do not introduce CSS
+  modules, styled-components, or global CSS classes beyond Tailwind's base layer.
+- **Icons**: unplugin-icons with Material Design icon packs MUST be used for all icons.
+
+Future libraries for animation, drag-and-drop, and rich text editing are not yet
+decided. Until a constitution amendment names them, no ad-hoc third-party libraries
+for these purposes MUST be added.
 
 ### II. Clean Architecture Boundaries
 
@@ -65,4 +91,4 @@ and production domain deployments.
 - Amendments require documentation, consensus of maintainers, and a semantic version bump.
 - Compliance is reviewed during PRs and release readiness checks.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date not provided | **Last Amended**: 2026-03-21
+**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date not provided | **Last Amended**: 2026-03-21
