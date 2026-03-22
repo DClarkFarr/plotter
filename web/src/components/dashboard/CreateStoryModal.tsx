@@ -1,5 +1,12 @@
-import { Button, Label, Modal, TextInput } from "flowbite-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Label,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  TextInput,
+} from "flowbite-react";
+import { useCallback, useMemo, useState } from "react";
 
 interface CreateStoryModalProps {
   isOpen: boolean;
@@ -18,39 +25,39 @@ export function CreateStoryModal({
 }: CreateStoryModalProps) {
   const [title, setTitle] = useState("");
 
-  useEffect(() => {
-    if (!isOpen) {
-      setTitle("");
-    }
-  }, [isOpen]);
-
   const trimmedTitle = useMemo(() => title.trim(), [title]);
   const isValid = trimmedTitle.length > 0;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isValid || isSubmitting) {
-      return;
-    }
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!isValid || isSubmitting) {
+        return;
+      }
 
-    onCreate(trimmedTitle);
-  };
+      onCreate(trimmedTitle);
+    },
+    [onCreate, isValid, isSubmitting, trimmedTitle],
+  );
+
+  const handleClose = useCallback(() => {
+    onClose();
+    setTitle("");
+  }, [onClose]);
 
   return (
-    <Modal show={isOpen} onClose={onClose} size="md" popup>
-      <Modal.Header />
-      <Modal.Body>
+    <Modal show={isOpen} onClose={handleClose} size="md" popup>
+      <ModalHeader className="bg-gray-900 p-6 ">Create a story</ModalHeader>
+      <ModalBody className="bg-gray-900">
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Create a story
-            </h2>
+            <h2 className="text-lg font-semibold text-white"></h2>
             <p className="text-sm text-slate-500">
               Add a title to get started. You can edit the details later.
             </p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="story-title" value="Story title" />
+            <Label htmlFor="story-title">Story title</Label>
             <TextInput
               id="story-title"
               placeholder="My new story"
@@ -78,7 +85,7 @@ export function CreateStoryModal({
             </Button>
           </div>
         </form>
-      </Modal.Body>
+      </ModalBody>
     </Modal>
   );
 }

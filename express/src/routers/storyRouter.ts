@@ -7,6 +7,7 @@ import {
   listStoriesForUser,
 } from "../services/storyService";
 import { requireString } from "../utils/validators";
+import { assertparamIsString } from "../utils/routes";
 
 export const storyRouter = express.Router({ mergeParams: true });
 
@@ -120,7 +121,9 @@ const applyStoryRoutes = () => {
     "/:storyId",
     handleAsync(async (req, res) => {
       const userId = requireUserId(req);
-      const storyId = req.params.storyId;
+
+      let storyId = assertparamIsString(req.params.storyId, "storyId");
+
       const story = await getStoryForUser(storyId, userId);
       if (!story) {
         res.status(404).json({ error: "Story not found" });

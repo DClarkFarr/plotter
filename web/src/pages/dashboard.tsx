@@ -52,7 +52,7 @@ export function DashboardPage() {
           </h1>
         </div>
         <Button color="dark" type="button" onClick={openCreateStory}>
-          <IconPlus className="mr-2" />+ story
+          <IconPlus className="mr-2" /> Story
         </Button>
       </header>
       <section className="overflow-auto min-h-[400px] rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
