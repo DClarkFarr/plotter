@@ -29,6 +29,8 @@ directory and MUST use the following libraries for their designated purposes:
 
 - **Routing**: TanStack Router (`@tanstack/react-router`) MUST be used for all
   client-side routing. Do not introduce alternative routing solutions.
+  For routing optimizations and to improve HMR, define the page components in web/src/pages/_ and then import them
+  into web/src/routes/_.
 - **Server State**: TanStack Query (`@tanstack/react-query`) MUST be used for all
   data fetching, caching, and server mutations. Remote data MUST NOT be managed in
   Zustand or local component state.
