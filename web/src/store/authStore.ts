@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { AuthUser } from "../api/types";
 
 interface AuthState {
+  isLoaded: boolean;
   user: AuthUser | null;
   isAuthenticated: boolean;
   setUser: (user: AuthUser | null) => void;
@@ -9,8 +10,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
+  isLoaded: false,
   user: null,
   isAuthenticated: false,
-  setUser: (user) => set({ user, isAuthenticated: user !== null }),
-  clearUser: () => set({ user: null, isAuthenticated: false }),
+  setUser: (user) =>
+    set({ user, isAuthenticated: user !== null, isLoaded: true }),
+  clearUser: () => set({ user: null, isAuthenticated: false, isLoaded: true }),
 }));
