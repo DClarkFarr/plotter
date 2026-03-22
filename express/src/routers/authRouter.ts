@@ -78,7 +78,6 @@ const applyAuthRoutes = () => {
         sessionData,
       );
 
-      console.log("after signup got user", user);
       res.status(201).json({ user });
     }),
   );

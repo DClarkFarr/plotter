@@ -52,7 +52,7 @@ const main = async (): Promise<void> => {
   }
 
   if (violations.length === 0) {
-    console.log("No model-to-model imports detected.");
+    console.warn("No model-to-model imports detected.");
     return;
   }
 

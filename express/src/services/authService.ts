@@ -100,22 +100,15 @@ export const signup = async (
 ): Promise<AuthUserResponse> => {
   const firstName = validateName(input.firstName, "firstName");
 
-  console.log("validated firstName", { firstName });
   const lastName = validateName(input.lastName, "lastName");
-  console.log("validated lastName", { lastName });
   const email = validateEmail(input.email);
-  console.log("validated email", { email });
   const password = validatePassword(input.password);
-  console.log("validated password", { password: "***" });
   const ipAddress = input.ipAddress ?? "unknown";
 
   await assertAuthAttemptAllowed(email, ipAddress, "signup");
-  console.log("asserted auth attempt allowed");
   await recordAuthAttempt(email, ipAddress, "signup");
-  console.log("recorded auth attempt");
 
   const passwordHash = await hashPassword(password);
-  console.log("hashed password", { passwordHash });
   const passwordChangedAt = new Date();
 
   const user = await createUser({
@@ -126,14 +119,10 @@ export const signup = async (
     passwordChangedAt,
   });
 
-  console.log("created user", { user });
-
   await resetAuthAttempt(email, ipAddress, "signup");
-  console.log("reset auth attempt");
 
   sessionData.userId = user._id.toHexString();
   await saveSession(sessionData);
-  console.log("saved session");
 
   recordAuditEvent({
     action: "signup",
