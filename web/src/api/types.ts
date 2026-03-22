@@ -10,10 +10,33 @@ export interface AuthUser {
   lastName: string;
 }
 
+export interface StoryStats {
+  plots: number;
+  scenes: number;
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  description: string | null;
+  ownerId: string;
+  stats: StoryStats;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
 // ─── Response Envelopes ───────────────────────────────────────────────────────
 
 export interface AuthUserResponse {
   user: AuthUser;
+}
+
+export interface StoryResponse {
+  story: Story;
+}
+
+export interface StoriesResponse {
+  stories: Story[];
 }
 
 export interface MessageResponse {
