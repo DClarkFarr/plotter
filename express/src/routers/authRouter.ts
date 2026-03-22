@@ -7,6 +7,7 @@ import {
   login,
   requestPasswordReset,
   signup,
+  ValidationError,
 } from "../services/authService";
 
 export const authRouter = express.Router({ mergeParams: true });
@@ -29,6 +30,11 @@ const getSession = (req: Request): AuthSession =>
 const handleError = (res: Response, error: unknown): void => {
   if (error instanceof AuthError) {
     res.status(error.status).json({ error: error.message });
+    return;
+  }
+
+  if (error instanceof ValidationError) {
+    res.status(error.status).json({ error: error.message, field: error.field });
     return;
   }
 
@@ -72,6 +78,7 @@ const applyAuthRoutes = () => {
         sessionData,
       );
 
+      console.log("after signup got user", user);
       res.status(201).json({ user });
     }),
   );
