@@ -108,10 +108,13 @@ const applyAuthRoutes = () => {
         if (err instanceof Error) {
           console.error("Error destroying session:", err);
         } else {
-          console.error("Unknown error destroying session", err);
         }
       });
-      res.status(200).json({ message: "Logged out" });
+
+      res
+        .clearCookie("plotter.sid")
+        .status(200)
+        .json({ message: "Logged out" });
     }),
   );
 
