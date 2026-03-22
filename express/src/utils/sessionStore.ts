@@ -45,7 +45,7 @@ export class MongoSessionStore extends session.Store {
           return;
         }
 
-        callback(null, sessionDoc.payload as session.SessionData);
+        callback(null, sessionDoc.payload as unknown as session.SessionData);
       })
       .catch((error) => callback(error as Error));
   }

@@ -16,9 +16,9 @@
 
 **Purpose**: Install the one new dependency and configure the environment so every subsequent task can compile and run.
 
-- [ ] T001 Run `npm install axios` in `web/`
-- [ ] T002 Create `web/.env.development` with `VITE_API_BASE_URL=http://localhost:1000/api`
-- [ ] T003 [P] Add `.env.development` and `.env.production` to `web/.gitignore` (if not already present)
+- [X] T001 Run `npm install axios` in `web/`
+- [X] T002 Create `web/.env.development` with `VITE_API_BASE_URL=http://localhost:1000/api`
+- [X] T003 [P] Add `.env.development` and `.env.production` to `web/.gitignore` (if not already present)
 
 **Checkpoint**: `npm run dev` in `web/` still starts without errors; `axios` appears in `web/node_modules/`
 
@@ -30,11 +30,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Create `web/src/api/types.ts` — define `AuthUser`, `AuthUserResponse`, `MessageResponse`, `ApiErrorResponse` interfaces, and `ApiError` class (with `status: number` and `serverMessage: string`) per `data-model.md`
-- [ ] T005 [P] Create `web/src/lib/apiClient.ts` — export a single Axios instance created with `baseURL: import.meta.env.VITE_API_BASE_URL`, `withCredentials: true`, and `Content-Type: application/json`
-- [ ] T006 Create `web/src/api/auth.ts` — implement `login()`, `signup()`, `resetPasswordRequest()`, and `getMe()` as typed async functions; each imports `apiClient` and catches Axios errors, re-throwing as `ApiError` with the HTTP status and `response.data.error`; network errors throw `ApiError` with `status: 0`; types imported from `web/src/api/types.ts` (depends on T004, T005)
-- [ ] T007 Create `web/src/store/authStore.ts` — Zustand store with `user: AuthUser | null`, `isAuthenticated: boolean`, `setUser(user: AuthUser | null): void`, and `clearUser(): void`; imports `AuthUser` from `web/src/api/types.ts` (depends on T004)
-- [ ] T008 Update `web/src/main.tsx` — import `QueryClient` and `QueryClientProvider` from `@tanstack/react-query`; create a `queryClient` instance; wrap `<RouterProvider>` with `<QueryClientProvider client={queryClient}>` (depends on T004–T007 being present so compilation passes)
+- [X] T004 [P] Create `web/src/api/types.ts` — define `AuthUser`, `AuthUserResponse`, `MessageResponse`, `ApiErrorResponse` interfaces, and `ApiError` class (with `status: number` and `serverMessage: string`) per `data-model.md`
+- [X] T005 [P] Create `web/src/lib/apiClient.ts` — export a single Axios instance created with `baseURL: import.meta.env.VITE_API_BASE_URL`, `withCredentials: true`, and `Content-Type: application/json`
+- [X] T006 Create `web/src/api/auth.ts` — implement `login()`, `signup()`, `resetPasswordRequest()`, and `getMe()` as typed async functions; each imports `apiClient` and catches Axios errors, re-throwing as `ApiError` with the HTTP status and `response.data.error`; network errors throw `ApiError` with `status: 0`; types imported from `web/src/api/types.ts` (depends on T004, T005)
+- [X] T007 Create `web/src/store/authStore.ts` — Zustand store with `user: AuthUser | null`, `isAuthenticated: boolean`, `setUser(user: AuthUser | null): void`, and `clearUser(): void`; imports `AuthUser` from `web/src/api/types.ts` (depends on T004)
+- [X] T008 Update `web/src/main.tsx` — import `QueryClient` and `QueryClientProvider` from `@tanstack/react-query`; create a `queryClient` instance; wrap `<RouterProvider>` with `<QueryClientProvider client={queryClient}>` (depends on T004–T007 being present so compilation passes)
 
 **Checkpoint**: TypeScript compilation passes; `apiClient`, `AuthUser`, `ApiError`, and `authStore` are all importable
 
@@ -46,9 +46,9 @@
 
 **Independent Test**: Run `npm run dev`; navigate to `http://localhost:5173/`. Confirm the centered banner and CTA render. Confirm the Topbar shows "plotter" wordmark on the left and "Log In" / "Sign Up" on the right. Check that clicking "Get Started" navigates to `/login` (the route can 404 at this stage — that is expected).
 
-- [ ] T009 [P] [US1] Create `web/src/components/layout/Topbar.tsx` — Flowbite `<Navbar>` with `<Navbar.Brand>` displaying text "plotter" (lowercase, styled as a brand link with `font-bold`) on the left; reads `authStore` via Zustand; renders `<Link to="/login">Log In</Link>` and `<Link to="/sign-up">Sign Up</Link>` when `isAuthenticated` is false; renders `<Link to="/dashboard">Dashboard</Link>` and a "Log Out" `<button>` (calls `authStore.clearUser()` as stub; real logout is future work) when `isAuthenticated` is true; uses `<Link>` from `@tanstack/react-router`
-- [ ] T010 [US1] Update `web/src/routes/__root.tsx` — import `useQuery` from `@tanstack/react-query`; import `getMe` from `web/src/api/auth.ts`; import `authStore` from `web/src/store/authStore.ts`; call `useQuery({ queryKey: ['me'], queryFn: getMe, retry: false })`; on query success call `authStore.setUser(data.user)`; on query error call `authStore.clearUser()`; render **only** `<Outlet />` as the component — no Topbar, no visual chrome (depends on T006, T007)
-- [ ] T011 [US1] Rewrite `web/src/pages/home.tsx` — render `<Topbar />` at the top; below it render a full-height centered section using Tailwind; display `<h1>Welcome to Plotter</h1>`; render a Flowbite `<Button>` as `<Link to="/login">` with label "Get Started" (depends on T009)
+- [X] T009 [P] [US1] Create `web/src/components/layout/Topbar.tsx` — Flowbite `<Navbar>` with `<Navbar.Brand>` displaying text "plotter" (lowercase, styled as a brand link with `font-bold`) on the left; reads `authStore` via Zustand; renders `<Link to="/login">Log In</Link>` and `<Link to="/sign-up">Sign Up</Link>` when `isAuthenticated` is false; renders `<Link to="/dashboard">Dashboard</Link>` and a "Log Out" `<button>` (calls `authStore.clearUser()` as stub; real logout is future work) when `isAuthenticated` is true; uses `<Link>` from `@tanstack/react-router`
+- [X] T010 [US1] Update `web/src/routes/__root.tsx` — import `useQuery` from `@tanstack/react-query`; import `getMe` from `web/src/api/auth.ts`; import `authStore` from `web/src/store/authStore.ts`; call `useQuery({ queryKey: ['me'], queryFn: getMe, retry: false })`; on query success call `authStore.setUser(data.user)`; on query error call `authStore.clearUser()`; render **only** `<Outlet />` as the component — no Topbar, no visual chrome (depends on T006, T007)
+- [X] T011 [US1] Rewrite `web/src/pages/home.tsx` — render `<Topbar />` at the top; below it render a full-height centered section using Tailwind; display `<h1>Welcome to Plotter</h1>`; render a Flowbite `<Button>` as `<Link to="/login">` with label "Get Started" (depends on T009)
 
 **Checkpoint (US1 complete)**: `/` shows Topbar with "plotter" wordmark, banner, and CTA; no Topbar on 404 or other routes yet
 
@@ -58,8 +58,8 @@
 
 **Purpose**: The `_auth.tsx` pathless layout wraps all auth routes in a centered card shell. Must exist before any auth page routes can render correctly.
 
-- [ ] T009b Create `web/src/routes/_auth.tsx` — pathless TanStack Router layout route (`createFileRoute('/_auth')({ component: AuthLayout })`); `AuthLayout` renders a full-viewport Tailwind container (`min-h-screen bg-gray-50 flex items-center justify-center`) with a Flowbite `<Card>` of fixed max-width (`max-w-md w-full`) containing `<Outlet />`; no Topbar or navigation chrome
-- [ ] T009c Create `web/src/routes/dashboard.tsx` — TanStack Router layout file for the `/dashboard` path segment (`createFileRoute('/dashboard')({ component: DashboardLayout })`); `DashboardLayout` renders `<Outlet />` only — a structural pass-through for future sidebar/topbar additions; no visual chrome
+- [X] T009b Create `web/src/routes/_auth.tsx` — pathless TanStack Router layout route (`createFileRoute('/_auth')({ component: AuthLayout })`); `AuthLayout` renders a full-viewport Tailwind container (`min-h-screen bg-gray-50 flex items-center justify-center`) with a Flowbite `<Card>` of fixed max-width (`max-w-md w-full`) containing `<Outlet />`; no Topbar or navigation chrome
+- [X] T009c Create `web/src/routes/dashboard.tsx` — TanStack Router layout file for the `/dashboard` path segment (`createFileRoute('/dashboard')({ component: DashboardLayout })`); `DashboardLayout` renders `<Outlet />` only — a structural pass-through for future sidebar/topbar additions; no visual chrome
 
 **Checkpoint (Phase 3.5 complete)**: Auth layout group and dashboard layout wrapper exist; TypeScript compiles cleanly
 
@@ -71,10 +71,10 @@
 
 **Independent Test**: Navigate to `/sign-up`. Submit empty form — see required-field errors on all fields. Enter a short/weak password and blur — see specific password errors. Enter valid data and submit — confirm the form invokes `onSignUpSuccess` (in the page component this triggers a navigate to `/dashboard`).
 
-- [ ] T012 [P] [US2] Create `web/src/hooks/useSignUpForm.ts` — manage `fields: { firstName, lastName, email, password }`, `touched: Record<keyof fields, boolean>`, and `fieldErrors: Record<keyof fields, string | undefined>`; implement `validateField(name, value)` which checks: firstName/lastName required; email required + regex format; password required, length 12–128, contains uppercase (`/[A-Z]/`), contains special char (`/[^a-zA-Z0-9]/`); expose `handleChange`, `handleBlur` (marks field touched + validates), and `handleSubmit` (marks all fields touched, validates all, calls `mutate` only when errors-free); use `useMutation` with `signup()` from `web/src/api/auth.ts`; on mutation success call `setUser(data.user)` in authStore then call `opts.onSignUpSuccess()`; on mutation error map `ApiError.status` to a `formError: string` (400 → show `serverMessage`, 409 → "An account with this email already exists.", 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."); return a props object: `{ fields, fieldErrors, formError, isSubmitting, handleChange, handleBlur, handleSubmit }` (depends on T004, T006, T007)
-- [ ] T013 [US2] Create `web/src/components/forms/SignUpForm.tsx` — accepts the props object returned by `useSignUpForm`; renders a `<form onSubmit={handleSubmit}>`; four Flowbite `<Label>` + `<TextInput>` pairs for firstName, lastName, email, password (type="password"); each field gets `onBlur={handleBlur}` and `onChange={handleChange}`; show inline `<p className="text-red-500 text-sm">` beneath each field when its `fieldErrors` entry is truthy and the field has been touched; show a Flowbite `<Alert color="failure">` above the submit button when `formError` is truthy; submit button is a Flowbite `<Button type="submit">` with `isProcessing={isSubmitting}` (depends on T012)
-- [ ] T014 [US2] Create `web/src/pages/sign-up.tsx` — call `useSignUpForm({ onSignUpSuccess: () => navigate({ to: '/dashboard' }) })`; import `useNavigate` from `@tanstack/react-router`; render `<SignUpForm {...formProps} />` (depends on T012, T013)
-- [ ] T015 [US2] Create `web/src/routes/_auth/sign-up.tsx` — `createFileRoute('/_auth/sign-up')({ component: SignUpPage })` importing from `web/src/pages/sign-up.tsx`; the `_auth` layout wrapper automatically provides the centered card shell (depends on T009b, T014)
+- [X] T012 [P] [US2] Create `web/src/hooks/useSignUpForm.ts` — manage `fields: { firstName, lastName, email, password }`, `touched: Record<keyof fields, boolean>`, and `fieldErrors: Record<keyof fields, string | undefined>`; implement `validateField(name, value)` which checks: firstName/lastName required; email required + regex format; password required, length 12–128, contains uppercase (`/[A-Z]/`), contains special char (`/[^a-zA-Z0-9]/`); expose `handleChange`, `handleBlur` (marks field touched + validates), and `handleSubmit` (marks all fields touched, validates all, calls `mutate` only when errors-free); use `useMutation` with `signup()` from `web/src/api/auth.ts`; on mutation success call `setUser(data.user)` in authStore then call `opts.onSignUpSuccess()`; on mutation error map `ApiError.status` to a `formError: string` (400 → show `serverMessage`, 409 → "An account with this email already exists.", 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."); return a props object: `{ fields, fieldErrors, formError, isSubmitting, handleChange, handleBlur, handleSubmit }` (depends on T004, T006, T007)
+- [X] T013 [US2] Create `web/src/components/forms/SignUpForm.tsx` — accepts the props object returned by `useSignUpForm`; renders a `<form onSubmit={handleSubmit}>`; four Flowbite `<Label>` + `<TextInput>` pairs for firstName, lastName, email, password (type="password"); each field gets `onBlur={handleBlur}` and `onChange={handleChange}`; show inline `<p className="text-red-500 text-sm">` beneath each field when its `fieldErrors` entry is truthy and the field has been touched; show a Flowbite `<Alert color="failure">` above the submit button when `formError` is truthy; submit button is a Flowbite `<Button type="submit">` with `isProcessing={isSubmitting}` (depends on T012)
+- [X] T014 [US2] Create `web/src/pages/sign-up.tsx` — call `useSignUpForm({ onSignUpSuccess: () => navigate({ to: '/dashboard' }) })`; import `useNavigate` from `@tanstack/react-router`; render `<SignUpForm {...formProps} />` (depends on T012, T013)
+- [X] T015 [US2] Create `web/src/routes/_auth/sign-up.tsx` — `createFileRoute('/_auth/sign-up')({ component: SignUpPage })` importing from `web/src/pages/sign-up.tsx`; the `_auth` layout wrapper automatically provides the centered card shell (depends on T009b, T014)
 
 **Checkpoint (US2 complete)**: `/sign-up` renders, validates inline, surfaces API errors, and calls `onSignUpSuccess` on success
 
@@ -86,10 +86,10 @@
 
 **Independent Test**: Navigate to `/login`. Submit empty — see required errors. Enter wrong password (after sign-up account exists) — see "Invalid email or password." alert. Enter valid credentials — confirm `onLoginSuccess` fires and navigates to `/dashboard`.
 
-- [ ] T016 [P] [US3] Create `web/src/hooks/useLoginForm.ts` — same structural pattern as `useSignUpForm` but for `fields: { email, password }`; validate email required + format, password required (no strength rules on login — it's a raw input); use `useMutation` with `login()` from `web/src/api/auth.ts`; on success call `authStore.setUser(data.user)` then `opts.onLoginSuccess()`; on error map `ApiError.status`: 401 → "Invalid email or password.", 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."; return same props shape: `{ fields, fieldErrors, formError, isSubmitting, handleChange, handleBlur, handleSubmit }` (depends on T004, T006, T007)
-- [ ] T017 [US3] Create `web/src/components/forms/LoginForm.tsx` — prop-driven; two Flowbite `<Label>` + `<TextInput>` pairs for email and password; inline field error display; Flowbite `<Alert color="failure">` for `formError`; Flowbite `<Button type="submit">` with `isProcessing={isSubmitting}`; include a "Sign up" link beneath the form pointing to `/sign-up` and a "Forgot password?" link pointing to `/reset-password` (depends on T016)
-- [ ] T018 [US3] Create `web/src/pages/login.tsx` — call `useLoginForm({ onLoginSuccess: () => navigate({ to: '/dashboard' }) })`; render `<LoginForm {...formProps} />` (depends on T016, T017)
-- [ ] T019 [US3] Create `web/src/routes/_auth/login.tsx` — `createFileRoute('/_auth/login')({ component: LoginPage })` importing from `web/src/pages/login.tsx`; rendered inside the `_auth` centered card layout (depends on T009b, T018)
+- [X] T016 [P] [US3] Create `web/src/hooks/useLoginForm.ts` — same structural pattern as `useSignUpForm` but for `fields: { email, password }`; validate email required + format, password required (no strength rules on login — it's a raw input); use `useMutation` with `login()` from `web/src/api/auth.ts`; on success call `authStore.setUser(data.user)` then `opts.onLoginSuccess()`; on error map `ApiError.status`: 401 → "Invalid email or password.", 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."; return same props shape: `{ fields, fieldErrors, formError, isSubmitting, handleChange, handleBlur, handleSubmit }` (depends on T004, T006, T007)
+- [X] T017 [US3] Create `web/src/components/forms/LoginForm.tsx` — prop-driven; two Flowbite `<Label>` + `<TextInput>` pairs for email and password; inline field error display; Flowbite `<Alert color="failure">` for `formError`; Flowbite `<Button type="submit">` with `isProcessing={isSubmitting}`; include a "Sign up" link beneath the form pointing to `/sign-up` and a "Forgot password?" link pointing to `/reset-password` (depends on T016)
+- [X] T018 [US3] Create `web/src/pages/login.tsx` — call `useLoginForm({ onLoginSuccess: () => navigate({ to: '/dashboard' }) })`; render `<LoginForm {...formProps} />` (depends on T016, T017)
+- [X] T019 [US3] Create `web/src/routes/_auth/login.tsx` — `createFileRoute('/_auth/login')({ component: LoginPage })` importing from `web/src/pages/login.tsx`; rendered inside the `_auth` centered card layout (depends on T009b, T018)
 
 **Checkpoint (US3 complete)**: `/login` validates, surfaces 401 errors, and navigates to `/dashboard` on success
 
@@ -101,10 +101,10 @@
 
 **Independent Test**: Navigate to `/reset-password`. Submit empty — see required error. Submit valid email — see the success message ("If the account exists, instructions have been sent.") rendered in the UI and `onResetSuccess` invoked.
 
-- [ ] T020 [P] [US4] Create `web/src/hooks/useResetPasswordForm.ts` — `fields: { email }`; validate email required + format; use `useMutation` with `resetPasswordRequest()` from `web/src/api/auth.ts`; on success call `opts.onResetSuccess()`; on error: 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."; return `{ fields, fieldErrors, formError, isSubmitting, isSuccess, handleChange, handleBlur, handleSubmit }` — include `isSuccess: boolean` from the mutation state so the page can show a confirmation (depends on T004, T006)
-- [ ] T021 [US4] Create `web/src/components/forms/ResetPasswordForm.tsx` — prop-driven; one Flowbite `<Label>` + `<TextInput>` for email; inline error; `<Alert color="failure">` for `formError`; when `isSuccess` is true render a Flowbite `<Alert color="success">` with "If the account exists, instructions have been sent." and hide the form fields; `<Button type="submit">` with `isProcessing={isSubmitting}`; include a "Back to Log In" link to `/login` (depends on T020)
-- [ ] T022 [US4] Create `web/src/pages/reset-password.tsx` — call `useResetPasswordForm({ onResetSuccess: () => {} })`; render `<ResetPasswordForm {...formProps} />`; `onResetSuccess` is a no-op since the success state is surfaced via `isSuccess` in the form itself (depends on T020, T021)
-- [ ] T023 [US4] Create `web/src/routes/_auth/reset-password.tsx` — `createFileRoute('/_auth/reset-password')({ component: ResetPasswordPage })` importing from `web/src/pages/reset-password.tsx`; rendered inside the `_auth` centered card layout (depends on T009b, T022)
+- [X] T020 [P] [US4] Create `web/src/hooks/useResetPasswordForm.ts` — `fields: { email }`; validate email required + format; use `useMutation` with `resetPasswordRequest()` from `web/src/api/auth.ts`; on success call `opts.onResetSuccess()`; on error: 429 → "Too many attempts. Please try again later.", else → "Something went wrong. Please try again."; return `{ fields, fieldErrors, formError, isSubmitting, isSuccess, handleChange, handleBlur, handleSubmit }` — include `isSuccess: boolean` from the mutation state so the page can show a confirmation (depends on T004, T006)
+- [X] T021 [US4] Create `web/src/components/forms/ResetPasswordForm.tsx` — prop-driven; one Flowbite `<Label>` + `<TextInput>` for email; inline error; `<Alert color="failure">` for `formError`; when `isSuccess` is true render a Flowbite `<Alert color="success">` with "If the account exists, instructions have been sent." and hide the form fields; `<Button type="submit">` with `isProcessing={isSubmitting}`; include a "Back to Log In" link to `/login` (depends on T020)
+- [X] T022 [US4] Create `web/src/pages/reset-password.tsx` — call `useResetPasswordForm({ onResetSuccess: () => {} })`; render `<ResetPasswordForm {...formProps} />`; `onResetSuccess` is a no-op since the success state is surfaced via `isSuccess` in the form itself (depends on T020, T021)
+- [X] T023 [US4] Create `web/src/routes/_auth/reset-password.tsx` — `createFileRoute('/_auth/reset-password')({ component: ResetPasswordPage })` importing from `web/src/pages/reset-password.tsx`; rendered inside the `_auth` centered card layout (depends on T009b, T022)
 
 **Checkpoint (US4 complete)**: `/reset-password` validates email, shows success message on submit, surfaces rate-limit errors
 
@@ -116,8 +116,8 @@
 
 **Independent Test**: Navigate to `/dashboard`. Confirm the placeholder renders. Confirm the Topbar is visible. No crash or blank screen.
 
-- [ ] T024 [P] [US5] Create `web/src/pages/dashboard.tsx` — render a simple `<main>` with `<h1>Welcome to Dashboard</h1>` placeholder; use Tailwind for basic padding/centering
-- [ ] T025 [US5] Create `web/src/routes/dashboard/index.tsx` — `createFileRoute('/dashboard/')({ component: DashboardPage })` importing from `web/src/pages/dashboard.tsx`; this route is a child of the `dashboard.tsx` layout wrapper (depends on T009c, T024)
+- [X] T024 [P] [US5] Create `web/src/pages/dashboard.tsx` — render a simple `<main>` with `<h1>Welcome to Dashboard</h1>` placeholder; use Tailwind for basic padding/centering
+- [X] T025 [US5] Create `web/src/routes/dashboard/index.tsx` — `createFileRoute('/dashboard/')({ component: DashboardPage })` importing from `web/src/pages/dashboard.tsx`; this route is a child of the `dashboard.tsx` layout wrapper (depends on T009c, T024)
 
 **Checkpoint (US5 complete)**: `/dashboard` renders the placeholder; all five routes now exist
 
@@ -125,9 +125,9 @@
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T026 Verify `web/src/routeTree.gen.ts` has been regenerated by the TanStack Router Vite plugin to include all new routes (`/_auth/login`, `/_auth/sign-up`, `/_auth/reset-password`, `/dashboard/`); if stale, run `npm run dev` once to trigger regeneration
-- [ ] T027 Run `npm run build` in `web/` and fix any TypeScript errors; common issues: missing `import.meta.env` type declaration for `VITE_API_BASE_URL`, untyped hook return values, missing Flowbite component prop types
-- [ ] T028 Remove or clear out the boilerplate content from `web/src/App.tsx` if it is still referenced anywhere; confirm it is not imported by any route file (it should not be, given the TanStack Router setup)
+- [X] T026 Verify `web/src/routeTree.gen.ts` has been regenerated by the TanStack Router Vite plugin to include all new routes (`/_auth/login`, `/_auth/sign-up`, `/_auth/reset-password`, `/dashboard/`); if stale, run `npm run dev` once to trigger regeneration
+- [X] T027 Run `npm run build` in `web/` and fix any TypeScript errors; common issues: missing `import.meta.env` type declaration for `VITE_API_BASE_URL`, untyped hook return values, missing Flowbite component prop types
+- [X] T028 Remove or clear out the boilerplate content from `web/src/App.tsx` if it is still referenced anywhere; confirm it is not imported by any route file (it should not be, given the TanStack Router setup)
 
 ---
 
