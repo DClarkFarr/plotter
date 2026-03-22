@@ -46,6 +46,14 @@ export async function login(input: LoginInput): Promise<AuthUser> {
   }
 }
 
+export async function logout(): Promise<void> {
+  try {
+    await apiClient.post("/auth/logout");
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 // ─── Reset Password Request ───────────────────────────────────────────────────
 
 export interface ResetPasswordRequestInput {

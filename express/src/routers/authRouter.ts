@@ -101,6 +101,21 @@ const applyAuthRoutes = () => {
   );
 
   authRouter.post(
+    "/logout",
+    handleAsync(async (req, res) => {
+      const sessionData = getSession(req);
+      await sessionData.destroy((err) => {
+        if (err instanceof Error) {
+          console.error("Error destroying session:", err);
+        } else {
+          console.error("Unknown error destroying session", err);
+        }
+      });
+      res.status(200).json({ message: "Logged out" });
+    }),
+  );
+
+  authRouter.post(
     "/reset-password/request",
     handleAsync(async (req, res) => {
       const ipAddress = req.ip ?? "unknown";

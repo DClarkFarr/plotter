@@ -9,11 +9,18 @@ import {
 } from "flowbite-react";
 import { useAuthStore } from "../../store/authStore";
 import { deriveAvatarInitials } from "./avatarInitials";
+import { useCallback } from "react";
+import { logout } from "../../api/auth";
 
 export function DashboardTopbar() {
   const { user, clearUser } = useAuthStore();
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
   const initials = deriveAvatarInitials(fullName);
+
+  const handleLogout = useCallback(() => {
+    clearUser();
+    logout();
+  }, [clearUser]);
 
   return (
     <Navbar
@@ -42,7 +49,7 @@ export function DashboardTopbar() {
               </div>
             </div>
           </DropdownHeader>
-          <DropdownItem onClick={clearUser}>Logout</DropdownItem>
+          <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
         </Dropdown>
       </div>
     </Navbar>
