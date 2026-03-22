@@ -19,7 +19,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [x] T001 Create dashboard component folders in web/src/components/dashboard and web/src/components/layout
+- [x] T001 Create stories router scaffold with async handler + error mapping in express/src/routers/storyRouter.ts
+- [x] T002 Register stories router under /stories in express/src/routers/apiRouter.ts
+- [x] T003 Add story response mapper helper in express/src/routers/storyRouter.ts
 
 ---
 
@@ -27,29 +29,31 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [x] T002 [P] Add Story and StoryStats types to web/src/api/types.ts
-- [x] T003 [P] Implement story endpoints in web/src/api/stories.ts using axios `apiClient`
-- [x] T004 [P] Add story query and mutation hooks in web/src/hooks/useStories.ts with `useQuery()` and `useMutation()`
-- [ ] T005 Update dashboard routing to use layout + index route in web/src/routes/dashboard.tsx and web/src/routes/dashboard/index.tsx
+- [x] T004 [P] Align story API types with the contract in web/src/api/types.ts
+- [x] T005 [P] Confirm story API client functions (list/create/get) in web/src/api/stories.ts
+- [x] T006 [P] Confirm story query + mutation hooks in web/src/hooks/useStories.ts
+- [x] T007 Ensure dashboard routes use layout + index files in web/src/routes/dashboard.tsx and web/src/routes/dashboard/index.tsx
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
 
-## Phase 3: User Story 1 - Navigate the dashboard (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Navigate the dashboard (Priority: P1) MVP
 
 **Goal**: Provide the fixed topbar, avatar dropdown, and story grid layout for the main dashboard.
 
-**Independent Test**: Load `/dashboard` with an authenticated user and verify the topbar, avatar initials, and story grid render with no page scroll.
+**Independent Test**: Load /dashboard with an authenticated user and verify the topbar, avatar initials, and story grid render with no page scroll.
 
 ### Implementation for User Story 1
 
-- [x] T006 [P] [US1] Add avatar initials helper in web/src/components/layout/avatarInitials.ts
-- [x] T007 [P] [US1] Build DashboardTopbar with avatar dropdown in web/src/components/layout/DashboardTopbar.tsx (Flowbite Navbar/Dropdown/Avatar)
-- [x] T008 [P] [US1] Create StoryCard component in web/src/components/dashboard/StoryCard.tsx for title, description, and stats
-- [x] T009 [P] [US1] Create StoryGrid component in web/src/components/dashboard/StoryGrid.tsx with loading, empty, and scrollable states
-- [x] T010 [US1] Implement fixed layout shell in web/src/components/layout/DashboardLayout.tsx (topbar + scrollable main area)
-- [x] T011 [US1] Implement dashboard page header, + story button, and grid in web/src/pages/dashboard.tsx
+- [x] T008 [US1] Implement GET /stories list endpoint in express/src/routers/storyRouter.ts using session user id
+- [x] T009 [US1] Add list response mapping (stats, description, timestamps) in express/src/routers/storyRouter.ts
+- [x] T010 [P] [US1] Add avatar initials helper in web/src/components/layout/avatarInitials.ts
+- [x] T011 [P] [US1] Build DashboardTopbar with avatar dropdown in web/src/components/layout/DashboardTopbar.tsx
+- [x] T012 [P] [US1] Create StoryCard component in web/src/components/dashboard/StoryCard.tsx
+- [x] T013 [P] [US1] Create StoryGrid component in web/src/components/dashboard/StoryGrid.tsx
+- [x] T014 [US1] Implement fixed layout shell in web/src/components/layout/DashboardLayout.tsx
+- [x] T015 [US1] Implement dashboard page header, + story button, and grid in web/src/pages/dashboard.tsx
 
 **Checkpoint**: User Story 1 is fully functional and independently testable
 
@@ -63,10 +67,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Add dashboard UI store for modal state in web/src/store/dashboardStore.ts (Zustand)
-- [ ] T013 [P] [US2] Build CreateStoryModal in web/src/components/dashboard/CreateStoryModal.tsx (Flowbite Modal, TextInput, Button)
-- [ ] T014 [US2] Wire + story button, modal submit, and redirect in web/src/pages/dashboard.tsx using `useMutation()`
-- [ ] T015 [US2] Ensure modal overlay does not enable page scroll in web/src/components/dashboard/CreateStoryModal.tsx
+- [x] T016 [P] [US2] Add dashboard UI store for modal state in web/src/store/dashboardStore.ts
+- [x] T017 [P] [US2] Build CreateStoryModal in web/src/components/dashboard/CreateStoryModal.tsx
+- [x] T018 [US2] Add create-story service helper to normalize owner/description in express/src/services/storyService.ts
+- [x] T019 [US2] Implement POST /stories endpoint with title validation in express/src/routers/storyRouter.ts
+- [x] T020 [US2] Add create-story error handling in express/src/routers/storyRouter.ts
+- [x] T021 [US2] Wire + story button, modal submit, and redirect in web/src/pages/dashboard.tsx
+- [x] T022 [US2] Ensure modal overlay does not enable page scroll in web/src/components/dashboard/CreateStoryModal.tsx
 
 **Checkpoint**: User Story 2 is fully functional and independently testable
 
@@ -76,12 +83,13 @@
 
 **Goal**: Provide a placeholder story page at the story-specific URL.
 
-**Independent Test**: Navigate to `/dashboard/story/:storyId` and verify placeholder content appears.
+**Independent Test**: Navigate to /dashboard/story/:storyId and verify placeholder content appears.
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Create story page placeholder in web/src/pages/story.tsx
-- [ ] T017 [US3] Add story route file in web/src/routes/dashboard/story.$storyId.tsx that renders StoryPage
+- [x] T023 [US3] Implement GET /stories/:storyId endpoint in express/src/routers/storyRouter.ts
+- [x] T024 [P] [US3] Create story page placeholder in web/src/pages/story.tsx
+- [x] T025 [US3] Add story route file in web/src/routes/dashboard/story.$storyId.tsx
 
 **Checkpoint**: User Story 3 is fully functional and independently testable
 
@@ -91,8 +99,8 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T018 [P] Refine dashboard styling for a clean modern look in web/src/components/layout/DashboardTopbar.tsx and web/src/components/dashboard/StoryCard.tsx
-- [ ] T019 Validate quickstart steps remain accurate in specs/006-dashboard-ui/quickstart.md
+- [ ] T026 [P] Refine dashboard empty state messaging in web/src/components/dashboard/StoryGrid.tsx
+- [ ] T027 Validate quickstart steps remain accurate in specs/006-dashboard-ui/quickstart.md
 
 ---
 
@@ -108,25 +116,23 @@
 ### User Story Dependencies
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Depends on Story API + hooks
-- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Depends on story routes and hooks
+- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Depends on story routes
 
 ### Parallel Opportunities
 
-- Phase 2 tasks T002-T004 can run in parallel
-- User Story 1 tasks T006-T009 can run in parallel
-- User Story 2 tasks T012-T013 can run in parallel
-- User Story 3 tasks T016 and T017 can run sequentially (route depends on page)
+- Phase 2 tasks T004-T006 can run in parallel
+- User Story 1 tasks T010-T013 can run in parallel
+- User Story 2 tasks T016-T017 can run in parallel
+- User Story 3 task T024 can run in parallel with T023/T025
 
 ---
 
-## Parallel Example: User Story 1
+## Parallel Example: User Story 2
 
 ```bash
-Task: "Add avatar initials helper in web/src/components/layout/avatarInitials.ts"
-Task: "Build DashboardTopbar with avatar dropdown in web/src/components/layout/DashboardTopbar.tsx"
-Task: "Create StoryCard component in web/src/components/dashboard/StoryCard.tsx"
-Task: "Create StoryGrid component in web/src/components/dashboard/StoryGrid.tsx"
+Task: "Add dashboard UI store for modal state in web/src/store/dashboardStore.ts"
+Task: "Build CreateStoryModal in web/src/components/dashboard/CreateStoryModal.tsx"
 ```
 
 ---
@@ -138,14 +144,14 @@ Task: "Create StoryGrid component in web/src/components/dashboard/StoryGrid.tsx"
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
 3. Complete Phase 3: User Story 1
-4. **STOP and VALIDATE**: Test User Story 1 independently
+4. STOP and validate: Test User Story 1 independently
 
 ### Incremental Delivery
 
-1. Complete Setup + Foundational → Foundation ready
-2. Add User Story 1 → Test independently → MVP ready
-3. Add User Story 2 → Test independently → Dashboard creation flow ready
-4. Add User Story 3 → Test independently → Story route ready
+1. Complete Setup + Foundational -> Foundation ready
+2. Add User Story 1 -> Test independently -> MVP ready
+3. Add User Story 2 -> Test independently -> Dashboard creation flow ready
+4. Add User Story 3 -> Test independently -> Story route ready
 
 ### Parallel Team Strategy
 

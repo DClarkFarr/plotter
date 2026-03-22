@@ -99,6 +99,29 @@ export const listPlots = async (
   return collection.find(filter).limit(limit).toArray();
 };
 
+export const countPlotsByStoryId = async (
+  storyId: string | ObjectId,
+): Promise<number> => {
+  const collection = getPlotsCollection();
+  return collection.countDocuments({
+    storyId: ensureObjectId(storyId, "storyId"),
+  });
+};
+
+export const listPlotIdsByStoryId = async (
+  storyId: string | ObjectId,
+): Promise<ObjectId[]> => {
+  const collection = getPlotsCollection();
+  const results = await collection
+    .find(
+      { storyId: ensureObjectId(storyId, "storyId") },
+      { projection: { _id: 1 } },
+    )
+    .toArray();
+
+  return results.map((plot) => plot._id);
+};
+
 export const listPlotsByIds = async (
   ids: Array<string | ObjectId>,
 ): Promise<PlotDocument[]> => {

@@ -6,9 +6,9 @@ export function DashboardLayout() {
   useAuthRedirect();
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+    <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       <DashboardTopbar />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1">
         <Outlet />
       </div>
     </div>

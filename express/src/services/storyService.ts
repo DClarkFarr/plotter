@@ -3,6 +3,8 @@ import {
   assertHasOwner,
   createStory as createStoryModel,
   CreateStoryInput,
+  getStoryById,
+  listStories,
   normalizeStoryPermissions,
   StoryDocument,
   StoryPermission,
@@ -10,6 +12,9 @@ import {
   UpdateStoryInput,
 } from "../models/stories";
 import { listUsersByIds } from "../models/users";
+import { countPlotsByStoryId, listPlotIdsByStoryId } from "../models/plots";
+import { countScenesByPlotIds } from "../models/scenes";
+import { AuthError } from "./authService";
 
 const validateStoryPermissionsUsers = async (
   permissions: StoryPermission[],
@@ -40,6 +45,65 @@ export const createStory = async (
     ...input,
     users: permissions,
   });
+};
+
+export interface CreateStoryForOwnerInput {
+  title: string;
+  ownerId: string | ObjectId;
+  description?: string;
+}
+
+export const createStoryForOwner = async (
+  input: CreateStoryForOwnerInput,
+): Promise<StoryDocument> =>
+  createStory({
+    title: input.title,
+    description: input.description ?? "",
+    users: [{ userId: input.ownerId, role: "owner" }],
+  });
+
+export const listStoriesForUser = async (
+  userId: string | ObjectId,
+): Promise<StoryDocument[]> => listStories({ userId });
+
+export const getStoryForUser = async (
+  storyId: string | ObjectId,
+  userId: string | ObjectId,
+): Promise<StoryDocument | null> => {
+  const story = await getStoryById(storyId);
+  if (!story) {
+    return null;
+  }
+
+  const userHex =
+    userId instanceof ObjectId ? userId.toHexString() : userId.toString();
+  const hasAccess = story.users.some(
+    (permission) => permission.userId.toHexString() === userHex,
+  );
+
+  if (!hasAccess) {
+    throw new AuthError("Forbidden", 403);
+  }
+
+  return story;
+};
+
+export interface StoryStats {
+  plots: number;
+  scenes: number;
+}
+
+export const getStoryStats = async (
+  storyId: string | ObjectId,
+): Promise<StoryStats> => {
+  const [plots, plotIds] = await Promise.all([
+    countPlotsByStoryId(storyId),
+    listPlotIdsByStoryId(storyId),
+  ]);
+
+  const scenes = await countScenesByPlotIds(plotIds);
+
+  return { plots, scenes };
 };
 
 export const updateStoryById = async (

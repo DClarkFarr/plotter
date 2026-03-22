@@ -1,9 +1,44 @@
 import { Button } from "flowbite-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
-import { useStoriesQuery } from "../hooks/useStories";
+import { useCreateStoryMutation, useStoriesQuery } from "../hooks/useStories";
+import { useDashboardStore } from "../store/dashboardStore";
+import IconPlus from "~icons/mdi/plus";
 
 export function DashboardPage() {
   const { data = [], isLoading, isError } = useStoriesQuery();
+  const navigate = useNavigate();
+  const createStoryMutation = useCreateStoryMutation();
+  const { isCreateStoryOpen, openCreateStory, closeCreateStory } =
+    useDashboardStore();
+
+  const errorMessage = useMemo(() => {
+    const error = createStoryMutation.error;
+    if (!error) {
+      return undefined;
+    }
+
+    return error instanceof Error ? error.message : "Unable to create story";
+  }, [createStoryMutation.error]);
+
+  const handleCloseModal = () => {
+    closeCreateStory();
+    createStoryMutation.reset();
+  };
+
+  const handleCreateStory = (title: string) => {
+    createStoryMutation.mutate(
+      { title },
+      {
+        onSuccess: (story) => {
+          closeCreateStory();
+          navigate({ to: `/dashboard/story/${story.id}` });
+        },
+      },
+    );
+  };
 
   return (
     <main className="flex h-full flex-col gap-6 px-6 py-6 sm:px-10">
@@ -16,13 +51,20 @@ export function DashboardPage() {
             Dashboard
           </h1>
         </div>
-        <Button color="dark" type="button">
-          + story
+        <Button color="dark" type="button" onClick={openCreateStory}>
+          <IconPlus className="mr-2" />+ story
         </Button>
       </header>
-      <section className="flex-1 overflow-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+      <section className="overflow-auto min-h-[400px] rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <StoryGrid stories={data} isLoading={isLoading} isError={isError} />
       </section>
+      <CreateStoryModal
+        isOpen={isCreateStoryOpen}
+        isSubmitting={createStoryMutation.isPending}
+        errorMessage={errorMessage}
+        onClose={handleCloseModal}
+        onCreate={handleCreateStory}
+      />
     </main>
   );
 }

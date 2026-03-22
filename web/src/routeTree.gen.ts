@@ -16,6 +16,7 @@ import { Route as DashboardIndexRouteImport } from "./routes/dashboard/index"
 import { Route as AuthSignUpRouteImport } from "./routes/_auth/sign-up"
 import { Route as AuthResetPasswordRouteImport } from "./routes/_auth/reset-password"
 import { Route as AuthLoginRouteImport } from "./routes/_auth/login"
+import { Route as DashboardStoryStoryIdRouteImport } from "./routes/dashboard/story.$storyId"
 
 const DashboardRoute = DashboardRouteImport.update({
   id: "/dashboard",
@@ -51,6 +52,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: "/login",
   getParentRoute: () => AuthRoute,
 } as any)
+const DashboardStoryStoryIdRoute = DashboardStoryStoryIdRouteImport.update({
+  id: "/story/$storyId",
+  path: "/story/$storyId",
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   "/reset-password": typeof AuthResetPasswordRoute
   "/sign-up": typeof AuthSignUpRoute
   "/dashboard/": typeof DashboardIndexRoute
+  "/dashboard/story/$storyId": typeof DashboardStoryStoryIdRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   "/reset-password": typeof AuthResetPasswordRoute
   "/sign-up": typeof AuthSignUpRoute
   "/dashboard": typeof DashboardIndexRoute
+  "/dashboard/story/$storyId": typeof DashboardStoryStoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   "/_auth/reset-password": typeof AuthResetPasswordRoute
   "/_auth/sign-up": typeof AuthSignUpRoute
   "/dashboard/": typeof DashboardIndexRoute
+  "/dashboard/story/$storyId": typeof DashboardStoryStoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -86,8 +95,15 @@ export interface FileRouteTypes {
     | "/reset-password"
     | "/sign-up"
     | "/dashboard/"
+    | "/dashboard/story/$storyId"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/login" | "/reset-password" | "/sign-up" | "/dashboard"
+  to:
+    | "/"
+    | "/login"
+    | "/reset-password"
+    | "/sign-up"
+    | "/dashboard"
+    | "/dashboard/story/$storyId"
   id:
     | "__root__"
     | "/"
@@ -97,6 +113,7 @@ export interface FileRouteTypes {
     | "/_auth/reset-password"
     | "/_auth/sign-up"
     | "/dashboard/"
+    | "/dashboard/story/$storyId"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -156,6 +173,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    "/dashboard/story/$storyId": {
+      id: "/dashboard/story/$storyId"
+      path: "/story/$storyId"
+      fullPath: "/dashboard/story/$storyId"
+      preLoaderRoute: typeof DashboardStoryStoryIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
@@ -175,10 +199,12 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardStoryStoryIdRoute: typeof DashboardStoryStoryIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardStoryStoryIdRoute: DashboardStoryStoryIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
