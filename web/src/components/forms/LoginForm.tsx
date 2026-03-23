@@ -14,9 +14,7 @@ export function LoginForm({
 }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
-        Log in
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-900 text-center">Log in</h2>
 
       {formError && (
         <Alert color="failure">
