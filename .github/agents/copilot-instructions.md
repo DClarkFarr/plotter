@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-21
+Auto-generated from all feature plans. Last updated: 2026-03-22
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -11,6 +11,7 @@ Auto-generated from all feature plans. Last updated: 2026-03-21
 - TypeScript 5.9 (React 19.2) + TanStack Router 1.168, TanStack Query 5.94, Flowbite React 0.12, Tailwind CSS 4.2, Zustand 5.0, axios 1.13, unplugin-icons 23 (006-dashboard-ui)
 - MongoDB via Express backend (frontend uses API only) (006-dashboard-ui)
 - TypeScript 5.9.3, Node.js (current LTS) + Express 5.2.x, MongoDB driver 6.16.x, React 19.2.x, TanStack Router/Query, Flowbite React, Tailwind CSS, Zustand, axios (006-dashboard-ui)
+- TypeScript 5.9, React 19 (web), Node.js + Express 5 (api) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Axios, unplugin-icons, Vite (007-story-page-data)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -30,9 +31,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 007-story-page-data: Added TypeScript 5.9, React 19 (web), Node.js + Express 5 (api) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Axios, unplugin-icons, Vite
 - 006-dashboard-ui: Added TypeScript 5.9.3, Node.js (current LTS) + Express 5.2.x, MongoDB driver 6.16.x, React 19.2.x, TanStack Router/Query, Flowbite React, Tailwind CSS, Zustand, axios
 - 006-dashboard-ui: Added TypeScript 5.9 (React 19.2) + TanStack Router 1.168, TanStack Query 5.94, Flowbite React 0.12, Tailwind CSS 4.2, Zustand 5.0, axios 1.13, unplugin-icons 23
-- 005-web-pages-layout: Added TypeScript 5.9, React 19 + TanStack Router 1.x, TanStack Query 5.x, Flowbite React 0.x, Tailwind CSS 4.x, Zustand 5.x, unplugin-icons + `@iconify-json/mdi`, Axios (to be added via `npm install axios`)
 
 
 <!-- MANUAL ADDITIONS START -->

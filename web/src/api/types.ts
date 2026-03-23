@@ -25,6 +25,41 @@ export interface Story {
   updatedAt?: string | null;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  variant: boolean;
+  variants: string[];
+  storyId: string;
+}
+
+export interface SceneTodoItem {
+  text: string;
+  isDone: boolean;
+}
+
+export interface Scene {
+  id: string;
+  title: string;
+  description: string;
+  plotId: string;
+  tags: string[];
+  todo: SceneTodoItem[];
+  scene: string | null;
+  verticalIndex: number;
+}
+
+export interface Plot {
+  id: string;
+  title: string;
+  description: string;
+  color: string;
+  storyId: string;
+  horizontalIndex: number;
+  scenes: Scene[];
+}
+
 // ─── Response Envelopes ───────────────────────────────────────────────────────
 
 export interface AuthUserResponse {
@@ -37,6 +72,14 @@ export interface StoryResponse {
 
 export interface StoriesResponse {
   stories: Story[];
+}
+
+export interface TagsResponse {
+  tags: Tag[];
+}
+
+export interface PlotsResponse {
+  plots: Plot[];
 }
 
 export interface MessageResponse {

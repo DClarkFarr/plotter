@@ -12,8 +12,13 @@ import {
   UpdateStoryInput,
 } from "../models/stories";
 import { listUsersByIds } from "../models/users";
-import { countPlotsByStoryId, listPlotIdsByStoryId } from "../models/plots";
-import { countScenesByPlotIds } from "../models/scenes";
+import {
+  countPlotsByStoryId,
+  listPlotIdsByStoryId,
+  listPlots,
+} from "../models/plots";
+import { countScenesByPlotIds, listScenesByPlotIds } from "../models/scenes";
+import { listTags } from "../models/tags";
 import { AuthError } from "./authService";
 
 const validateStoryPermissionsUsers = async (
@@ -104,6 +109,36 @@ export const getStoryStats = async (
   const scenes = await countScenesByPlotIds(plotIds);
 
   return { plots, scenes };
+};
+
+export const listStoryTagsForUser = async (
+  storyId: string | ObjectId,
+  userId: string | ObjectId,
+) => {
+  await getStoryForUser(storyId, userId);
+  return listTags({ storyId });
+};
+
+export const listStoryPlotsWithScenesForUser = async (
+  storyId: string | ObjectId,
+  userId: string | ObjectId,
+) => {
+  await getStoryForUser(storyId, userId);
+  const plots = await listPlots({ storyId });
+  const scenes = await listScenesByPlotIds(plots.map((plot) => plot._id));
+  const scenesByPlot = new Map<string, typeof scenes>();
+
+  for (const scene of scenes) {
+    const plotKey = scene.plotId.toHexString();
+    const existing = scenesByPlot.get(plotKey) ?? [];
+    existing.push(scene);
+    scenesByPlot.set(plotKey, existing);
+  }
+
+  return plots.map((plot) => ({
+    ...plot,
+    scenes: scenesByPlot.get(plot._id.toHexString()) ?? [],
+  }));
 };
 
 export const updateStoryById = async (

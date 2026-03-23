@@ -16,6 +16,26 @@ export const requireString = (value: unknown, label: string): string => {
   return trimmed;
 };
 
+export const optionalString = (
+  value: unknown,
+  label: string,
+): string | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (typeof value !== "string") {
+    throw new ValidationError(label, `${label} must be a string`);
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new ValidationError(label, `${label} is required`);
+  }
+
+  return trimmed;
+};
+
 export const validateEmail = (value: unknown): string => {
   const raw = requireString(value, "email");
   const normalized = normalizeEmail(raw);

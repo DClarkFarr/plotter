@@ -118,6 +118,21 @@ export const listScenes = async (
   return collection.find(filter).limit(limit).toArray();
 };
 
+export const listScenesByPlotIds = async (
+  plotIds: Array<string | ObjectId>,
+): Promise<SceneDocument[]> => {
+  const collection = getScenesCollection();
+  const uniqueIds = Array.from(
+    new Set(plotIds.map((id) => ensureObjectId(id, "plotId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection.find({ plotId: { $in: uniqueIds } }).toArray();
+};
+
 export const countScenesByPlotIds = async (
   plotIds: Array<string | ObjectId>,
 ): Promise<number> => {
