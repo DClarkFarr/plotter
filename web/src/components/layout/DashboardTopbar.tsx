@@ -32,6 +32,7 @@ export function DashboardTopbar() {
           plotter
         </Link>
       </NavbarBrand>
+      <div id="dashboard-topbar"></div>
       <div className="flex items-center gap-3">
         <Dropdown
           inline

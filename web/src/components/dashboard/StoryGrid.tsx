@@ -5,9 +5,11 @@ interface StoryGridProps {
   stories: Story[];
   isLoading: boolean;
   isError: boolean;
+  onViewStory: (story: Story) => void; 
 }
 
-export function StoryGrid({ stories, isLoading, isError }: StoryGridProps) {
+export function StoryGrid({ stories, isLoading, isError, onViewStory }: StoryGridProps) {
+  
   if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,7 +42,7 @@ export function StoryGrid({ stories, isLoading, isError }: StoryGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {stories.map((story) => (
-        <StoryCard key={story.id} story={story} />
+        <StoryCard key={story.id} story={story} onClick={onViewStory} />
       ))}
     </div>
   );

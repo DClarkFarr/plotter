@@ -1,11 +1,12 @@
 import { Button } from "flowbite-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
 import { useCreateStoryMutation, useStoriesQuery } from "../hooks/useStories";
 import { useDashboardStore } from "../store/dashboardStore";
 import IconPlus from "~icons/mdi/plus";
+import type { Story } from "../api/types";
 
 export function DashboardPage() {
   const { data = [], isLoading, isError } = useStoriesQuery();
@@ -40,8 +41,19 @@ export function DashboardPage() {
     );
   };
 
+  const onViewStory = useCallback(
+    (story: Story) => {
+      console.log("navigating", story);
+      navigate({
+        to: `/dashboard/story/$storyId`,
+        params: { storyId: story.id },
+      });
+    },
+    [navigate],
+  );
+
   return (
-    <main className="flex h-full flex-col gap-6 px-6 py-6 sm:px-10">
+    <main className="flex h-full flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -55,9 +67,12 @@ export function DashboardPage() {
           <IconPlus className="mr-2" /> Story
         </Button>
       </header>
-      <section className="overflow-auto min-h-[400px] rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <StoryGrid stories={data} isLoading={isLoading} isError={isError} />
-      </section>
+      <StoryGrid
+        stories={data}
+        isLoading={isLoading}
+        isError={isError}
+        onViewStory={onViewStory}
+      />
       <CreateStoryModal
         isOpen={isCreateStoryOpen}
         isSubmitting={createStoryMutation.isPending}
