@@ -117,7 +117,7 @@ export const updateUserById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const deleteUserById = async (

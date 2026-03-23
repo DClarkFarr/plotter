@@ -138,7 +138,7 @@ export const updateTagById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const deleteTagById = async (

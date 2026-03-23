@@ -173,7 +173,16 @@ export const updateStoryById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  console.log(
+    "updated story with id",
+    storyId,
+    "using payload",
+    updatePayload,
+    "result is",
+    result,
+  );
+
+  return result;
 };
 
 export const softDeleteStoryById = async (

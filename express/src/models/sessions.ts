@@ -111,7 +111,7 @@ export const updateSessionById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const updateSessionByToken = async (
@@ -131,7 +131,7 @@ export const updateSessionByToken = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const endSessionById = async (

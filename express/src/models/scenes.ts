@@ -215,7 +215,7 @@ export const updateSceneById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const deleteSceneById = async (

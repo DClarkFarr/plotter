@@ -76,5 +76,5 @@ export const markPasswordResetUsed = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };

@@ -87,5 +87,5 @@ export const updateAuthAttempt = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };

@@ -190,7 +190,7 @@ export const updatePlotById = async (
     { returnDocument: "after" },
   );
 
-  return result?.value ?? null;
+  return result;
 };
 
 export const deletePlotById = async (
