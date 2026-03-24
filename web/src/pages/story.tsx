@@ -1,4 +1,3 @@
-import { Badge, Card } from "flowbite-react";
 import { Portal } from "../components/helpers/Portal";
 import { StoryHeading } from "../components/story/StoryHeading";
 import { StoryLoading } from "../components/story/StoryLoading";
@@ -10,6 +9,7 @@ import {
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import IconLabelMultiple from "~icons/mdi/label-multiple";
+import { SortablePlot } from "../components/plot/SortablePlot";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -21,19 +21,25 @@ export function StoryPage() {
   const { cardDisplay, cardSize, setCardDisplay, setCardSize } =
     useStoryStore();
 
+  const story = storyQuery.data;
+  const plots = plotsQuery.data ?? [];
+
+  const maxVerticalPosition =
+    plots.reduce((max, plot) => {
+      const sceneMax = plot.scenes.reduce(
+        (sMax, scene) => Math.max(sMax, scene.verticalIndex),
+        0,
+      );
+      return Math.max(max, sceneMax);
+    }, 0) + 3;
+
+  const verticalStackSize = Math.max(5, maxVerticalPosition);
+
   const isLoading =
     storyQuery.isLoading || tagsQuery.isLoading || plotsQuery.isLoading;
   const error = storyQuery.error || tagsQuery.error || plotsQuery.error;
 
-  if (isLoading) {
-    return (
-      <main className="h-full p-6">
-        <StoryLoading />
-      </main>
-    );
-  }
-
-  if (error || !storyQuery.data) {
+  if (error || !story) {
     return (
       <main className="h-full p-6">
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
@@ -43,14 +49,16 @@ export function StoryPage() {
     );
   }
 
-  const story = storyQuery.data;
-  const plots = plotsQuery.data ?? [];
-
-  const cardSizeClass =
-    cardSize === "sm" ? "p-2" : cardSize === "lg" ? "p-6" : "p-4";
+  if (isLoading) {
+    return (
+      <main className="h-full p-6">
+        <StoryLoading />
+      </main>
+    );
+  }
 
   return (
-    <main className="h-full p-6">
+    <main className="page--story h-full w-full p-6 flex flex-col gap-6">
       <Portal wrapperId="dashboard-topbar">
         <div className="story-controls flex flex-wrap gap-3 items-center">
           <div className="flex items-center gap-2">
@@ -120,41 +128,35 @@ export function StoryPage() {
         </p>
         <StoryHeading
           storyId={storyId}
-          title={story.title}
-          description={story.description}
+          title={story?.title}
+          description={story?.description}
         />
       </div>
 
-      <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
-          Plots
-        </h2>
-        {plots.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">No plots yet.</p>
-        ) : (
-          <div
-            className={`mt-3 grid gap-4 ${
-              cardDisplay === "list" ? "grid-cols-1" : "md:grid-cols-2"
-            }`}
-          >
-            {plots.map((plot) => (
-              <Card key={plot.id} className={`shadow-sm ${cardSizeClass}`}>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-slate-900">
-                      {plot.title}
-                    </h3>
-                    <Badge color="light">{plot.scenes.length} scenes</Badge>
-                  </div>
-                  <p className="text-sm text-slate-600">
-                    {plot.description || "No description"}
-                  </p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
+      <h2 className="text-sm mb-3 font-semibold uppercase tracking-[0.2em] text-slate-400">
+        Plots
+      </h2>
+
+      <div className="plots-wrapper flex-1 h-full bg-gray-100 overflow-auto">
+        <div className={`plots flex gap-4 h-full`}>
+          {plots.map((plot, pi) => (
+            <SortablePlot
+              plot={plot}
+              plotIndex={pi}
+              verticalStackSize={verticalStackSize}
+              cardDisplay={cardDisplay}
+              cardSize={cardSize}
+            />
+          ))}
+
+          <SortablePlot
+            plotIndex={plots.length}
+            verticalStackSize={verticalStackSize}
+            cardDisplay={cardDisplay}
+            cardSize={cardSize}
+          />
+        </div>
+      </div>
     </main>
   );
 }

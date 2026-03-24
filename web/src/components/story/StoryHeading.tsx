@@ -98,7 +98,7 @@ export function StoryHeading({
         <button
           type="button"
           onClick={handleEdit}
-          className="rounded-full p-1 text-slate-400 transition hover:text-slate-700"
+          className="rounded-full p-1 text-slate-400 transition hover:text-slate-700 cursor-pointer"
           aria-label="Edit story heading"
         >
           <IconLeadPencil className="text-lg" />
