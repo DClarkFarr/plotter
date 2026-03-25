@@ -9,7 +9,7 @@ export function DashboardLayout() {
     <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       <DashboardTopbar />
       <div
-        className="flex-1 w-full h-[var(--dashboard-content-height)] overflow-hidden"
+        className="flex-1 w-full h-[var(--dashboard-content-height)]"
         style={{
           "--dashboard-content-height": "calc(100vh - 64px)",
         }}

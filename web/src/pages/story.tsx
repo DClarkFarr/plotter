@@ -58,7 +58,7 @@ export function StoryPage() {
   }
 
   return (
-    <main className="page--story h-full w-full p-6 flex flex-col gap-6">
+    <main className="page--story min-h-full w-full flex flex-col gap-6">
       <Portal wrapperId="dashboard-topbar">
         <div className="story-controls flex flex-wrap gap-3 items-center">
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function StoryPage() {
         </div>
       </Portal>
 
-      <div>
+      <div className="p-6">
         <p className="text-sm uppercase tracking-[0.2em] text-slate-400">
           Story Details
         </p>
@@ -133,11 +133,11 @@ export function StoryPage() {
         />
       </div>
 
-      <h2 className="text-sm mb-3 font-semibold uppercase tracking-[0.2em] text-slate-400">
+      <h2 className="text-sm mb-3 px-6 font-semibold uppercase tracking-[0.2em] text-slate-400">
         Plots
       </h2>
 
-      <div className="plots-wrapper flex-1 h-full bg-gray-100 overflow-auto">
+      <div className="plots-wrapper bg-gray-100 py-6">
         <PlotGrid
           plots={plots}
           plotIndex={0}
