@@ -4,6 +4,7 @@ import type {
   SceneRenderer,
   EmptyRendererProps,
   SceneRendererProps,
+  SceneCardTypes,
 } from "./plot.types";
 import { SceneCard } from "./SceneRenderer/SceneCard";
 import { EmptyCard } from "./SceneRenderer/EmptyCard";
@@ -11,12 +12,6 @@ import type {
   StoryCardDisplay,
   StoryCardSize,
 } from "../../store/storyStore.types";
-
-export type SceneCardTypes =
-  | {
-      type: "empty";
-    }
-  | { type: "scene"; index: number };
 
 export type SortablePlotProps = {
   plot?: Plot;

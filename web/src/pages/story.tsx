@@ -9,7 +9,7 @@ import {
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import IconLabelMultiple from "~icons/mdi/label-multiple";
-import { SortablePlot } from "../components/plot/SortablePlot";
+import { PlotGrid } from "../components/plot/PlotGrid";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -24,16 +24,16 @@ export function StoryPage() {
   const story = storyQuery.data;
   const plots = plotsQuery.data ?? [];
 
-  const maxVerticalPosition =
-    plots.reduce((max, plot) => {
-      const sceneMax = plot.scenes.reduce(
-        (sMax, scene) => Math.max(sMax, scene.verticalIndex),
-        0,
-      );
-      return Math.max(max, sceneMax);
-    }, 0) + 3;
+  // const maxVerticalPosition =
+  //   plots.reduce((max, plot) => {
+  //     const sceneMax = plot.scenes.reduce(
+  //       (sMax, scene) => Math.max(sMax, scene.verticalIndex),
+  //       0,
+  //     );
+  //     return Math.max(max, sceneMax);
+  //   }, 0) + 3;
 
-  const verticalStackSize = Math.max(5, maxVerticalPosition);
+  // const verticalStackSize = Math.max(5, maxVerticalPosition);
 
   const isLoading =
     storyQuery.isLoading || tagsQuery.isLoading || plotsQuery.isLoading;
@@ -138,24 +138,12 @@ export function StoryPage() {
       </h2>
 
       <div className="plots-wrapper flex-1 h-full bg-gray-100 overflow-auto">
-        <div className={`plots flex gap-4 h-full`}>
-          {plots.map((plot, pi) => (
-            <SortablePlot
-              plot={plot}
-              plotIndex={pi}
-              verticalStackSize={verticalStackSize}
-              cardDisplay={cardDisplay}
-              cardSize={cardSize}
-            />
-          ))}
-
-          <SortablePlot
-            plotIndex={plots.length}
-            verticalStackSize={verticalStackSize}
-            cardDisplay={cardDisplay}
-            cardSize={cardSize}
-          />
-        </div>
+        <PlotGrid
+          plots={plots}
+          plotIndex={0}
+          cardSize={cardSize}
+          cardDisplay={cardDisplay}
+        />
       </div>
     </main>
   );

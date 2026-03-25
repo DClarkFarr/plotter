@@ -16,3 +16,9 @@ export type EmptyRendererProps = Omit<BaseSceneRendererProps, "plot"> & {
 export type SceneRenderer<T extends BaseSceneRendererProps> = (
   props: T,
 ) => React.ReactNode;
+
+export type SceneCardTypes =
+  | {
+      type: "empty";
+    }
+  | { type: "scene"; index: number };

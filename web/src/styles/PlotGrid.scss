@@ -1,0 +1,41 @@
+.grid {
+  display: grid;
+
+  /* First column = row headers */
+  grid-template-columns: 100px repeat(var(--grid-cols), 350px);
+
+  /* First row = column headers */
+  // grid-template-rows: 100px;
+
+  /* All other rows */
+  // grid-auto-rows: 200px;
+
+  overflow: auto;
+
+  .col-header {
+    height: 100%;
+  }
+
+  .row-header {
+    width: 100%;
+  }
+
+  .col-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .row-header {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  .corner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+  }
+}
