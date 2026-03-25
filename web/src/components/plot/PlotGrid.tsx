@@ -12,7 +12,7 @@ import type {
 } from "./plot.types";
 import { EmptyCard } from "./SceneRenderer/EmptyCard";
 import { SceneCard } from "./SceneRenderer/SceneCard";
-import { PlotHeader } from "./SceneRenderer/PlotHeader";
+import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 
 export type PlotGridProps = {
   plots: Plot[];
@@ -140,7 +140,10 @@ export const PlotGrid = ({
                 data-row={r}
                 data-col={c}
               >
-                <PlotHeader plot={plots[cell.index]} plotIndex={cell.index} />
+                <PlotHeaderCreate
+                  plot={plots[cell.index]}
+                  plotIndex={cell.index}
+                />
               </div>
             );
           }

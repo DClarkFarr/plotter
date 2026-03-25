@@ -1,11 +1,14 @@
 import { Button, TextInput } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 
-export type PlotHeaderProps = {
+export type PlotHeaderCreateProps = {
   plot?: Plot;
   plotIndex: number;
 };
-export const PlotHeader = ({ plot, plotIndex }: PlotHeaderProps) => {
+export const PlotHeaderCreate = ({
+  plot,
+  plotIndex,
+}: PlotHeaderCreateProps) => {
   if (!plot) {
     return (
       <div className="bg-slate-300 p-4 h-[150px] flex flex-col self-stretch">
