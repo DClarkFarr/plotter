@@ -1,13 +1,16 @@
 import { apiClient } from "../lib/apiClient";
 import {
   toApiError,
+  type CreatePlotInput,
   type Plot,
+  type PlotResponse,
   type PlotsResponse,
   type Tag,
   type TagsResponse,
   type Story,
   type StoryResponse,
   type StoriesResponse,
+  type UpdatePlotInput,
 } from "./types";
 
 export interface CreateStoryInput {
@@ -63,6 +66,37 @@ export async function listStoryPlots(storyId: string): Promise<Plot[]> {
       `/stories/${storyId}/plots`,
     );
     return data.plots;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function createPlot(
+  storyId: string,
+  input: CreatePlotInput,
+): Promise<Plot> {
+  try {
+    const { data } = await apiClient.post<PlotResponse>(
+      `/stories/${storyId}/plots`,
+      input,
+    );
+    return data.plot;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updatePlot(
+  storyId: string,
+  plotId: string,
+  input: UpdatePlotInput,
+): Promise<Plot> {
+  try {
+    const { data } = await apiClient.patch<PlotResponse>(
+      `/stories/${storyId}/plots/${plotId}`,
+      input,
+    );
+    return data.plot;
   } catch (err) {
     throw toApiError(err);
   }

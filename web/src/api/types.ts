@@ -60,6 +60,20 @@ export interface Plot {
   scenes: Scene[];
 }
 
+export interface CreatePlotInput {
+  title: string;
+  description: string | undefined;
+  color: string;
+  horizontalIndex: number;
+}
+
+export interface UpdatePlotInput {
+  title?: string;
+  description?: string;
+  color?: string;
+  horizontalIndex?: number;
+}
+
 // ─── Response Envelopes ───────────────────────────────────────────────────────
 
 export interface AuthUserResponse {
@@ -80,6 +94,10 @@ export interface TagsResponse {
 
 export interface PlotsResponse {
   plots: Plot[];
+}
+
+export interface PlotResponse {
+  plot: Plot;
 }
 
 export interface MessageResponse {

@@ -11,6 +11,7 @@ export type SceneRendererProps = BaseSceneRendererProps & {
 };
 export type EmptyRendererProps = Omit<BaseSceneRendererProps, "plot"> & {
   plot: Plot | undefined;
+  isDisabled?: boolean;
 };
 
 export type SceneRenderer<T extends BaseSceneRendererProps> = (

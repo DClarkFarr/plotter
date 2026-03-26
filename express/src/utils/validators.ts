@@ -1,5 +1,6 @@
+import { Request } from "express";
 import { normalizeEmail } from "../models/users";
-import { ValidationError } from "../services/authService";
+import { AuthError, ValidationError } from "../services/authService";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -75,4 +76,55 @@ export const validateToken = (value: unknown): string => {
   }
 
   return token;
+};
+
+type SessionWithUser = Request & {
+  session?: {
+    userId?: string;
+  };
+};
+
+export const requireUserId = (req: Request): string => {
+  const session = (req as SessionWithUser).session;
+  if (!session?.userId) {
+    throw new AuthError("Unauthorized", 401);
+  }
+
+  return session.userId;
+};
+
+export const requireNumber = (value: unknown, label: string): number => {
+  const parsed = typeof value === "string" ? Number(value) : value;
+  if (typeof parsed !== "number" || Number.isNaN(parsed)) {
+    throw new ValidationError(label, `${label} is required`);
+  }
+
+  return parsed;
+};
+
+export const optionalNumber = (
+  value: unknown,
+  label: string,
+): number | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  const parsed = typeof value === "string" ? Number(value) : value;
+  if (typeof parsed !== "number" || Number.isNaN(parsed)) {
+    throw new ValidationError(label, `${label} must be a number`);
+  }
+
+  return parsed;
+};
+
+export const resolveOwnerId = (
+  users: Array<{ userId: { toHexString(): string }; role: string }>,
+): string => {
+  const owner = users.find((permission) => permission.role === "owner");
+  if (!owner) {
+    return users[0]?.userId.toHexString() ?? "";
+  }
+
+  return owner.userId.toHexString();
 };

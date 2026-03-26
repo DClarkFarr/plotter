@@ -9,7 +9,20 @@ import {
   listStoryTagsForUser,
   updateStoryById,
 } from "../services/storyService";
-import { optionalString, requireString } from "../utils/validators";
+import {
+  createPlot,
+  getPlotForStory,
+  getPlotWithScenes,
+  updatePlotById,
+} from "../services/plotService";
+import {
+  optionalNumber,
+  optionalString,
+  requireNumber,
+  requireString,
+  requireUserId,
+  resolveOwnerId,
+} from "../utils/validators";
 import { assertparamIsString } from "../utils/routes";
 import { UpdateStoryInput } from "../models/stories";
 
@@ -26,32 +39,6 @@ const handleAsync =
       handleError(res, error);
     }
   };
-
-type SessionWithUser = Request & {
-  session?: {
-    userId?: string;
-  };
-};
-
-const requireUserId = (req: Request): string => {
-  const session = (req as SessionWithUser).session;
-  if (!session?.userId) {
-    throw new AuthError("Unauthorized", 401);
-  }
-
-  return session.userId;
-};
-
-const resolveOwnerId = (
-  users: Array<{ userId: { toHexString(): string }; role: string }>,
-): string => {
-  const owner = users.find((permission) => permission.role === "owner");
-  if (!owner) {
-    return users[0]?.userId.toHexString() ?? "";
-  }
-
-  return owner.userId.toHexString();
-};
 
 const toTagResponse = (tag: {
   _id: { toHexString(): string };
@@ -223,6 +210,96 @@ const applyStoryRoutes = () => {
       res
         .status(200)
         .json({ plots: plots.map((plot) => toPlotResponse(plot)) });
+    }),
+  );
+
+  storyRouter.post(
+    "/:storyId/plots",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+
+      await getStoryForUser(storyId, userId);
+
+      const title = requireString(req.body?.title, "title");
+      const description = optionalString(req.body?.description, "description");
+      const color = optionalString(req.body?.color, "color");
+      const horizontalIndex = requireNumber(
+        req.body?.horizontalIndex,
+        "horizontalIndex",
+      );
+
+      const plot = await createPlot({
+        title,
+        description: description ?? "",
+        color: color ?? "#94A3B8",
+        storyId,
+        horizontalIndex,
+      });
+
+      res.status(201).json({
+        plot: toPlotResponse({
+          ...plot,
+          scenes: [],
+        }),
+      });
+    }),
+  );
+
+  storyRouter.patch(
+    "/:storyId/plots/:plotId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const plotId = assertparamIsString(req.params.plotId, "plotId");
+
+      await getStoryForUser(storyId, userId);
+      const existing = await getPlotForStory(plotId, storyId);
+
+      if (!existing) {
+        res.status(404).json({ error: "Plot not found" });
+        return;
+      }
+
+      const title = optionalString(req.body?.title, "title");
+      const description = optionalString(req.body?.description, "description");
+      const color = optionalString(req.body?.color, "color");
+      const horizontalIndex = optionalNumber(
+        req.body?.horizontalIndex,
+        "horizontalIndex",
+      );
+
+      if (
+        title === undefined &&
+        description === undefined &&
+        color === undefined &&
+        horizontalIndex === undefined
+      ) {
+        throw new ValidationError("body", "Update payload is empty");
+      }
+
+      const updated = await updatePlotById(plotId, {
+        title: title || existing.title,
+        description: description || existing.description,
+        color: color || existing.color,
+        horizontalIndex:
+          horizontalIndex !== undefined
+            ? horizontalIndex
+            : existing.horizontalIndex,
+      });
+
+      if (!updated) {
+        res.status(404).json({ error: "Plot not found" });
+        return;
+      }
+
+      const plotWithScenes = await getPlotWithScenes(plotId);
+      if (!plotWithScenes) {
+        res.status(404).json({ error: "Plot not found" });
+        return;
+      }
+
+      res.status(200).json({ plot: toPlotResponse(plotWithScenes) });
     }),
   );
 

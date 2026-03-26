@@ -13,8 +13,10 @@ import type {
 import { EmptyCard } from "./SceneRenderer/EmptyCard";
 import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
+import { PlotHeader } from "./PlotHeader";
 
 export type PlotGridProps = {
+  storyId: string;
   plots: Plot[];
   plotIndex: number;
   cardSize: StoryCardSize;
@@ -37,7 +39,15 @@ type GridCellTypes =
       index: number;
     };
 
+const getCellColIndex = (gridIndex: number) => {
+  return gridIndex - 1;
+};
+const getCellRowIndex = (gridIndex: number) => {
+  return gridIndex - 1;
+};
+
 export const PlotGrid = ({
+  storyId,
   plots,
   cardDisplay,
   cardSize,
@@ -49,6 +59,10 @@ export const PlotGrid = ({
 
   const RenderSceneCard = renderSceneCard || SceneCard;
   const RenderEmptyCard = renderEmptyCard || EmptyCard;
+  const maxHorizontalIndex = Math.max(
+    0,
+    ...plots.map((plot) => plot.horizontalIndex),
+  );
 
   const grid = useMemo(() => {
     const rows: GridCellTypes[][] = [];
@@ -62,7 +76,7 @@ export const PlotGrid = ({
       const row: GridCellTypes[] = [{ type: "col-header", index: r }];
 
       for (let c = 1; c < gridCols + 1; c++) {
-        const plot = plots[c];
+        const plot = plots[getCellColIndex(c)];
         if (!plot) {
           row.push({ type: "empty" });
           continue;
@@ -104,6 +118,7 @@ export const PlotGrid = ({
               </div>
             );
           } else if (cell.type === "empty") {
+            const plot = plots[getCellColIndex(c)];
             return (
               <div
                 key={`${r}-${c}`}
@@ -111,11 +126,16 @@ export const PlotGrid = ({
                 data-row={r}
                 data-col={c}
               >
-                <RenderEmptyCard sceneIndex={r} plotIndex={c} plot={plots[c]} />
+                <RenderEmptyCard
+                  sceneIndex={getCellRowIndex(r)}
+                  plotIndex={getCellColIndex(c)}
+                  plot={plot}
+                  isDisabled={!plot}
+                />
               </div>
             );
           } else if (cell.type === "scene") {
-            const plot = plots[c];
+            const plot = plots[getCellColIndex(c)];
             const scene = plot?.scenes[cell.index];
             return (
               <div
@@ -125,14 +145,15 @@ export const PlotGrid = ({
                 data-col={c}
               >
                 <RenderSceneCard
-                  sceneIndex={cell.index}
-                  plotIndex={c}
+                  sceneIndex={getCellRowIndex(r)}
+                  plotIndex={getCellColIndex(c)}
                   scene={scene!}
                   plot={plot!}
                 />
               </div>
             );
           } else if (cell.type === "plot") {
+            const plot = plots[getCellColIndex(c)];
             return (
               <div
                 key={`${r}-${c}`}
@@ -140,10 +161,20 @@ export const PlotGrid = ({
                 data-row={r}
                 data-col={c}
               >
-                <PlotHeaderCreate
-                  plot={plots[cell.index]}
-                  plotIndex={cell.index}
-                />
+                {plot ? (
+                  <PlotHeader
+                    storyId={storyId}
+                    plot={plot}
+                    plotIndex={getCellColIndex(c)}
+                    maxHorizontalIndex={maxHorizontalIndex}
+                  />
+                ) : (
+                  <PlotHeaderCreate
+                    storyId={storyId}
+                    plot={plot}
+                    plotIndex={getCellColIndex(c)}
+                  />
+                )}
               </div>
             );
           }

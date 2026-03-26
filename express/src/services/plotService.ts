@@ -6,6 +6,7 @@ import {
   shiftPlotIndices,
   updatePlotById as updatePlotByIdModel,
 } from "../models/plots";
+import { listScenesByPlotIds } from "../models/scenes";
 import { getStoryById } from "../models/stories";
 import { ensureObjectId } from "../models/types";
 
@@ -77,4 +78,36 @@ export const updatePlotById = async (
     ...updates,
     ...(updates.storyId !== undefined && { storyId: targetStoryId }),
   });
+};
+
+export const getPlotForStory = async (
+  plotId: string | ObjectId,
+  storyId: string | ObjectId,
+): Promise<PlotDocument | null> => {
+  const plot = await getPlotById(plotId);
+  if (!plot) {
+    return null;
+  }
+
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
+    return null;
+  }
+
+  return plot;
+};
+
+export const getPlotWithScenes = async (
+  plotId: string | ObjectId,
+): Promise<
+  | (PlotDocument & { scenes: Awaited<ReturnType<typeof listScenesByPlotIds>> })
+  | null
+> => {
+  const plot = await getPlotById(plotId);
+  if (!plot) {
+    return null;
+  }
+
+  const scenes = await listScenesByPlotIds([plot._id]);
+  return { ...plot, scenes };
 };

@@ -1,12 +1,39 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createPlot,
   getStory,
   listStoryPlots,
   listStoryTags,
   updateStory,
+  updatePlot,
   type UpdateStoryInput,
 } from "../api/stories";
-import type { Story } from "../api/types";
+import type {
+  CreatePlotInput,
+  Plot,
+  Story,
+  UpdatePlotInput,
+} from "../api/types";
+
+const sortPlots = (plots: Plot[]) =>
+  [...plots].sort((a, b) => a.horizontalIndex - b.horizontalIndex);
+
+const shiftPlotsForInsert = (
+  plots: Plot[],
+  fromIndex: number,
+  excludeId?: string,
+) =>
+  plots.map((plot) => {
+    if (plot.id === excludeId) {
+      return plot;
+    }
+
+    if (plot.horizontalIndex >= fromIndex) {
+      return { ...plot, horizontalIndex: plot.horizontalIndex + 1 };
+    }
+
+    return plot;
+  });
 
 export function useStoryQuery(storyId: string) {
   return useQuery({
@@ -60,6 +87,130 @@ export function useUpdateStoryMutation(storyId: string) {
       queryClient.setQueryData(["story", storyId], story);
       queryClient.invalidateQueries({ queryKey: ["story", storyId] });
       queryClient.invalidateQueries({ queryKey: ["stories"] });
+    },
+  });
+}
+
+export function useCreatePlotMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreatePlotInput) =>
+      createPlot(storyId, {
+        ...input,
+        description: input.description || undefined,
+      }),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "plots"],
+      });
+      const previous = queryClient.getQueryData<Plot[]>([
+        "story",
+        storyId,
+        "plots",
+      ]);
+
+      const tempId = `temp-${Date.now()}`;
+      if (previous) {
+        const shifted = shiftPlotsForInsert(previous, input.horizontalIndex);
+        const optimistic: Plot = {
+          id: tempId,
+          title: input.title,
+          description: input.description || "",
+          color: input.color,
+          storyId,
+          horizontalIndex: input.horizontalIndex,
+          scenes: [],
+        };
+
+        queryClient.setQueryData<Plot[]>(
+          ["story", storyId, "plots"],
+          sortPlots([...shifted, optimistic]),
+        );
+      }
+
+      return { previous, tempId };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["story", storyId, "plots"], context.previous);
+      }
+    },
+    onSuccess: (plot, _input, context) => {
+      queryClient.setQueryData<Plot[]>(
+        ["story", storyId, "plots"],
+        (current) => {
+          if (!current) {
+            return [plot];
+          }
+
+          const replaced = current.map((entry) =>
+            entry.id === context?.tempId ? plot : entry,
+          );
+
+          const hasPlot = replaced.some((entry) => entry.id === plot.id);
+          return sortPlots(hasPlot ? replaced : [...replaced, plot]);
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
+    },
+  });
+}
+
+export function useUpdatePlotMutation(storyId: string, plotId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdatePlotInput) => updatePlot(storyId, plotId, input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "plots"],
+      });
+      const previous = queryClient.getQueryData<Plot[]>([
+        "story",
+        storyId,
+        "plots",
+      ]);
+
+      if (previous) {
+        const shifted =
+          input.horizontalIndex === undefined
+            ? previous
+            : shiftPlotsForInsert(previous, input.horizontalIndex, plotId);
+
+        const optimistic = shifted.map((plot) =>
+          plot.id === plotId ? { ...plot, ...input } : plot,
+        );
+
+        queryClient.setQueryData<Plot[]>(
+          ["story", storyId, "plots"],
+          sortPlots(optimistic),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["story", storyId, "plots"], context.previous);
+      }
+    },
+    onSuccess: (plot) => {
+      queryClient.setQueryData<Plot[]>(
+        ["story", storyId, "plots"],
+        (current) => {
+          if (!current) {
+            return [plot];
+          }
+
+          const replaced = current.map((entry) =>
+            entry.id === plot.id ? plot : entry,
+          );
+          const hasPlot = replaced.some((entry) => entry.id === plot.id);
+          return sortPlots(hasPlot ? replaced : [...replaced, plot]);
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
     },
   });
 }

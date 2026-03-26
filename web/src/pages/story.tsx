@@ -139,6 +139,7 @@ export function StoryPage() {
 
       <div className="plots-wrapper bg-gray-100 py-6">
         <PlotGrid
+          storyId={storyId}
           plots={plots}
           plotIndex={0}
           cardSize={cardSize}
