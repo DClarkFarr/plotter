@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Button, ButtonGroup, TextInput, Tooltip } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useCreatePlotMutation } from "../../../hooks/useStory";
+import { usePlotTheme } from "../../../hooks/usePlotTheme";
 
 import IconCheckThick from "~icons/mdi/check-thick";
 import IconDotsCircle from "~icons/mdi/dots-circle";
@@ -20,6 +21,12 @@ export const PlotHeaderCreate = ({
   const [title, setTitle] = useState(defaultTitle);
   const [error, setError] = useState<string | null>(null);
   const createMutation = useCreatePlotMutation(storyId);
+  const theme = usePlotTheme(plot?.color);
+  const themeStyles = {
+    "--plot-color": theme.baseColor,
+    "--plot-color-soft": theme.softColor,
+    "--plot-text": theme.textColor,
+  } as CSSProperties;
 
   useEffect(() => {
     setTitle(defaultTitle);
@@ -38,21 +45,27 @@ export const PlotHeaderCreate = ({
     createMutation.mutate({
       title: trimmedTitle,
       description: "",
-      color: "#94A3B8",
+      color: "#FFF",
       horizontalIndex: plotIndex,
     });
   };
 
   if (plot) {
     return (
-      <div className="text-red-600">
+      <div
+        style={themeStyles}
+        className="text-red-600 border border-[var(--plot-color-soft)] bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300"
+      >
         this should never happen, plot already exists for this index: {plot.id}
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 flex flex-col h-full relative group">
+    <div
+      style={themeStyles}
+      className="rounded-lg border border-[var(--plot-color-soft)] bg-[var(--plot-color)] p-6 flex flex-col h-full relative group text-[var(--plot-text)] transition-colors duration-300"
+    >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <Button
           color="gray"
@@ -74,7 +87,7 @@ export const PlotHeaderCreate = ({
         </Button>
       </ButtonGroup>
 
-      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+      <div className="text-xs uppercase tracking-[0.2em] opacity-70">
         Create Plot {plotIndex + 1}
       </div>
       <div className="mt-2">

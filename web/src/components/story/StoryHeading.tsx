@@ -43,11 +43,6 @@ export function StoryHeading({
       return;
     }
 
-    if (!trimmedDescription) {
-      setError("Description is required.");
-      return;
-    }
-
     updateMutation.mutate({
       title: trimmedTitle,
       description: trimmedDescription,

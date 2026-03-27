@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-25
+Auto-generated from all feature plans. Last updated: 2026-03-26
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-25
 - TypeScript 5.9.3, Node.js (current LTS) + Express 5.2.x, MongoDB driver 6.16.x, React 19.2.x, TanStack Router/Query, Flowbite React, Tailwind CSS, Zustand, axios (006-dashboard-ui)
 - TypeScript 5.9, React 19 (web), Node.js + Express 5 (api) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Axios, unplugin-icons, Vite (007-story-page-data)
 - TypeScript (Node.js backend, React frontend) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, axios (008-plot-header-grid)
+- TypeScript 5.9.3, React 19.2.4 (web), Node.js + TypeScript (express) + Vite 8.0.1, Tailwind CSS 4.2.2, Flowbite React 0.12.17, TanStack Router 1.168.1, TanStack Query 5.94.5, Zustand 5.0.12 (009-plot-row-color)
+- MongoDB (existing) (009-plot-row-color)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -32,9 +34,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 009-plot-row-color: Added TypeScript 5.9.3, React 19.2.4 (web), Node.js + TypeScript (express) + Vite 8.0.1, Tailwind CSS 4.2.2, Flowbite React 0.12.17, TanStack Router 1.168.1, TanStack Query 5.94.5, Zustand 5.0.12
 - 008-plot-header-grid: Added TypeScript (Node.js backend, React frontend) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, axios
 - 007-story-page-data: Added TypeScript 5.9, React 19 (web), Node.js + Express 5 (api) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Axios, unplugin-icons, Vite
-- 006-dashboard-ui: Added TypeScript 5.9.3, Node.js (current LTS) + Express 5.2.x, MongoDB driver 6.16.x, React 19.2.x, TanStack Router/Query, Flowbite React, Tailwind CSS, Zustand, axios
 
 
 <!-- MANUAL ADDITIONS START -->

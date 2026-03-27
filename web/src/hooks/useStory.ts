@@ -175,7 +175,11 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: UpdatePlotInput) => updatePlot(storyId, plotId, input),
+    mutationFn: (input: UpdatePlotInput) =>
+      updatePlot(storyId, plotId, {
+        ...input,
+        description: input.description || undefined,
+      }),
     onMutate: async (input) => {
       await queryClient.cancelQueries({
         queryKey: ["story", storyId, "plots"],
