@@ -12,7 +12,6 @@ export function DashboardLayout() {
   const sidebar = useSidebarStore();
   const selectedScene = useSceneEditorStore((state) => state.selectedScene);
 
-  console.log("selected scene id", selectedScene);
   return (
     <div className="x-scroller w-screen overflow-x-hidden relative">
       <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50">
@@ -27,7 +26,11 @@ export function DashboardLayout() {
         </div>
       </div>
       <DashboardSidebar isOpen={sidebar.isOpen}>
-        {selectedScene ? <StoryForm /> : <StoryFormLoading />}
+        {selectedScene ? (
+          <StoryForm selectedScene={selectedScene} key={selectedScene.id} />
+        ) : (
+          <StoryFormLoading />
+        )}
       </DashboardSidebar>
     </div>
   );

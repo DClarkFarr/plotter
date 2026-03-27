@@ -10,13 +10,17 @@ import { SceneDescriptionEditor } from "./SceneDescriptionEditor";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
+import type { Scene } from "../../api/types";
+import { useDebounce } from "../../utils/useDebounce";
 
-export const StoryForm = () => {
+export type StoryFormProps = {
+  selectedScene: Scene | null;
+};
+export const StoryForm = ({ selectedScene }: StoryFormProps) => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const updateSceneMutation = useUpdateSceneMutation(storyId);
-  const selectedScene = useSceneEditorStore((state) => state.selectedScene);
   const tagSelections = useSceneEditorStore((state) => state.tagSelections);
   const isTagModalOpen = useSceneEditorStore((state) => state.isTagModalOpen);
   const openTagModal = useSceneEditorStore((state) => state.openTagModal);
@@ -27,6 +31,10 @@ export const StoryForm = () => {
   const todoDraft = useSceneEditorStore((state) => state.todoDraft);
   const setTodoDraft = useSceneEditorStore((state) => state.setTodoDraft);
 
+  const [descriptionHtml, setDescriptionHtml] = useState(
+    selectedScene?.description ?? "",
+  );
+
   const scenePlot = useMemo(() => {
     if (!selectedScene) return null;
     return plots.find((plot) =>
@@ -35,19 +43,6 @@ export const StoryForm = () => {
   }, [selectedScene, plots]);
 
   const [draftTitle, setDraftTitle] = useState(selectedScene?.title ?? "");
-
-  // useEffect(() => {
-  //   setDraftTitle(selectedScene?.title ?? "");
-  //   setTagSelections(selectedScene?.tags ?? []);
-  //   setTodoDraft(selectedScene?.todo ?? []);
-  // }, [
-  //   selectedScene?.id,
-  //   selectedScene?.title,
-  //   selectedScene?.tags,
-  //   selectedScene?.todo,
-  //   setTagSelections,
-  //   setTodoDraft,
-  // ]);
 
   const handleTitleBlur = () => {
     const nextTitle = draftTitle.trim();
@@ -93,6 +88,18 @@ export const StoryForm = () => {
     });
   };
 
+  const updateDescriptionDebounced = useDebounce((html: string) => {
+    updateSceneMutation.mutate({
+      sceneId: selectedScene?.id ?? "",
+      description: html,
+    });
+  }, 200);
+
+  const onChangeDescription = (html: string) => {
+    setDescriptionHtml(html);
+    updateDescriptionDebounced(html);
+  };
+
   if (isLoading) {
     return <div className="p-6 text-sm text-slate-500">Loading scene...</div>;
   }
@@ -115,7 +122,7 @@ export const StoryForm = () => {
           value={draftTitle}
           onChange={(event) => setDraftTitle(event.target.value)}
           onBlur={handleTitleBlur}
-          className="w-full text-xl font-semibold text-slate-900 bg-transparent rounded-md px-2 -mx-2 py-1 transition-colors hover:bg-slate-50 focus:bg-slate-100 focus:outline-none"
+          className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
         />
         <p className="text-sm text-slate-500">
           Plot: {scenePlot?.title || "Untitled Plot"}
@@ -126,13 +133,8 @@ export const StoryForm = () => {
           Description
         </p>
         <SceneDescriptionEditor
-          value={selectedScene?.scene ?? ""}
-          onCommit={(value) =>
-            updateSceneMutation.mutate({
-              sceneId: selectedScene?.id ?? "",
-              scene: value,
-            })
-          }
+          value={descriptionHtml}
+          onCommit={onChangeDescription}
         />
       </div>
       <div>

@@ -28,7 +28,7 @@ export const SceneDescriptionEditor = ({
   return (
     <div className="">
       {editor && <MenuBar editor={editor} />}
-      <EditorContent editor={editor} className="" />
+      <EditorContent editor={editor} />
     </div>
   );
 };
@@ -67,6 +67,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         >
           Strike
         </button>
+      </div>
+      <div className="button-group">
         <button
           onClick={() => editor.chain().focus().toggleCode().run()}
           disabled={!editorState.canCode}
@@ -80,6 +82,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         <button onClick={() => editor.chain().focus().clearNodes().run()}>
           Clear nodes
         </button>
+      </div>
+      <div className="button-group">
         <button
           onClick={() => editor.chain().focus().setParagraph().run()}
           className={editorState.isParagraph ? "is-active" : ""}
@@ -134,6 +138,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         >
           H6
         </button>
+      </div>
+      <div className="button-group">
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={editorState.isBulletList ? "is-active" : ""}
@@ -158,6 +164,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         >
           Blockquote
         </button>
+      </div>
+      <div className="button-group">
         <button
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
         >
@@ -166,6 +174,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         <button onClick={() => editor.chain().focus().setHardBreak().run()}>
           Hard break
         </button>
+      </div>
+      <div className="button-group">
         <button
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editorState.canUndo}

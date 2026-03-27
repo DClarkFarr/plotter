@@ -1,16 +1,22 @@
-import type { CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import type { SceneRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import { useSidebarStore } from "../../../store/sidebarStore";
 import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 
+function stripTagsButLeaveText(html: string) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+}
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
   const sidebar = useSidebarStore();
-  const sceneEditor = useSceneEditorStore();
-  const descriptionText = scene.description
-    ? scene.description.replace(/<[^>]*>/g, "").trim()
-    : "";
+  const selectScene = useSceneEditorStore((s) => s.selectScene);
+  const descriptionText = useMemo(() => {
+    return stripTagsButLeaveText(scene.description || "");
+  }, [scene.description]);
+
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
@@ -18,7 +24,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   } as CSSProperties;
 
   const handleSelect = () => {
-    sceneEditor.selectScene(scene);
+    selectScene(scene);
     sidebar.openSidebar();
   };
 

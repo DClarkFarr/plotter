@@ -13,7 +13,7 @@ export const EmptyCard = ({
 }: EmptyRendererProps) => {
   const theme = usePlotTheme(plot?.color);
   const createSceneMutation = useCreateSceneMutation(storyId);
-  const sceneEditor = useSceneEditorStore();
+  const selectScene = useSceneEditorStore((s) => s.selectScene);
   const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
   const themeStyles = {
     "--plot-color": theme.baseColor,
@@ -41,8 +41,7 @@ export const EmptyCard = ({
     });
 
     if (scene?.id) {
-      console.log("selecting scene", scene);
-      sceneEditor.selectScene(scene);
+      selectScene(scene);
     }
   };
 
