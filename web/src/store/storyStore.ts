@@ -7,6 +7,8 @@ export const useStoryStore = create<StoryState>((set) => ({
   filters: defaultFilters,
   cardSize: "md",
   cardDisplay: "grid",
+  story: null,
+  setStory: (story) => set({ story }),
   setFilters: (filters) => set({ filters }),
   setCardSize: (cardSize) => set({ cardSize }),
   setCardDisplay: (cardDisplay) => set({ cardDisplay }),

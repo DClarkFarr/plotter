@@ -10,6 +10,8 @@ import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import IconLabelMultiple from "~icons/mdi/label-multiple";
 import { PlotGrid } from "../components/plot/PlotGrid";
+import { useEffect } from "react";
+import { useSidebarStore } from "../store/sidebarStore";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -34,6 +36,23 @@ export function StoryPage() {
   //   }, 0) + 3;
 
   // const verticalStackSize = Math.max(5, maxVerticalPosition);
+
+  useEffect(() => {
+    /**
+     * Subscribe story store to sidebar store for automatic open / close
+     */
+
+    const unsub = useStoryStore.subscribe((state, prevState) => {
+      if (state.story && !prevState.story) {
+        // Story was set, open sidebar
+        useSidebarStore.setState({ isOpen: true });
+      } else if (!state.story && prevState.story) {
+        // Story was unset, close sidebar
+        useSidebarStore.setState({ isOpen: false });
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const isLoading =
     storyQuery.isLoading || tagsQuery.isLoading || plotsQuery.isLoading;
