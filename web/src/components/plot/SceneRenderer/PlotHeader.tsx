@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -14,6 +14,7 @@ import IconMoveRight from "~icons/mdi/arrow-right-thick";
 import IconMoveLeft from "~icons/mdi/arrow-left-thick";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import IconClose from "~icons/mdi/close-thick";
+import { useClickOutside } from "../../../hooks/use-click-outside";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -34,6 +35,14 @@ export const PlotHeader = ({
   const [draftColor, setDraftColor] = useState(plot.color);
   const [error, setError] = useState<string | null>(null);
   const updateMutation = useUpdatePlotMutation(storyId, plot.id);
+
+  const onClickOutside = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  const { containerRef } = useClickOutside<HTMLDivElement>({
+    onClickOutside,
+  });
 
   const onSaveDebounced = useDebounce(() => {
     const trimmedTitle = draftTitle.trim();
@@ -80,7 +89,10 @@ export const PlotHeader = ({
 
   if (isEditing) {
     return (
-      <div className="plot-header group rounded-lg border border-slate-200 bg-white p-6 h-full relative z-10">
+      <div
+        ref={containerRef}
+        className="plot-header group rounded-lg border border-slate-200 bg-white p-6 h-full relative z-10"
+      >
         <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
           <Button
             color="gray"
