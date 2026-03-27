@@ -6,7 +6,6 @@ export type PortalProps = React.PropsWithChildren<{
 }>;
 export function Portal({ children, wrapperId }: PortalProps) {
   const wrapperElement = document.getElementById(wrapperId);
-  console.log("Portal wrapper element:", wrapperElement, "from", wrapperId);
 
   // You might want to handle cases where the wrapper element isn't found
   if (!wrapperElement) {
