@@ -137,7 +137,7 @@ export function StoryPage() {
         Plots
       </h2>
 
-      <div className="plots-wrapper bg-gray-100 py-6">
+      <div className="plots-wrapper bg-gray-100">
         <PlotGrid
           storyId={storyId}
           plots={plots}

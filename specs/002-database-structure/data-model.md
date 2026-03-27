@@ -94,7 +94,7 @@
 
 - `storyId` must exist.
 - `horizontalIndex` must be >= 0.
-- Ordering conflicts are resolved by shifting existing plots down to make room.
+- Ordering conflicts are resolved by shifting only plots in the affected index range down to make room; moves shift only plots between the source and target indices.
 
 **Indexes**
 

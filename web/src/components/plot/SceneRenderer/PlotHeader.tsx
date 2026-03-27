@@ -58,7 +58,7 @@ export const PlotHeader = ({
   };
 
   const canMoveLeft = plot.horizontalIndex > 0;
-  const canMoveRight = plot.horizontalIndex < maxHorizontalIndex;
+  const canMoveRight = plot.horizontalIndex < maxHorizontalIndex + 1;
   const isPending = updateMutation.isPending;
 
   const onChangeTitle = (event: React.ChangeEvent<HTMLInputElement>) => {

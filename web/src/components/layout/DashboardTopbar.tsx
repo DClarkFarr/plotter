@@ -25,7 +25,7 @@ export function DashboardTopbar() {
   return (
     <Navbar
       fluid
-      className="border-b border-slate-200 bg-white/90 backdrop-blur z-[100]"
+      className="border-b border-slate-200 bg-white/90 backdrop-blur z-[100] sticky top-0"
     >
       <NavbarBrand as="span">
         <Link to="/dashboard" className="text-lg font-semibold text-slate-900">

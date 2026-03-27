@@ -20,20 +20,35 @@ const sortPlots = (plots: Plot[]) =>
 
 const shiftPlotsForInsert = (
   plots: Plot[],
-  fromIndex: number,
-  excludeId?: string,
-) =>
-  plots.map((plot) => {
-    if (plot.id === excludeId) {
+  plotId: string,
+  toIndex: number,
+) => {
+  const plot = plots.find((p) => p.id === plotId);
+  if (!plot) {
+    return plots;
+  }
+
+  const fromIndex = plot.horizontalIndex;
+  const isMovingUp = toIndex > fromIndex;
+
+  return plots.map((plot) => {
+    if (plot.id === plotId) {
       return plot;
     }
 
-    if (plot.horizontalIndex >= fromIndex) {
-      return { ...plot, horizontalIndex: plot.horizontalIndex + 1 };
+    if (isMovingUp) {
+      if (plot.horizontalIndex > fromIndex && plot.horizontalIndex <= toIndex) {
+        return { ...plot, horizontalIndex: plot.horizontalIndex - 1 };
+      }
+    } else {
+      if (plot.horizontalIndex < fromIndex && plot.horizontalIndex >= toIndex) {
+        return { ...plot, horizontalIndex: plot.horizontalIndex + 1 };
+      }
     }
 
     return plot;
   });
+};
 
 export function useStoryQuery(storyId: string) {
   return useQuery({
@@ -112,7 +127,6 @@ export function useCreatePlotMutation(storyId: string) {
 
       const tempId = `temp-${Date.now()}`;
       if (previous) {
-        const shifted = shiftPlotsForInsert(previous, input.horizontalIndex);
         const optimistic: Plot = {
           id: tempId,
           title: input.title,
@@ -125,7 +139,7 @@ export function useCreatePlotMutation(storyId: string) {
 
         queryClient.setQueryData<Plot[]>(
           ["story", storyId, "plots"],
-          sortPlots([...shifted, optimistic]),
+          sortPlots([...previous, optimistic]),
         );
       }
 
@@ -152,7 +166,7 @@ export function useCreatePlotMutation(storyId: string) {
           return sortPlots(hasPlot ? replaced : [...replaced, plot]);
         },
       );
-      queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
+      // queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
     },
   });
 }
@@ -173,20 +187,19 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
       ]);
 
       if (previous) {
-        console.log("todo: handle horizontalIndex changes optimistically");
-        // const shifted =
-        //   input.horizontalIndex === undefined
-        //     ? previous
-        //     : shiftPlotsForInsert(previous, input.horizontalIndex, plotId);
+        const shifted =
+          input.horizontalIndex === undefined
+            ? previous
+            : shiftPlotsForInsert(previous, plotId, input.horizontalIndex);
 
-        // const optimistic = shifted.map((plot) =>
-        //   plot.id === plotId ? { ...plot, ...input } : plot,
-        // );
+        const optimistic = shifted.map((plot) =>
+          plot.id === plotId ? { ...plot, ...input } : plot,
+        );
 
-        // queryClient.setQueryData<Plot[]>(
-        //   ["story", storyId, "plots"],
-        //   sortPlots(optimistic),
-        // );
+        queryClient.setQueryData<Plot[]>(
+          ["story", storyId, "plots"],
+          sortPlots(optimistic),
+        );
       }
 
       return { previous };
@@ -211,7 +224,7 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
           return sortPlots(hasPlot ? replaced : [...replaced, plot]);
         },
       );
-      queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
+      // queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
     },
   });
 }

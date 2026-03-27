@@ -94,96 +94,108 @@ export const PlotGrid = ({
   }, [plots, gridCols, gridRows]);
 
   return (
-    <div className="grid plot-grid gap-4" style={{ "--grid-cols": gridCols }}>
-      {grid.map((row, r) =>
-        row.map((cell, c) => {
-          if (cell.type === "corner") {
-            return (
-              <div
-                key={`${r}-${c}`}
-                className="corner"
-                data-row={r}
-                data-col={c}
-              ></div>
-            );
-          } else if (cell.type === "col-header") {
-            return (
-              <div
-                key={`${r}-${c}`}
-                className="col-header flex items-center justify-center bg-gray-100"
-                data-row={r}
-                data-col={c}
-              >
-                <h4 className="font-bold text-2xl text-gray-500">Row {r}</h4>
-              </div>
-            );
-          } else if (cell.type === "empty") {
-            const plot = plots[getCellColIndex(c)];
-            return (
-              <div
-                key={`${r}-${c}`}
-                className="scene-card empty"
-                data-row={r}
-                data-col={c}
-              >
-                <RenderEmptyCard
-                  sceneIndex={getCellRowIndex(r)}
-                  plotIndex={getCellColIndex(c)}
-                  plot={plot}
-                  isDisabled={!plot}
-                />
-              </div>
-            );
-          } else if (cell.type === "scene") {
-            const plot = plots[getCellColIndex(c)];
-            const scene = plot?.scenes[cell.index];
-            return (
-              <div
-                key={`${r}-${c}`}
-                className="scene-card"
-                data-row={r}
-                data-col={c}
-              >
-                <RenderSceneCard
-                  sceneIndex={getCellRowIndex(r)}
-                  plotIndex={getCellColIndex(c)}
-                  scene={scene!}
-                  plot={plot!}
-                />
-              </div>
-            );
-          } else if (cell.type === "plot") {
-            const plot = plots.find(
-              (p) => p.horizontalIndex === getCellColIndex(c),
-            );
-            return (
-              <div
-                key={`${r}-${c}`}
-                className="plot-header row-header"
-                data-row={r}
-                data-col={c}
-              >
-                {plot ? (
-                  <PlotHeader
-                    storyId={storyId}
-                    plot={plot}
-                    plotIndex={getCellColIndex(c)}
-                    maxHorizontalIndex={maxHorizontalIndex}
-                  />
-                ) : (
-                  <PlotHeaderCreate
-                    storyId={storyId}
-                    plot={plot}
-                    plotIndex={getCellColIndex(c)}
-                  />
-                )}
-              </div>
-            );
-          }
+    <div
+      className="y-scroller overflow-y-auto h-[var(--grid-height)]"
+      style={{ "--grid-height": `calc(100vh - 61px)` }}
+    >
+      <div className="x-scroller h-full overflow-x-auto">
+        <div
+          className="grid p-6 plot-grid gap-4 bg-gray-100"
+          style={{ "--grid-cols": gridCols }}
+        >
+          {grid.map((row, r) =>
+            row.map((cell, c) => {
+              if (cell.type === "corner") {
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="corner"
+                    data-row={r}
+                    data-col={c}
+                  ></div>
+                );
+              } else if (cell.type === "col-header") {
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="col-header flex items-center justify-center bg-gray-100"
+                    data-row={r}
+                    data-col={c}
+                  >
+                    <h4 className="font-bold text-2xl text-gray-500">
+                      Row {r}
+                    </h4>
+                  </div>
+                );
+              } else if (cell.type === "empty") {
+                const plot = plots[getCellColIndex(c)];
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="scene-card empty"
+                    data-row={r}
+                    data-col={c}
+                  >
+                    <RenderEmptyCard
+                      sceneIndex={getCellRowIndex(r)}
+                      plotIndex={getCellColIndex(c)}
+                      plot={plot}
+                      isDisabled={!plot}
+                    />
+                  </div>
+                );
+              } else if (cell.type === "scene") {
+                const plot = plots[getCellColIndex(c)];
+                const scene = plot?.scenes[cell.index];
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="scene-card"
+                    data-row={r}
+                    data-col={c}
+                  >
+                    <RenderSceneCard
+                      sceneIndex={getCellRowIndex(r)}
+                      plotIndex={getCellColIndex(c)}
+                      scene={scene!}
+                      plot={plot!}
+                    />
+                  </div>
+                );
+              } else if (cell.type === "plot") {
+                const plot = plots.find(
+                  (p) => p.horizontalIndex === getCellColIndex(c),
+                );
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className="plot-header row-header"
+                    data-row={r}
+                    data-col={c}
+                  >
+                    {plot ? (
+                      <PlotHeader
+                        storyId={storyId}
+                        plot={plot}
+                        plotIndex={getCellColIndex(c)}
+                        maxHorizontalIndex={maxHorizontalIndex}
+                      />
+                    ) : (
+                      <PlotHeaderCreate
+                        storyId={storyId}
+                        plot={plot}
+                        plotIndex={getCellColIndex(c)}
+                      />
+                    )}
+                  </div>
+                );
+              }
 
-          return null;
-        }),
-      )}
+              return null;
+            }),
+          )}
+        </div>
+      </div>
     </div>
   );
 };

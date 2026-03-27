@@ -11,7 +11,7 @@
 
 ### Session 2026-03-21
 
-- Q: How should ordering conflicts be handled when two plots or scenes share the same position? -> A: Shift existing items down to make room (stable insert).
+- Q: How should ordering conflicts be handled when two plots or scenes share the same position? -> A: Shift only the items in the affected index range down to make room (stable insert); moves only shift items between the source and target indices.
 - Q: When a story is deleted, what should happen to its tags, plots, and scenes? -> A: Soft delete story, keep related items.
 - Q: How should an expired session token be treated when used? -> A: Reject as unauthorized/expired.
 - Q: When an email is already used by another user, what should happen? -> A: Reject creation/update with a duplicate email.
@@ -69,7 +69,7 @@ As a user, I start a session when I sign in and the session ends when it expires
 ### Edge Cases
 
 - Duplicate emails are rejected on create/update.
-- Ordering conflicts are resolved by shifting existing items down to make room (stable insert).
+- Ordering conflicts are resolved by shifting only items in the affected index range down to make room (stable insert); moves only shift items between the source and target indices.
 - Deleting a story is a soft delete and does not remove related tags, plots, or scenes.
 - Expired session tokens are rejected as unauthorized/expired.
 
@@ -89,7 +89,7 @@ As a user, I start a session when I sign in and the session ends when it expires
 - **FR-010**: System MUST prevent references to non-existent stories, plots, or tags.
 - **FR-011**: System MUST store sessions with user linkage, token, payload, creation timestamp, and expiration timestamp.
 - **FR-012**: System MUST invalidate sessions once they expire or are explicitly ended.
-- **FR-013**: System MUST resolve ordering conflicts by shifting existing plots/scenes down to make room for inserts.
+- **FR-013**: System MUST resolve ordering conflicts by shifting only the plots/scenes in the affected index range down to make room for inserts; move operations only shift items between source and target indices.
 - **FR-014**: System MUST soft delete stories without deleting related tags, plots, or scenes.
 - **FR-015**: System MUST reject expired session tokens as unauthorized.
 - **FR-016**: System MUST reject create/update actions with a duplicate email.
