@@ -1,17 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createScene,
   createPlot,
   getStory,
   listStoryPlots,
   listStoryTags,
+  updateScene,
   updateStory,
   updatePlot,
   type UpdateStoryInput,
 } from "../api/stories";
 import type {
+  CreateSceneInput,
   CreatePlotInput,
   Plot,
+  Scene,
   Story,
+  UpdateSceneInput,
   UpdatePlotInput,
 } from "../api/types";
 
@@ -47,6 +52,41 @@ const shiftPlotsForInsert = (
     }
 
     return plot;
+  });
+};
+
+const sortScenes = (scenes: Scene[]) =>
+  [...scenes].sort((a, b) => a.verticalIndex - b.verticalIndex);
+
+const shiftScenesForInsert = (
+  scenes: Scene[],
+  sceneId: string,
+  toIndex: number,
+) => {
+  const target = scenes.find((scene) => scene.id === sceneId);
+  if (!target) {
+    return scenes;
+  }
+
+  const fromIndex = target.verticalIndex;
+  const isMovingUp = toIndex > fromIndex;
+
+  return scenes.map((scene) => {
+    if (scene.id === sceneId) {
+      return scene;
+    }
+
+    if (isMovingUp) {
+      if (scene.verticalIndex > fromIndex && scene.verticalIndex <= toIndex) {
+        return { ...scene, verticalIndex: scene.verticalIndex - 1 };
+      }
+    } else {
+      if (scene.verticalIndex < fromIndex && scene.verticalIndex >= toIndex) {
+        return { ...scene, verticalIndex: scene.verticalIndex + 1 };
+      }
+    }
+
+    return scene;
   });
 };
 
@@ -229,6 +269,177 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
         },
       );
       // queryClient.invalidateQueries({ queryKey: ["story", storyId, "plots"] });
+    },
+  });
+}
+
+type CreateScenePayload = CreateSceneInput & {
+  plotId: string;
+};
+
+export function useCreateSceneMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateScenePayload) =>
+      createScene(storyId, input.plotId, input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "plots"],
+      });
+      const previous = queryClient.getQueryData<Plot[]>([
+        "story",
+        storyId,
+        "plots",
+      ]);
+
+      const tempId = `temp-${Date.now()}`;
+      if (previous) {
+        const optimistic: Scene = {
+          id: tempId,
+          title: input.title,
+          description: input.description,
+          plotId: input.plotId,
+          tags: input.tags ?? [],
+          todo: input.todo ?? [],
+          scene: input.scene ?? null,
+          verticalIndex: input.verticalIndex,
+        };
+
+        const updated = previous.map((plot) => {
+          if (plot.id !== input.plotId) {
+            return plot;
+          }
+
+          const shifted = plot.scenes.map((scene) =>
+            scene.verticalIndex >= input.verticalIndex
+              ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
+              : scene,
+          );
+
+          return {
+            ...plot,
+            scenes: sortScenes([...shifted, optimistic]),
+          };
+        });
+
+        queryClient.setQueryData<Plot[]>(["story", storyId, "plots"], updated);
+      }
+
+      return { previous, tempId };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["story", storyId, "plots"], context.previous);
+      }
+    },
+    onSuccess: (scene, _input, context) => {
+      queryClient.setQueryData<Plot[]>(
+        ["story", storyId, "plots"],
+        (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return current.map((plot) => {
+            if (plot.id !== scene.plotId) {
+              return plot;
+            }
+
+            const replaced = plot.scenes.map((entry) =>
+              entry.id === context?.tempId ? scene : entry,
+            );
+
+            const hasScene = replaced.some((entry) => entry.id === scene.id);
+            return {
+              ...plot,
+              scenes: sortScenes(hasScene ? replaced : [...replaced, scene]),
+            };
+          });
+        },
+      );
+    },
+  });
+}
+
+type UpdateScenePayload = UpdateSceneInput & {
+  sceneId: string;
+};
+
+export function useUpdateSceneMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateScenePayload) =>
+      updateScene(storyId, input.sceneId, input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "plots"],
+      });
+      const previous = queryClient.getQueryData<Plot[]>([
+        "story",
+        storyId,
+        "plots",
+      ]);
+
+      if (previous) {
+        const updated = previous.map((plot) => {
+          const target = plot.scenes.find(
+            (scene) => scene.id === input.sceneId,
+          );
+          if (!target) {
+            return plot;
+          }
+
+          const shifted =
+            input.verticalIndex !== undefined
+              ? shiftScenesForInsert(
+                  plot.scenes,
+                  target.id,
+                  input.verticalIndex,
+                )
+              : plot.scenes;
+
+          const nextScenes = shifted.map((scene) =>
+            scene.id === input.sceneId
+              ? { ...scene, ...input, id: scene.id, plotId: scene.plotId }
+              : scene,
+          );
+
+          return { ...plot, scenes: sortScenes(nextScenes) };
+        });
+
+        queryClient.setQueryData<Plot[]>(["story", storyId, "plots"], updated);
+      }
+
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["story", storyId, "plots"], context.previous);
+      }
+    },
+    onSuccess: (scene) => {
+      queryClient.setQueryData<Plot[]>(
+        ["story", storyId, "plots"],
+        (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return current.map((plot) => {
+            if (plot.id !== scene.plotId) {
+              return plot;
+            }
+
+            const nextScenes = plot.scenes.map((entry) =>
+              entry.id === scene.id ? scene : entry,
+            );
+
+            return { ...plot, scenes: sortScenes(nextScenes) };
+          });
+        },
+      );
     },
   });
 }

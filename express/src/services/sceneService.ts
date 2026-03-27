@@ -3,12 +3,13 @@ import {
   createScene as createSceneModel,
   CreateSceneInput,
   getSceneById,
+  getSceneByIdForPlotIds,
   SceneDocument,
   shiftSceneIndices,
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
 } from "../models/scenes";
-import { getPlotById } from "../models/plots";
+import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
 
@@ -42,6 +43,14 @@ const assertTagsBelongToStory = async (
   }
 };
 
+export const getSceneForStory = async (
+  storyId: string | ObjectId,
+  sceneId: string | ObjectId,
+): Promise<SceneDocument | null> => {
+  const plotIds = await listPlotIdsByStoryId(storyId);
+  return getSceneByIdForPlotIds(sceneId, plotIds);
+};
+
 export const createScene = async (
   input: CreateSceneInput,
 ): Promise<SceneDocument> => {
@@ -61,6 +70,23 @@ export const createScene = async (
     ...input,
     plotId: plot._id,
     tags: tagIds,
+  });
+};
+
+export const createSceneForStory = async (
+  storyId: string | ObjectId,
+  input: CreateSceneInput,
+): Promise<SceneDocument> => {
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  const plot = await assertPlotExists(input.plotId);
+
+  if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
+    throw new Error("Plot not found");
+  }
+
+  return createScene({
+    ...input,
+    plotId: plot._id,
   });
 };
 
@@ -90,6 +116,43 @@ export const updateSceneById = async (
   }
 
   return updateSceneByIdModel(id, {
+    ...updates,
+    ...(updates.plotId !== undefined && { plotId: plot._id }),
+    ...(tagIds !== undefined && { tags: tagIds }),
+  });
+};
+
+export const updateSceneForStory = async (
+  storyId: string | ObjectId,
+  sceneId: string | ObjectId,
+  updates: UpdateSceneInput,
+): Promise<SceneDocument | null> => {
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  const current = await getSceneForStory(storyObjectId, sceneId);
+  if (!current) {
+    return null;
+  }
+
+  const targetPlotId = updates.plotId ?? current.plotId;
+  const plot = await assertPlotExists(targetPlotId);
+  if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
+    throw new Error("Plot not found");
+  }
+
+  if (updates.verticalIndex !== undefined) {
+    if (updates.verticalIndex < 0) {
+      throw new Error("verticalIndex must be >= 0");
+    }
+    await shiftSceneIndices(plot._id, updates.verticalIndex, current._id);
+  }
+
+  let tagIds: ObjectId[] | undefined;
+  if (updates.tags) {
+    tagIds = updates.tags.map((tagId) => ensureObjectId(tagId, "tagId"));
+    await assertTagsBelongToStory(plot.storyId, tagIds);
+  }
+
+  return updateSceneByIdModel(sceneId, {
     ...updates,
     ...(updates.plotId !== undefined && { plotId: plot._id }),
     ...(tagIds !== undefined && { tags: tagIds }),

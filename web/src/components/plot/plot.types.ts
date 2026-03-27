@@ -10,6 +10,7 @@ export type SceneRendererProps = BaseSceneRendererProps & {
   plot: Plot;
 };
 export type EmptyRendererProps = Omit<BaseSceneRendererProps, "plot"> & {
+  storyId: string;
   plot: Plot | undefined;
   isDisabled?: boolean;
 };

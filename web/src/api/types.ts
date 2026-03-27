@@ -74,6 +74,24 @@ export interface UpdatePlotInput {
   horizontalIndex?: number;
 }
 
+export interface CreateSceneInput {
+  title: string;
+  description: string;
+  scene?: string | null;
+  tags?: string[];
+  todo?: SceneTodoItem[];
+  verticalIndex: number;
+}
+
+export interface UpdateSceneInput {
+  title?: string;
+  description?: string;
+  scene?: string | null;
+  tags?: string[];
+  todo?: SceneTodoItem[];
+  verticalIndex?: number;
+}
+
 // ─── Response Envelopes ───────────────────────────────────────────────────────
 
 export interface AuthUserResponse {
@@ -98,6 +116,10 @@ export interface PlotsResponse {
 
 export interface PlotResponse {
   plot: Plot;
+}
+
+export interface SceneResponse {
+  scene: Scene;
 }
 
 export interface MessageResponse {

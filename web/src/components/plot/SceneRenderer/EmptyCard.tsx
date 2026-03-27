@@ -2,14 +2,49 @@ import type { CSSProperties } from "react";
 import type { EmptyRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import IconPlus from "~icons/mdi/plus";
+import { useCreateSceneMutation } from "../../../hooks/useStory";
+import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 
-export const EmptyCard = ({ isDisabled, plot }: EmptyRendererProps) => {
+export const EmptyCard = ({
+  storyId,
+  isDisabled,
+  plot,
+  sceneIndex,
+}: EmptyRendererProps) => {
   const theme = usePlotTheme(plot?.color);
+  const createSceneMutation = useCreateSceneMutation(storyId);
+  const sceneEditor = useSceneEditorStore();
+  const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
   } as CSSProperties;
+
+  const handleCreate = async () => {
+    if (!plot || isBusy) {
+      return;
+    }
+
+    const rowNumber = sceneIndex + 1;
+    const plotName = plot.title?.trim() || "Untitled Plot";
+    const title = `Scene ${rowNumber} in ${plotName}`;
+
+    const scene = await createSceneMutation.mutateAsync({
+      plotId: plot.id,
+      title,
+      description: "",
+      scene: null,
+      tags: [],
+      todo: [],
+      verticalIndex: sceneIndex,
+    });
+
+    if (scene?.id) {
+      console.log("selecting scene", scene);
+      sceneEditor.selectScene(scene);
+    }
+  };
 
   return (
     <div
@@ -23,13 +58,12 @@ export const EmptyCard = ({ isDisabled, plot }: EmptyRendererProps) => {
         <div>
           <button
             className={`text-2xl p-4 text-[var(--plot-text)] ${
-              isDisabled
-                ? "cursor-not-allowed"
-                : "cursor-pointer hover:bg-gray-200"
+              isBusy ? "cursor-not-allowed" : "cursor-pointer hover:bg-gray-200"
             }`}
             type="button"
-            aria-disabled={isDisabled}
-            disabled={isDisabled}
+            aria-disabled={isBusy}
+            disabled={isBusy}
+            onClick={handleCreate}
           >
             <IconPlus />
           </button>

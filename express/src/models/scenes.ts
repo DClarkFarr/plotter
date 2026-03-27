@@ -155,6 +155,25 @@ export const getSceneById = async (
   return collection.findOne({ _id: ensureObjectId(id, "sceneId") });
 };
 
+export const getSceneByIdForPlotIds = async (
+  id: string | ObjectId,
+  plotIds: Array<string | ObjectId>,
+): Promise<SceneDocument | null> => {
+  const collection = getScenesCollection();
+  const sceneId = ensureObjectId(id, "sceneId");
+  const uniquePlotIds = Array.from(
+    new Set(
+      plotIds.map((plotId) => ensureObjectId(plotId, "plotId").toHexString()),
+    ),
+  ).map((value) => new ObjectId(value));
+
+  if (uniquePlotIds.length === 0) {
+    return null;
+  }
+
+  return collection.findOne({ _id: sceneId, plotId: { $in: uniquePlotIds } });
+};
+
 export interface UpdateSceneInput {
   title?: string;
   description?: string;

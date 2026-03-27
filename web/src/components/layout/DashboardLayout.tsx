@@ -3,14 +3,16 @@ import { DashboardTopbar } from "./DashboardTopbar";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { useSidebarStore } from "../../store/sidebarStore";
-import { useStoryStore } from "../../store/storyStore";
 import { StoryForm } from "../story/StoryForm";
 import { StoryFormLoading } from "../story/StoryFormLoading";
+import { useSceneEditorStore } from "../../store/sceneEditorStore";
 
 export function DashboardLayout() {
   useAuthRedirect();
   const sidebar = useSidebarStore();
-  const storyStore = useStoryStore();
+  const selectedScene = useSceneEditorStore((state) => state.selectedScene);
+
+  console.log("selected scene id", selectedScene);
   return (
     <div className="x-scroller w-screen overflow-x-hidden relative">
       <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 via-white to-emerald-50">
@@ -25,11 +27,7 @@ export function DashboardLayout() {
         </div>
       </div>
       <DashboardSidebar isOpen={sidebar.isOpen}>
-        {storyStore.story ? (
-          <StoryForm story={storyStore.story} />
-        ) : (
-          <StoryFormLoading />
-        )}
+        {selectedScene ? <StoryForm /> : <StoryFormLoading />}
       </DashboardSidebar>
     </div>
   );

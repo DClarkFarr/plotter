@@ -13,7 +13,7 @@
 
 **Purpose**: Project initialization and governance prerequisites
 
-- [ ] T001 Update constitution to approve TipTap and dnd-kit in .specify/memory/constitution.md
+- [x] T001 Update constitution to approve TipTap and dnd-kit in .specify/memory/constitution.md
 
 ---
 
@@ -21,9 +21,9 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [ ] T002 [P] Add scene API types (inputs/responses) in web/src/api/types.ts
-- [ ] T003 [P] Create scene editor state store in web/src/store/sceneEditorStore.ts
-- [ ] T004 Add scene API client functions in web/src/api/stories.ts (createScene, updateScene)
+- [x] T002 [P] Add scene API types (inputs/responses) in web/src/api/types.ts
+- [x] T003 [P] Create scene editor state store in web/src/store/sceneEditorStore.ts
+- [x] T004 Add scene API client functions in web/src/api/stories.ts (createScene, updateScene)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -37,15 +37,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Add scene router with create/update endpoints in express/src/routers/sceneRouter.ts
-- [ ] T006 [US1] Mount scene router under stories in express/src/routers/apiRouter.ts
-- [ ] T007 [P] [US1] Extend scene workflow helpers in express/src/services/sceneService.ts (story ownership checks, create/update orchestration)
-- [ ] T008 [P] [US1] Add scene lookup helpers for story scoping in express/src/models/scenes.ts
-- [ ] T009 [P] [US1] Add create/update scene mutations with optimistic cache updates in web/src/hooks/useStory.ts
-- [ ] T010 [US1] Wire EmptyCard create action to createScene mutation in web/src/components/plot/SceneRenderer/EmptyCard.tsx
-- [ ] T011 [US1] Thread storyId/plot context into EmptyCard via web/src/components/plot/PlotGrid.tsx and web/src/components/plot/SortablePlot.tsx
-- [ ] T012 [US1] Add scene selection actions and sidebar-open behavior in web/src/store/sceneEditorStore.ts
-- [ ] T013 [US1] Render selected scene summary in sidebar using web/src/components/story/StoryForm.tsx and web/src/components/layout/DashboardLayout.tsx
+- [x] T005 [P] [US1] Add scene router with create/update endpoints in express/src/routers/sceneRouter.ts
+- [x] T006 [US1] Mount scene router under stories in express/src/routers/apiRouter.ts
+- [x] T007 [P] [US1] Extend scene workflow helpers in express/src/services/sceneService.ts (story ownership checks, create/update orchestration)
+- [x] T008 [P] [US1] Add scene lookup helpers for story scoping in express/src/models/scenes.ts
+- [x] T009 [P] [US1] Add create/update scene mutations with optimistic cache updates in web/src/hooks/useStory.ts
+- [x] T010 [US1] Wire EmptyCard create action to createScene mutation in web/src/components/plot/SceneRenderer/EmptyCard.tsx
+- [x] T011 [US1] Thread storyId/plot context into EmptyCard via web/src/components/plot/PlotGrid.tsx and web/src/components/plot/SortablePlot.tsx
+- [x] T012 [US1] Add scene selection actions and sidebar-open behavior in web/src/store/sceneEditorStore.ts
+- [x] T013 [US1] Render selected scene summary in sidebar using web/src/components/story/StoryForm.tsx and web/src/components/layout/DashboardLayout.tsx
 
 **Checkpoint**: User Story 1 is fully functional and testable independently
 
@@ -59,10 +59,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Add TipTap dependencies in web/package.json
-- [ ] T015 [US2] Implement in-place title input styling in web/src/components/story/StoryForm.tsx
-- [ ] T016 [US2] Add rich text editor component in web/src/components/story/SceneDescriptionEditor.tsx
-- [ ] T017 [US2] Persist title/description edits via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T014 [P] [US2] Add TipTap dependencies in web/package.json
+- [x] T015 [US2] Implement in-place title input styling in web/src/components/story/StoryForm.tsx
+- [x] T016 [US2] Add rich text editor component in web/src/components/story/SceneDescriptionEditor.tsx
+- [x] T017 [US2] Persist title/description edits via updateScene mutation in web/src/hooks/useStory.ts
 
 **Checkpoint**: User Story 2 is fully functional and testable independently
 
@@ -76,10 +76,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T018 [P] [US3] Create inline tag badge list in web/src/components/story/SceneTags.tsx
-- [ ] T019 [P] [US3] Create tag selection modal in web/src/components/story/SceneTagsModal.tsx
-- [ ] T020 [US3] Wire modal state to web/src/store/sceneEditorStore.ts and useStoryTagsQuery in web/src/components/story/StoryForm.tsx
-- [ ] T021 [US3] Persist tag changes via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T018 [P] [US3] Create inline tag badge list in web/src/components/story/SceneTags.tsx
+- [x] T019 [P] [US3] Create tag selection modal in web/src/components/story/SceneTagsModal.tsx
+- [x] T020 [US3] Wire modal state to web/src/store/sceneEditorStore.ts and useStoryTagsQuery in web/src/components/story/StoryForm.tsx
+- [x] T021 [US3] Persist tag changes via updateScene mutation in web/src/hooks/useStory.ts
 
 **Checkpoint**: User Story 3 is fully functional and testable independently
 
@@ -93,10 +93,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [P] [US4] Add dnd-kit dependencies in web/package.json
-- [ ] T023 [US4] Build todo list UI in web/src/components/story/SceneTodoList.tsx
-- [ ] T024 [US4] Add dnd-kit sortable behavior in web/src/components/story/SceneTodoList.tsx
-- [ ] T025 [US4] Persist todo updates via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T022 [P] [US4] Add dnd-kit dependencies in web/package.json
+- [x] T023 [US4] Build todo list UI in web/src/components/story/SceneTodoList.tsx
+- [x] T024 [US4] Add dnd-kit sortable behavior in web/src/components/story/SceneTodoList.tsx
+- [x] T025 [US4] Persist todo updates via updateScene mutation in web/src/hooks/useStory.ts
 
 **Checkpoint**: User Story 4 is fully functional and testable independently
 
@@ -106,8 +106,8 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T026 Update quickstart validation notes in specs/010-create-scene-flow/quickstart.md
-- [ ] T027 [P] Review error handling consistency in express/src/routers/sceneRouter.ts and web/src/hooks/useStory.ts
+- [x] T026 Update quickstart validation notes in specs/010-create-scene-flow/quickstart.md
+- [x] T027 [P] Review error handling consistency in express/src/routers/sceneRouter.ts and web/src/hooks/useStory.ts
 
 ---
 

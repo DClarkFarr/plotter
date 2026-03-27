@@ -1,9 +1,8 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0
-- Modified principles: I. Stack Guardrails — expanded frontend library mandates;
-    TanStack Query and Zustand added with designated purposes; future library
-    placeholders noted for animation, drag-and-drop, and rich text editor.
+- Version change: 1.1.0 → 1.2.0
+- Modified principles: I. Stack Guardrails — approved libraries for drag-and-drop
+  and rich text editing.
 - Added sections: None
 - Removed sections: None
 - Templates requiring updates:
@@ -11,10 +10,8 @@ Sync Impact Report
     .specify/templates/spec-template.md ✅ (no changes required)
     .specify/templates/tasks-template.md ✅ (no changes required)
 - Follow-up TODOs:
-    TODO(RATIFICATION_DATE): original adoption date not provided
-    TODO(ANIMATION_LIBRARY): motion or equivalent not yet decided — amend Principle I when selected
-    TODO(DND_LIBRARY): drag-and-drop library not yet decided — amend Principle I when selected
-    TODO(RTE_LIBRARY): rich text editor library not yet decided — amend Principle I when selected
+  TODO(RATIFICATION_DATE): original adoption date not provided
+  TODO(ANIMATION_LIBRARY): motion or equivalent not yet decided — amend Principle I when selected
 -->
 
 # Plotter Constitution
@@ -42,10 +39,11 @@ directory and MUST use the following libraries for their designated purposes:
 - **Styles**: Tailwind CSS MUST be the sole styling mechanism. Do not introduce CSS
   modules, styled-components, or global CSS classes beyond Tailwind's base layer.
 - **Icons**: unplugin-icons with Material Design icon packs MUST be used for all icons.
+- **Drag-and-Drop**: dnd-kit (`@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`) MUST be used for sortable or draggable UI.
+- **Rich Text**: TipTap (`@tiptap/react`, `@tiptap/starter-kit`) MUST be used for rich text editing.
 
-Future libraries for animation, drag-and-drop, and rich text editing are not yet
-decided. Until a constitution amendment names them, no ad-hoc third-party libraries
-for these purposes MUST be added.
+Future libraries for animation are not yet decided. Until a constitution amendment
+names them, no ad-hoc third-party libraries for motion or animation MUST be added.
 
 ### II. Clean Architecture Boundaries
 
@@ -93,4 +91,4 @@ and production domain deployments.
 - Amendments require documentation, consensus of maintainers, and a semantic version bump.
 - Compliance is reviewed during PRs and release readiness checks.
 
-**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date not provided | **Last Amended**: 2026-03-21
+**Version**: 1.2.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date not provided | **Last Amended**: 2026-03-27

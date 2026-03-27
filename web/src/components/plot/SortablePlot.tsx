@@ -14,6 +14,7 @@ import type {
 } from "../../store/storyStore.types";
 
 export type SortablePlotProps = {
+  storyId: string;
   plot?: Plot;
   plotIndex: number;
   verticalStackSize: number;
@@ -24,6 +25,7 @@ export type SortablePlotProps = {
 };
 
 export const SortablePlot = ({
+  storyId,
   plot,
   verticalStackSize,
   plotIndex,
@@ -64,7 +66,12 @@ export const SortablePlot = ({
         if (card.type === "empty") {
           return (
             <div key={i} className="scene-card empty">
-              <Empty sceneIndex={i} plotIndex={plotIndex} plot={plot} />
+              <Empty
+                storyId={storyId}
+                sceneIndex={i}
+                plotIndex={plotIndex}
+                plot={plot}
+              />
             </div>
           );
         }

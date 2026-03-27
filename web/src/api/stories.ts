@@ -1,15 +1,19 @@
 import { apiClient } from "../lib/apiClient";
 import {
   toApiError,
+  type CreateSceneInput,
   type CreatePlotInput,
   type Plot,
   type PlotResponse,
   type PlotsResponse,
+  type Scene,
+  type SceneResponse,
   type Tag,
   type TagsResponse,
   type Story,
   type StoryResponse,
   type StoriesResponse,
+  type UpdateSceneInput,
   type UpdatePlotInput,
 } from "./types";
 
@@ -97,6 +101,38 @@ export async function updatePlot(
       input,
     );
     return data.plot;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function createScene(
+  storyId: string,
+  plotId: string,
+  input: CreateSceneInput,
+): Promise<Scene> {
+  try {
+    const { data } = await apiClient.post<SceneResponse>(
+      `/stories/${storyId}/plots/${plotId}/scenes`,
+      input,
+    );
+    return data.scene;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updateScene(
+  storyId: string,
+  sceneId: string,
+  input: UpdateSceneInput,
+): Promise<Scene> {
+  try {
+    const { data } = await apiClient.patch<SceneResponse>(
+      `/stories/${storyId}/scenes/${sceneId}`,
+      input,
+    );
+    return data.scene;
   } catch (err) {
     throw toApiError(err);
   }

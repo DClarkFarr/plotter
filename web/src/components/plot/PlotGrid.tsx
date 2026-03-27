@@ -157,6 +157,7 @@ export const PlotGrid = ({
                     data-col={c}
                   >
                     <RenderEmptyCard
+                      storyId={storyId}
                       sceneIndex={getCellRowIndex(r)}
                       plotIndex={getCellColIndex(c)}
                       plot={plot}

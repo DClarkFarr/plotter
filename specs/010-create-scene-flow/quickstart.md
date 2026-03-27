@@ -33,4 +33,4 @@ npm run dev
 5. Edit the title inline and confirm the input styling matches the heading.
 6. Enter formatted description text and confirm it renders correctly.
 7. Click a tag badge, toggle tag checkboxes, and confirm the inline badge list updates.
-8. Add or reorder todo items and confirm checkbox and order updates persist.
+8. Toggle todo checkboxes, then drag items to reorder and confirm the list persists.

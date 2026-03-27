@@ -4,12 +4,6 @@
   /* First column = row headers */
   grid-template-columns: 100px repeat(var(--grid-cols), 350px);
 
-  /* First row = column headers */
-  // grid-template-rows: 100px;
-
-  /* All other rows */
-  // grid-auto-rows: 200px;
-
   .col-header {
     height: 100%;
   }

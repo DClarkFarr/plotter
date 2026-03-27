@@ -1,13 +1,13 @@
 import type { CSSProperties } from "react";
 import type { SceneRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
-import { useSceneStore } from "../../../store/sceneStore";
 import { useSidebarStore } from "../../../store/sidebarStore";
+import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 
-export const SceneCard = ({ plot, scene, storyId }: SceneRendererProps) => {
+export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
-  const sceneStore = useSceneStore();
   const sidebar = useSidebarStore();
+  const sceneEditor = useSceneEditorStore();
   const descriptionText = scene.description
     ? scene.description.replace(/<[^>]*>/g, "").trim()
     : "";
@@ -18,11 +18,7 @@ export const SceneCard = ({ plot, scene, storyId }: SceneRendererProps) => {
   } as CSSProperties;
 
   const handleSelect = () => {
-    sceneStore.setSelectedScene({
-      storyId,
-      sceneId: scene.id,
-      plotId: scene.plotId,
-    });
+    sceneEditor.selectScene(scene);
     sidebar.openSidebar();
   };
 
