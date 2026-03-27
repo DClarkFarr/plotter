@@ -13,6 +13,7 @@ import { useDebounce } from "../../../utils/useDebounce";
 import IconMoveRight from "~icons/mdi/arrow-right-thick";
 import IconMoveLeft from "~icons/mdi/arrow-left-thick";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
+import IconClose from "~icons/mdi/close-thick";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -79,7 +80,19 @@ export const PlotHeader = ({
 
   if (isEditing) {
     return (
-      <div className="plot-header rounded-lg border border-slate-200 bg-white p-6 h-full">
+      <div className="plot-header group rounded-lg border border-slate-200 bg-white p-6 h-full relative z-10">
+        <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
+          <Button
+            color="gray"
+            size="xs"
+            type="button"
+            onClick={() => setIsEditing(false)}
+          >
+            <Tooltip content="Close" className="whitespace-nowrap">
+              <IconClose />
+            </Tooltip>
+          </Button>
+        </ButtonGroup>
         <div className="flex flex-col gap-3">
           <TextInput
             value={draftTitle}
@@ -115,18 +128,6 @@ export const PlotHeader = ({
 
   return (
     <div className="plot-header group relative rounded-lg border border-slate-200 bg-white p-6 h-full">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Plot {plotIndex + 1}
-          </div>
-          <h3 className="mt-2 text-lg font-semibold text-slate-900">
-            {plot.title}
-          </h3>
-          <p className="mt-2 text-sm text-slate-600">{plot.description}</p>
-        </div>
-      </div>
-
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (
           <Button
@@ -168,6 +169,18 @@ export const PlotHeader = ({
           </Tooltip>
         </Button>
       </ButtonGroup>
+
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Plot {plotIndex + 1}
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900">
+            {plot.title}
+          </h3>
+          <p className="mt-2 text-sm text-slate-600">{plot.description}</p>
+        </div>
+      </div>
     </div>
   );
 };
