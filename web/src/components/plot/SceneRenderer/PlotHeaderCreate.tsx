@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, TextInput } from "flowbite-react";
+import { Button, ButtonGroup, TextInput, Tooltip } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useCreatePlotMutation } from "../../../hooks/useStory";
+
+import IconCheckThick from "~icons/mdi/check-thick";
+import IconDotsCircle from "~icons/mdi/dots-circle";
 
 export type PlotHeaderCreateProps = {
   storyId: string;
@@ -22,7 +25,6 @@ export const PlotHeaderCreate = ({
     setTitle(defaultTitle);
   }, [defaultTitle]);
 
-  const isDirty = title.trim() !== defaultTitle.trim();
   const isPending = createMutation.isPending;
 
   const handleCreate = () => {
@@ -41,38 +43,52 @@ export const PlotHeaderCreate = ({
     });
   };
 
-  if (!plot) {
+  if (plot) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 flex flex-col h-full">
-        <div className="">
-          <TextInput
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
-        </div>
-        {error ? <p className="mt-2 text-sm text-rose-600">{error}</p> : null}
-        {createMutation.error ? (
-          <p className="mt-2 text-sm text-rose-600">
-            {createMutation.error.message}
-          </p>
-        ) : null}
-        <div className="flex justify-end mt-auto">
-          <div
-            className={`transition-opacity duration-200 ${
-              isDirty ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-          >
-            <Button onClick={handleCreate} disabled={!isDirty || isPending}>
-              {isPending ? "Creating..." : "Create"}
-            </Button>
-          </div>
-        </div>
+      <div className="text-red-600">
+        this should never happen, plot already exists for this index: {plot.id}
       </div>
     );
   }
+
   return (
-    <div className="bg-slate-300 px-4 py-2">
-      <div className="text-sm text-slate-500">Plot {plotIndex + 1}</div>
+    <div className="rounded-lg border border-slate-200 bg-white p-6 flex flex-col h-full relative group">
+      <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <Button
+          color="gray"
+          size="xs"
+          type="button"
+          onClick={handleCreate}
+          disabled={isPending}
+        >
+          <Tooltip
+            content={isPending ? "Creating..." : "Create"}
+            className="whitespace-nowrap"
+          >
+            {isPending ? (
+              <IconDotsCircle className="animate-spin" />
+            ) : (
+              <IconCheckThick />
+            )}
+          </Tooltip>
+        </Button>
+      </ButtonGroup>
+
+      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        Create Plot {plotIndex + 1}
+      </div>
+      <div className="mt-2">
+        <TextInput
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+        />
+      </div>
+      {error ? <p className="mt-2 text-sm text-rose-600">{error}</p> : null}
+      {createMutation.error ? (
+        <p className="mt-2 text-sm text-rose-600">
+          {createMutation.error.message}
+        </p>
+      ) : null}
     </div>
   );
 };
