@@ -43,7 +43,7 @@ export const PlotHeaderCreate = ({
 
   if (!plot) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 h-[150px] flex flex-col self-stretch">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 flex flex-col h-full">
         <div className="">
           <TextInput
             value={title}

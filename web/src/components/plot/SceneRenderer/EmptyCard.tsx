@@ -4,7 +4,7 @@ import IconPlus from "~icons/mdi/plus";
 export const EmptyCard = ({ isDisabled }: EmptyRendererProps) => {
   return (
     <div
-      className={`card card--empty border border-slate-300 radius-2 bg-white h-[200px] ${
+      className={`card card--empty border border-slate-300 radius-2 bg-white self-stretch ${
         isDisabled ? "opacity-50" : ""
       }`}
     >

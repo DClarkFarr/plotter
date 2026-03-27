@@ -13,7 +13,7 @@ import type {
 import { EmptyCard } from "./SceneRenderer/EmptyCard";
 import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
-import { PlotHeader } from "./PlotHeader";
+import { PlotHeader } from "./SceneRenderer/PlotHeader";
 
 export type PlotGridProps = {
   storyId: string;
@@ -110,7 +110,7 @@ export const PlotGrid = ({
             return (
               <div
                 key={`${r}-${c}`}
-                className="col-header flex items-center justify-center"
+                className="col-header flex items-center justify-center bg-gray-100"
                 data-row={r}
                 data-col={c}
               >
@@ -153,7 +153,9 @@ export const PlotGrid = ({
               </div>
             );
           } else if (cell.type === "plot") {
-            const plot = plots[getCellColIndex(c)];
+            const plot = plots.find(
+              (p) => p.horizontalIndex === getCellColIndex(c),
+            );
             return (
               <div
                 key={`${r}-${c}`}
@@ -187,7 +189,12 @@ export const PlotGrid = ({
 };
 
 const getGridCols = (plots: Plot[]) => {
-  return plots.length + 3;
+  const maxVerticalPosition =
+    plots.reduce((max, plot) => {
+      return Math.max(max, plot.horizontalIndex);
+    }, 0) + 2;
+
+  return maxVerticalPosition;
 };
 
 const getGridRows = (plots: Plot[]) => {
@@ -200,5 +207,5 @@ const getGridRows = (plots: Plot[]) => {
       return Math.max(max, sceneMax);
     }, 0) + 3;
 
-  return maxVerticalPosition + 3;
+  return maxVerticalPosition;
 };

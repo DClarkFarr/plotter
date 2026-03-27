@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button, Textarea, TextInput } from "flowbite-react";
-import type { Plot } from "../../api/types";
-import { useUpdatePlotMutation } from "../../hooks/useStory";
+import type { Plot } from "../../../api/types";
+import { useUpdatePlotMutation } from "../../../hooks/useStory";
+import { useDebounce } from "../../../utils/useDebounce";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -23,15 +24,7 @@ export const PlotHeader = ({
   const [error, setError] = useState<string | null>(null);
   const updateMutation = useUpdatePlotMutation(storyId, plot.id);
 
-  const handleCancel = () => {
-    setError(null);
-    setDraftTitle(plot.title);
-    setDraftDescription(plot.description);
-    setDraftColor(plot.color);
-    setIsEditing(false);
-  };
-
-  const handleSave = () => {
+  const onSaveDebounced = useDebounce(() => {
     const trimmedTitle = draftTitle.trim();
     if (!trimmedTitle) {
       setError("Title is required.");
@@ -44,8 +37,7 @@ export const PlotHeader = ({
       description: draftDescription.trim(),
       color: draftColor,
     });
-    setIsEditing(false);
-  };
+  }, 500);
 
   const handleEdit = () => {
     setError(null);
@@ -59,48 +51,60 @@ export const PlotHeader = ({
   const canMoveRight = plot.horizontalIndex < maxHorizontalIndex;
   const isPending = updateMutation.isPending;
 
+  const onChangeTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDraftTitle(event.target.value);
+    onSaveDebounced();
+  };
+
+  const onChangeDescription = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setDraftDescription(event.target.value);
+    onSaveDebounced();
+  };
+  const onChangeColor = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDraftColor(event.target.value);
+    onSaveDebounced();
+  };
+
   if (isEditing) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="plot-header rounded-lg border border-slate-200 bg-white p-6 h-full">
         <div className="flex flex-col gap-3">
           <TextInput
             value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
+            onChange={onChangeTitle}
             placeholder={`Plot ${plotIndex + 1} title`}
           />
           <Textarea
             value={draftDescription}
-            onChange={(event) => setDraftDescription(event.target.value)}
+            onChange={onChangeDescription}
             rows={4}
             placeholder="Plot description"
           />
-          <input
-            type="color"
-            value={draftColor}
-            onChange={(event) => setDraftColor(event.target.value)}
-            className="h-10 w-20 rounded border border-slate-200"
-          />
+
+          <label className="flex items-center gap-2">
+            <input
+              type="color"
+              value={draftColor}
+              onChange={onChangeColor}
+              className=""
+            />
+            <span>Plot Color</span>
+          </label>
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
           {updateMutation.error ? (
             <p className="text-sm text-rose-600">
               {updateMutation.error.message}
             </p>
           ) : null}
-          <div className="flex items-center gap-2">
-            <Button color="gray" type="button" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleSave} disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
-            </Button>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="group relative rounded-lg border border-slate-200 bg-white p-6">
+    <div className="plot-header group relative rounded-lg border border-slate-200 bg-white p-6 h-full">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-slate-400">

@@ -96,7 +96,11 @@ export const listPlots = async (
     ? { storyId: ensureObjectId(options.storyId, "storyId") }
     : {};
 
-  return collection.find(filter).limit(limit).toArray();
+  return collection
+    .find(filter)
+    .limit(limit)
+    .sort({ horizontalIndex: 1 })
+    .toArray();
 };
 
 export const countPlotsByStoryId = async (
@@ -117,6 +121,7 @@ export const listPlotIdsByStoryId = async (
       { storyId: ensureObjectId(storyId, "storyId") },
       { projection: { _id: 1 } },
     )
+    .sort({ horizontalIndex: 1 })
     .toArray();
 
   return results.map((plot) => plot._id);
@@ -134,7 +139,10 @@ export const listPlotsByIds = async (
     return [];
   }
 
-  return collection.find({ _id: { $in: uniqueIds } }).toArray();
+  return collection
+    .find({ _id: { $in: uniqueIds } })
+    .sort({ horizontalIndex: 1 })
+    .toArray();
 };
 
 export const getPlotById = async (
