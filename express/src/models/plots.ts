@@ -33,21 +33,28 @@ export const ensurePlotIndexes = async (): Promise<void> => {
 };
 
 export const shiftPlotIndices = async (
-  storyId: ObjectId,
-  fromIndex: number,
-  excludeId?: ObjectId,
+  plot: PlotDocument,
+  toIndex: number,
 ): Promise<void> => {
-  const collection = getPlotsCollection();
-  const filter: Record<string, unknown> = {
-    storyId,
-    horizontalIndex: { $gte: fromIndex },
-  };
-
-  if (excludeId) {
-    filter._id = { $ne: excludeId };
+  const fromIndex = plot.horizontalIndex;
+  if (toIndex === fromIndex) {
+    return;
   }
 
-  await collection.updateMany(filter, { $inc: { horizontalIndex: 1 } });
+  const isMovingUp = toIndex > fromIndex;
+  const collection = getPlotsCollection();
+
+  const filter: Record<string, unknown> = {
+    storyId: plot.storyId,
+    horizontalIndex: isMovingUp
+      ? { $gte: fromIndex, $lte: toIndex }
+      : { $lte: fromIndex, $gte: toIndex },
+    _id: { $ne: plot._id },
+  };
+
+  await collection.updateMany(filter, {
+    $inc: { horizontalIndex: isMovingUp ? -1 : 1 },
+  });
 };
 
 export interface CreatePlotInput {

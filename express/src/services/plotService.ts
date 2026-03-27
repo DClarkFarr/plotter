@@ -32,8 +32,6 @@ export const createPlot = async (
     throw new Error("Story not found");
   }
 
-  await shiftPlotIndices(story._id, input.horizontalIndex);
-
   return createPlotModel({
     ...input,
     storyId: story._id,
@@ -57,26 +55,24 @@ export const updatePlotById = async (
     return null;
   }
 
-  let targetStoryId = current.storyId;
   if (updates.storyId !== undefined) {
     const storyId = ensureObjectId(updates.storyId, "storyId");
     const story = await getStoryById(storyId);
     if (!story) {
       throw new Error("Story not found");
     }
-    targetStoryId = story._id;
   }
 
   if (updates.horizontalIndex !== undefined) {
     if (updates.horizontalIndex < 0) {
       throw new Error("horizontalIndex must be >= 0");
     }
-    await shiftPlotIndices(targetStoryId, updates.horizontalIndex, current._id);
+    await shiftPlotIndices(current, updates.horizontalIndex);
   }
 
   return updatePlotByIdModel(id, {
     ...updates,
-    ...(updates.storyId !== undefined && { storyId: targetStoryId }),
+    ...(updates.storyId !== undefined && { storyId: current.storyId }),
   });
 };
 

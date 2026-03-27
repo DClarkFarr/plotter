@@ -173,19 +173,20 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
       ]);
 
       if (previous) {
-        const shifted =
-          input.horizontalIndex === undefined
-            ? previous
-            : shiftPlotsForInsert(previous, input.horizontalIndex, plotId);
+        console.log("todo: handle horizontalIndex changes optimistically");
+        // const shifted =
+        //   input.horizontalIndex === undefined
+        //     ? previous
+        //     : shiftPlotsForInsert(previous, input.horizontalIndex, plotId);
 
-        const optimistic = shifted.map((plot) =>
-          plot.id === plotId ? { ...plot, ...input } : plot,
-        );
+        // const optimistic = shifted.map((plot) =>
+        //   plot.id === plotId ? { ...plot, ...input } : plot,
+        // );
 
-        queryClient.setQueryData<Plot[]>(
-          ["story", storyId, "plots"],
-          sortPlots(optimistic),
-        );
+        // queryClient.setQueryData<Plot[]>(
+        //   ["story", storyId, "plots"],
+        //   sortPlots(optimistic),
+        // );
       }
 
       return { previous };

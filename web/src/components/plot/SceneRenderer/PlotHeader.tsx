@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Button, Textarea, TextInput } from "flowbite-react";
+import {
+  Button,
+  ButtonGroup,
+  Textarea,
+  TextInput,
+  Tooltip,
+} from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useUpdatePlotMutation } from "../../../hooks/useStory";
 import { useDebounce } from "../../../utils/useDebounce";
+
+import IconMoveRight from "~icons/mdi/arrow-right-thick";
+import IconMoveLeft from "~icons/mdi/arrow-left-thick";
+import IconLeadPencil from "~icons/mdi/lead-pencil";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -116,7 +126,8 @@ export const PlotHeader = ({
           <p className="mt-2 text-sm text-slate-600">{plot.description}</p>
         </div>
       </div>
-      <div className="absolute right-4 top-4 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+
+      <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (
           <Button
             color="gray"
@@ -129,7 +140,9 @@ export const PlotHeader = ({
               })
             }
           >
-            Move left
+            <Tooltip content="Move left" className="whitespace-nowrap">
+              <IconMoveLeft />
+            </Tooltip>
           </Button>
         ) : null}
         {canMoveRight ? (
@@ -144,13 +157,17 @@ export const PlotHeader = ({
               })
             }
           >
-            Move right
+            <Tooltip content="Move right" className="whitespace-nowrap">
+              <IconMoveRight />
+            </Tooltip>
           </Button>
         ) : null}
         <Button color="gray" size="xs" type="button" onClick={handleEdit}>
-          Edit
+          <Tooltip content="Edit">
+            <IconLeadPencil />
+          </Tooltip>
         </Button>
-      </div>
+      </ButtonGroup>
     </div>
   );
 };
