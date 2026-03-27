@@ -53,7 +53,7 @@ export function DashboardPage() {
   );
 
   return (
-    <main className="flex h-full flex-col gap-6">
+    <main className="flex h-full flex-col gap-6 p-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">

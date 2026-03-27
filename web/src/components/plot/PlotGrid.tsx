@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Plot } from "../../api/types";
+import type { Plot, Scene } from "../../api/types";
 import type {
   StoryCardDisplay,
   StoryCardSize,
@@ -93,6 +93,26 @@ export const PlotGrid = ({
     return rows;
   }, [plots, gridCols, gridRows]);
 
+  const plotsByRowIndex = useMemo(() => {
+    const map = new Map<number, Plot>();
+    for (const plot of plots) {
+      map.set(plot.horizontalIndex, plot);
+    }
+    return map;
+  }, [plots]);
+
+  const scenesByColIndex = useMemo(() => {
+    const plotMap = new Map<string, Map<number, Scene>>();
+    for (const plot of plots) {
+      const sceneMap = new Map<number, Scene>();
+      for (const scene of plot.scenes) {
+        sceneMap.set(scene.verticalIndex, scene);
+      }
+      plotMap.set(plot.id, sceneMap);
+    }
+    return plotMap;
+  }, [plots]);
+
   return (
     <div
       className="y-scroller overflow-y-auto h-[var(--grid-height)]"
@@ -100,7 +120,7 @@ export const PlotGrid = ({
     >
       <div className="x-scroller h-full overflow-x-auto">
         <div
-          className="grid p-6 plot-grid gap-4 bg-gray-100"
+          className="grid story-grid p-6 plot-grid gap-4 bg-gray-100"
           style={{ "--grid-cols": gridCols }}
         >
           {grid.map((row, r) =>
@@ -128,7 +148,7 @@ export const PlotGrid = ({
                   </div>
                 );
               } else if (cell.type === "empty") {
-                const plot = plots[getCellColIndex(c)];
+                const plot = plotsByRowIndex.get(getCellColIndex(c));
                 return (
                   <div
                     key={`${r}-${c}`}
@@ -145,8 +165,10 @@ export const PlotGrid = ({
                   </div>
                 );
               } else if (cell.type === "scene") {
-                const plot = plots[getCellColIndex(c)];
-                const scene = plot?.scenes[cell.index];
+                const plot = plotsByRowIndex.get(getCellColIndex(c));
+                const scene = scenesByColIndex
+                  .get(plot?.id || "")
+                  ?.get(getCellRowIndex(r));
                 return (
                   <div
                     key={`${r}-${c}`}
@@ -163,9 +185,7 @@ export const PlotGrid = ({
                   </div>
                 );
               } else if (cell.type === "plot") {
-                const plot = plots.find(
-                  (p) => p.horizontalIndex === getCellColIndex(c),
-                );
+                const plot = plotsByRowIndex.get(getCellColIndex(c));
                 return (
                   <div
                     key={`${r}-${c}`}
