@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import {
+  useCreateTagMutation,
   useStoryPlotsQuery,
   useStoryTagsQuery,
   useUpdateSceneMutation,
@@ -10,94 +11,127 @@ import { SceneDescriptionEditor } from "./SceneDescriptionEditor";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
-import type { Scene } from "../../api/types";
 import { useDebounce } from "../../utils/useDebounce";
+import type { SceneTodoItem } from "../../api/types";
 
-export type StoryFormProps = {
-  selectedScene: Scene | null;
-};
-export const StoryForm = ({ selectedScene }: StoryFormProps) => {
+export const StoryForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const updateSceneMutation = useUpdateSceneMutation(storyId);
-  const tagSelections = useSceneEditorStore((state) => state.tagSelections);
-  const isTagModalOpen = useSceneEditorStore((state) => state.isTagModalOpen);
-  const openTagModal = useSceneEditorStore((state) => state.openTagModal);
-  const closeTagModal = useSceneEditorStore((state) => state.closeTagModal);
-  const setTagSelections = useSceneEditorStore(
-    (state) => state.setTagSelections,
-  );
-  const todoDraft = useSceneEditorStore((state) => state.todoDraft);
-  const setTodoDraft = useSceneEditorStore((state) => state.setTodoDraft);
+  const createTagMutation = useCreateTagMutation(storyId);
+  const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
+  const selectedPlotId = useSceneEditorStore((state) => state.selectedPlotId);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
 
+  const selectedPlot = useMemo(() => {
+    if (!selectedPlotId) {
+      return null;
+    }
+    return plots.find((plot) => plot.id === selectedPlotId) ?? null;
+  }, [plots, selectedPlotId]);
+
+  const selectedScene = useMemo(() => {
+    if (!selectedSceneId) {
+      return null;
+    }
+
+    if (selectedPlot) {
+      return (
+        selectedPlot.scenes.find((scene) => scene.id === selectedSceneId) ??
+        null
+      );
+    }
+
+    for (const plot of plots) {
+      const match = plot.scenes.find((scene) => scene.id === selectedSceneId);
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  }, [plots, selectedPlot, selectedSceneId]);
+
+  const [draftTitle, setDraftTitle] = useState(selectedScene?.title ?? "");
   const [descriptionHtml, setDescriptionHtml] = useState(
     selectedScene?.description ?? "",
   );
 
-  const scenePlot = useMemo(() => {
-    if (!selectedScene) return null;
-    return plots.find((plot) =>
-      plot.scenes.some((scene) => scene.id === selectedScene.id),
-    );
-  }, [selectedScene, plots]);
-
-  const [draftTitle, setDraftTitle] = useState(selectedScene?.title ?? "");
-
-  const handleTitleBlur = () => {
-    const nextTitle = draftTitle.trim();
-    if (!nextTitle || nextTitle === selectedScene?.title) {
-      setDraftTitle(selectedScene?.title ?? "");
+  const debouncedTitleUpdate = useDebounce((value: string) => {
+    if (!selectedScene) {
       return;
     }
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === selectedScene.title) {
+      return;
+    }
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, title: trimmed });
+  }, 300);
 
+  const debouncedDescriptionUpdate = useDebounce((value: string) => {
+    if (!selectedScene) {
+      return;
+    }
+    if (value === selectedScene.description) {
+      return;
+    }
     updateSceneMutation.mutate({
-      sceneId: selectedScene?.id ?? "",
-      title: nextTitle,
+      sceneId: selectedScene.id,
+      description: value,
     });
+  }, 300);
+
+  const handleTitleChange = (value: string) => {
+    setDraftTitle(value);
+    debouncedTitleUpdate(value);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescriptionHtml(value);
+    debouncedDescriptionUpdate(value);
   };
 
   const handleToggleTag = (tagId: string) => {
-    const next = tagSelections.includes(tagId)
-      ? tagSelections.filter((id) => id !== tagId)
-      : [...tagSelections, tagId];
+    if (!selectedScene) {
+      return;
+    }
+    const selectedTagIds = selectedScene.tags ?? [];
+    const next = selectedTagIds.includes(tagId)
+      ? selectedTagIds.filter((id) => id !== tagId)
+      : [...selectedTagIds, tagId];
 
-    setTagSelections(next);
-    updateSceneMutation.mutate({
-      sceneId: selectedScene?.id ?? "",
-      tags: next,
-    });
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, tags: next });
+  };
+
+  const handleCreateTag = (name: string, color: string) => {
+    createTagMutation.mutate({ name, color });
   };
 
   const handleToggleTodo = (index: number) => {
-    const next = todoDraft.map((item, idx) =>
+    if (!selectedScene) {
+      return;
+    }
+    const next = selectedScene.todo.map((item, idx) =>
       idx === index ? { ...item, isDone: !item.isDone } : item,
     );
-    setTodoDraft(next);
-    updateSceneMutation.mutate({
-      sceneId: selectedScene?.id ?? "",
-      todo: next,
-    });
+
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
-  const handleReorderTodo = (next: typeof todoDraft) => {
-    setTodoDraft(next);
-    updateSceneMutation.mutate({
-      sceneId: selectedScene?.id ?? "",
-      todo: next,
-    });
+  const handleReorderTodo = (next: SceneTodoItem[]) => {
+    if (!selectedScene) {
+      return;
+    }
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
-  const updateDescriptionDebounced = useDebounce((html: string) => {
-    updateSceneMutation.mutate({
-      sceneId: selectedScene?.id ?? "",
-      description: html,
-    });
-  }, 200);
-
-  const onChangeDescription = (html: string) => {
-    setDescriptionHtml(html);
-    updateDescriptionDebounced(html);
+  const handleAddTodo = (text: string) => {
+    if (!selectedScene) {
+      return;
+    }
+    const next = [...selectedScene.todo, { text, isDone: false }];
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
   if (isLoading) {
@@ -120,12 +154,11 @@ export const StoryForm = ({ selectedScene }: StoryFormProps) => {
         </p>
         <input
           value={draftTitle}
-          onChange={(event) => setDraftTitle(event.target.value)}
-          onBlur={handleTitleBlur}
+          onChange={(event) => handleTitleChange(event.target.value)}
           className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
         />
         <p className="text-sm text-slate-500">
-          Plot: {scenePlot?.title || "Untitled Plot"}
+          Plot: {selectedPlot?.title || "Untitled Plot"}
         </p>
       </div>
       <div>
@@ -134,7 +167,7 @@ export const StoryForm = ({ selectedScene }: StoryFormProps) => {
         </p>
         <SceneDescriptionEditor
           value={descriptionHtml}
-          onCommit={onChangeDescription}
+          onCommit={handleDescriptionChange}
         />
       </div>
       <div>
@@ -143,25 +176,28 @@ export const StoryForm = ({ selectedScene }: StoryFormProps) => {
         </p>
         <SceneTags
           tags={tags}
-          selectedTagIds={tagSelections}
-          onOpen={openTagModal}
+          selectedTagIds={selectedScene.tags}
+          onOpen={() => setIsTagModalOpen(true)}
         />
       </div>
       <SceneTagsModal
         isOpen={isTagModalOpen}
         tags={tags}
-        selectedTagIds={tagSelections}
-        onClose={closeTagModal}
+        selectedTagIds={selectedScene.tags}
+        onClose={() => setIsTagModalOpen(false)}
         onToggle={handleToggleTag}
+        onCreateTag={handleCreateTag}
+        isCreating={createTagMutation.isPending}
       />
       <div>
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
           Todo List
         </p>
         <SceneTodoList
-          items={todoDraft}
+          items={selectedScene.todo}
           onToggle={handleToggleTodo}
           onReorder={handleReorderTodo}
+          onAdd={handleAddTodo}
         />
       </div>
       {updateSceneMutation.error ? (

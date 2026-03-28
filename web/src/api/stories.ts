@@ -2,6 +2,7 @@ import { apiClient } from "../lib/apiClient";
 import {
   toApiError,
   type CreateSceneInput,
+  type CreateTagInput,
   type CreatePlotInput,
   type Plot,
   type PlotResponse,
@@ -9,6 +10,7 @@ import {
   type Scene,
   type SceneResponse,
   type Tag,
+  type TagResponse,
   type TagsResponse,
   type Story,
   type StoryResponse,
@@ -59,6 +61,21 @@ export async function listStoryTags(storyId: string): Promise<Tag[]> {
       `/stories/${storyId}/tags`,
     );
     return data.tags;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function createTag(
+  storyId: string,
+  input: CreateTagInput,
+): Promise<Tag> {
+  try {
+    const { data } = await apiClient.post<TagResponse>(
+      `/stories/${storyId}/tags`,
+      input,
+    );
+    return data.tag;
   } catch (err) {
     throw toApiError(err);
   }

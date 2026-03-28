@@ -7,7 +7,7 @@
 
 ## Summary
 
-Deliver a create-scene flow from empty plot cells that creates a scene with a default title, selects it, and opens the sidebar editor. The editor uses in-place inputs for title/description, supports rich text content, offers tag selection via a modal, and manages a sortable todo checklist. Backend support adds scene endpoints and service/model helpers aligned with existing story and plot patterns.
+Deliver a create-scene flow from empty plot cells that creates a scene with a default title, selects it, and opens the sidebar editor. The editor uses in-place inputs for title/description with debounced saves, supports rich text content, offers tag selection and tag creation via a modal, and manages a sortable todo checklist with an add-item input. Backend support adds scene endpoints and service/model helpers aligned with existing story and plot patterns.
 
 ## Technical Context
 
@@ -33,7 +33,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - Routes use Express router; services compose workflow; models own MongoDB queries.
 - Input validation and error handling follow security-first requirements.
 - Performance and environment base URL requirements addressed.
-- **Pending amendment**: Rich text editor and drag-and-drop libraries must be added to the constitution before implementation.
+- Rich text and drag-and-drop libraries are approved in the constitution.
 
 ## Project Structure
 
@@ -99,4 +99,4 @@ Reference: [specs/010-create-scene-flow/research.md](specs/010-create-scene-flow
 - Routes use Express router; services compose workflow; models own MongoDB queries.
 - Input validation and error handling follow security-first requirements.
 - Performance and environment base URL requirements addressed.
-- **Action required**: Amend constitution to add dnd-kit and TipTap before implementation.
+- Constitution amendments for dnd-kit and TipTap completed.

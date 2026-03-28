@@ -37,6 +37,7 @@ As a user editing a scene, I want the fields to look like the display view so I 
 
 1. **Given** the sidebar editor is open, **When** I focus the title field, **Then** it visually matches the heading style with no visible border and only a subtle hover or focus background.
 2. **Given** the description field, **When** I add formatted text (bold, italics, lists, links), **Then** the formatting is retained in display and edit modes.
+3. **Given** I am editing title or description, **When** I pause after typing, **Then** changes are saved without needing an explicit submit action.
 
 ---
 
@@ -53,6 +54,7 @@ As a user assigning tags to a scene, I want to see selected tags inline and mana
 1. **Given** a scene with selected tags, **When** I click a tag badge, **Then** a modal opens showing selected tags at the top and all available tags with checkboxes.
 2. **Given** the modal is open, **When** I check or uncheck a tag, **Then** the selection updates immediately and the inline badge list reflects the change.
 3. **Given** the modal is open, **When** I close it without toggling anything, **Then** no tag state changes occur.
+4. **Given** the modal is open, **When** I enter a new tag name and choose a color, **Then** the new tag is added to the tag list and can be selected.
 
 ---
 
@@ -68,6 +70,7 @@ As a user tracking tasks in a scene, I want a checklist I can reorder so I can o
 
 1. **Given** a todo list, **When** I check an item, **Then** it appears crossed out and muted; when I uncheck it, the normal style returns.
 2. **Given** multiple todo items, **When** I drag an item to a new position, **Then** the list order updates and persists.
+3. **Given** the todo list editor, **When** I add a new item via the input group, **Then** the item appears in the list and can be reordered.
 
 ### Edge Cases
 
@@ -87,13 +90,17 @@ As a user tracking tasks in a scene, I want a checklist I can reorder so I can o
 - **FR-003**: System MUST select the newly created scene and open the sidebar editor immediately after creation.
 - **FR-004**: System MUST present the title field as an in-place editable heading with no visible border and only subtle hover or focus styling.
 - **FR-005**: System MUST provide rich text editing for the scene description with common formatting options (bold, italics, lists, links).
+- **FR-005a**: System MUST debounce updates for title and description to avoid saving on every keystroke.
 - **FR-006**: System MUST display selected tags as an inline list of badges with small spacing.
 - **FR-007**: System MUST open a tag selection modal when a tag badge is clicked, showing selected tags at the top and all available tags with checkboxes.
 - **FR-008**: System MUST apply tag selection changes immediately when a checkbox is toggled.
 - **FR-009**: System MUST leave tag selections unchanged when the modal is closed without toggling any tag.
+- **FR-009a**: System MUST provide a tag creation input group with a color picker and submit action in the tag modal.
 - **FR-010**: System MUST display todo items as a vertical checklist with checkbox state reflected by crossed-out, muted styling.
 - **FR-011**: System MUST allow users to reorder todo items via drag and drop and persist the updated order.
 - **FR-012**: System MUST persist scene edits to title, description, tags, todos, and ordering changes.
+- **FR-012a**: System MUST provide a todo input group with an add button to create new items.
+- **FR-013**: System MUST show a skeleton loading state in the sidebar before scene data is available.
 
 ### Key Entities _(include if feature involves data)_
 
@@ -101,7 +108,7 @@ As a user tracking tasks in a scene, I want a checklist I can reorder so I can o
 - **Plot**: The parent grouping that provides the plot name and row context for default titles.
 - **Tag**: A label available to scenes within the story.
 - **Todo Item**: A checklist entry with text, completion state, and order.
-- **Sidebar Editor State**: The selected scene and the editor visibility state.
+- **Sidebar Editor State**: The selected scene and saving state used to drive UI feedback.
 
 ### Assumptions
 
@@ -109,6 +116,7 @@ As a user tracking tasks in a scene, I want a checklist I can reorder so I can o
 - If a plot name is missing, the default title uses "Untitled Plot".
 - Users creating scenes already have access permissions to edit the story and plot.
 - The tag catalog for a story already exists and can be listed for selection.
+- New tags created from the modal are scoped to the current story.
 - The sidebar editor is available and can be opened programmatically.
 
 ## Success Criteria _(mandatory)_

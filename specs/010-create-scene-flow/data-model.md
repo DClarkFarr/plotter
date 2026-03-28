@@ -37,16 +37,12 @@
 ## Scene Editor UI State (Zustand)
 
 - **selectedSceneId**: string | null
-- **isSidebarOpen**: boolean
-- **isTagModalOpen**: boolean
-- **tagSelections**: string[]
-- **todoDraft**: { text: string; isDone: boolean }[]
+- **selectedPlotId**: string | null
 - **isSaving**: boolean
-- **error**: string | null
 
 ## Validation Rules
 
 - `verticalIndex` is a non-negative integer.
 - `title` is required when creating or saving a scene.
-- `todoDraft` preserves item order as displayed.
-- `tagSelections` must contain tag IDs that belong to the story.
+- Todo item order preserves the displayed list order.
+- Tag selection must contain tag IDs that belong to the story.

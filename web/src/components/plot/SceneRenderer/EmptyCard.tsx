@@ -41,7 +41,7 @@ export const EmptyCard = ({
     });
 
     if (scene?.id) {
-      selectScene(scene);
+      selectScene(scene.id, scene.plotId);
     }
   };
 

@@ -32,5 +32,7 @@ npm run dev
 4. Verify the sidebar opens and the new scene is selected for editing.
 5. Edit the title inline and confirm the input styling matches the heading.
 6. Enter formatted description text and confirm it renders correctly.
-7. Click a tag badge, toggle tag checkboxes, and confirm the inline badge list updates.
-8. Toggle todo checkboxes, then drag items to reorder and confirm the list persists.
+7. Click a tag badge, add a new tag with name and color, and confirm it appears in the list.
+8. Toggle tag checkboxes and confirm the inline badge list updates.
+9. Add a new todo item using the input group, then toggle and reorder items.
+10. Reload the page and confirm the story form shows loading skeletons before data appears.

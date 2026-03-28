@@ -18,3 +18,13 @@
    - **Decision**: Use "Scene {row number} in {plot name}" with row number derived as `verticalIndex + 1` and fallback plot name "Untitled Plot".
    - **Rationale**: Matches user-facing expectations for 1-based numbering and handles missing plot titles.
    - **Alternatives considered**: Zero-based numbering (rejected as user-unfriendly).
+
+4. **Editor state ownership**
+   - **Decision**: Store only `selectedSceneId`, `selectedPlotId`, and `isSaving` in the scene editor store; derive everything else from queries and props.
+   - **Rationale**: Keeps state single-sourced in TanStack Query and avoids duplicate caches.
+   - **Alternatives considered**: Store tag selections and todo drafts in Zustand (rejected for state drift risk).
+
+5. **Debounced updates for text inputs**
+   - **Decision**: Debounce title and description updates to avoid mutation spam.
+   - **Rationale**: Better UX and fewer network calls while preserving autosave behavior.
+   - **Alternatives considered**: Save on blur only (rejected for less continuous autosave behavior).

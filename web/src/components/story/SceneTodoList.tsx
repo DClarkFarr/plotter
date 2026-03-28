@@ -13,11 +13,13 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { SceneTodoItem } from "../../api/types";
+import { useState } from "react";
 
 export type SceneTodoListProps = {
   items: SceneTodoItem[];
   onToggle: (index: number) => void;
   onReorder: (items: SceneTodoItem[]) => void;
+  onAdd: (text: string) => void;
 };
 
 type TodoRowProps = {
@@ -72,11 +74,22 @@ export const SceneTodoList = ({
   items,
   onToggle,
   onReorder,
+  onAdd,
 }: SceneTodoListProps) => {
+  const [newItem, setNewItem] = useState("");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
   const ids = items.map((_, index) => `todo-${index}`);
+
+  const handleAdd = () => {
+    const trimmed = newItem.trim();
+    if (!trimmed) {
+      return;
+    }
+    onAdd(trimmed);
+    setNewItem("");
+  };
 
   return (
     <DndContext
@@ -109,6 +122,21 @@ export const SceneTodoList = ({
           ))}
         </div>
       </SortableContext>
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          value={newItem}
+          onChange={(event) => setNewItem(event.target.value)}
+          placeholder="Add todo item"
+          className="flex-1 rounded-lg border bg-slate-100 border-slate-200 hover:bg-slate-200 focus:bg-slate-200 hover:border-slate-300 focus:border-slate-300 px-3 py-2 text-sm"
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
+        >
+          Add
+        </button>
+      </div>
     </DndContext>
   );
 };

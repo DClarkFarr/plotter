@@ -34,6 +34,11 @@ export interface Tag {
   storyId: string;
 }
 
+export interface CreateTagInput {
+  name: string;
+  color: string;
+}
+
 export interface SceneTodoItem {
   text: string;
   isDone: boolean;
@@ -108,6 +113,10 @@ export interface StoriesResponse {
 
 export interface TagsResponse {
   tags: Tag[];
+}
+
+export interface TagResponse {
+  tag: Tag;
 }
 
 export interface PlotsResponse {

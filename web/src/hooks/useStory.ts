@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createTag,
   createScene,
   createPlot,
   getStory,
@@ -12,13 +13,16 @@ import {
 } from "../api/stories";
 import type {
   CreateSceneInput,
+  CreateTagInput,
   CreatePlotInput,
   Plot,
   Scene,
   Story,
+  Tag,
   UpdateSceneInput,
   UpdatePlotInput,
 } from "../api/types";
+import { useSceneEditorStore } from "../store/sceneEditorStore";
 
 const sortPlots = (plots: Plot[]) =>
   [...plots].sort((a, b) => a.horizontalIndex - b.horizontalIndex);
@@ -284,6 +288,7 @@ export function useCreateSceneMutation(storyId: string) {
     mutationFn: (input: CreateScenePayload) =>
       createScene(storyId, input.plotId, input),
     onMutate: async (input) => {
+      useSceneEditorStore.getState().setSaving(true);
       await queryClient.cancelQueries({
         queryKey: ["story", storyId, "plots"],
       });
@@ -359,6 +364,9 @@ export function useCreateSceneMutation(storyId: string) {
         },
       );
     },
+    onSettled: () => {
+      useSceneEditorStore.getState().setSaving(false);
+    },
   });
 }
 
@@ -373,6 +381,7 @@ export function useUpdateSceneMutation(storyId: string) {
     mutationFn: (input: UpdateScenePayload) =>
       updateScene(storyId, input.sceneId, input),
     onMutate: async (input) => {
+      useSceneEditorStore.getState().setSaving(true);
       await queryClient.cancelQueries({
         queryKey: ["story", storyId, "plots"],
       });
@@ -440,6 +449,68 @@ export function useUpdateSceneMutation(storyId: string) {
           });
         },
       );
+    },
+    onSettled: () => {
+      useSceneEditorStore.getState().setSaving(false);
+    },
+  });
+}
+
+export function useCreateTagMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateTagInput) => createTag(storyId, input),
+    onMutate: async (input) => {
+      useSceneEditorStore.getState().setSaving(true);
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "tags"],
+      });
+      const previous = queryClient.getQueryData<Tag[]>([
+        "story",
+        storyId,
+        "tags",
+      ]);
+
+      const tempId = `temp-${Date.now()}`;
+      if (previous) {
+        const optimistic: Tag = {
+          id: tempId,
+          name: input.name,
+          color: input.color,
+          variant: false,
+          variants: [],
+          storyId,
+        };
+
+        queryClient.setQueryData<Tag[]>(
+          ["story", storyId, "tags"],
+          [...previous, optimistic],
+        );
+      }
+
+      return { previous, tempId };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["story", storyId, "tags"], context.previous);
+      }
+    },
+    onSuccess: (tag, _input, context) => {
+      queryClient.setQueryData<Tag[]>(["story", storyId, "tags"], (current) => {
+        if (!current) {
+          return [tag];
+        }
+
+        const replaced = current.map((entry) =>
+          entry.id === context?.tempId ? tag : entry,
+        );
+        const hasTag = replaced.some((entry) => entry.id === tag.id);
+        return hasTag ? replaced : [...replaced, tag];
+      });
+    },
+    onSettled: () => {
+      useSceneEditorStore.getState().setSaving(false);
     },
   });
 }

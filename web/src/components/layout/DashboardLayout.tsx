@@ -10,7 +10,7 @@ import { useSceneEditorStore } from "../../store/sceneEditorStore";
 export function DashboardLayout() {
   useAuthRedirect();
   const sidebar = useSidebarStore();
-  const selectedScene = useSceneEditorStore((state) => state.selectedScene);
+  const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
 
   return (
     <div className="x-scroller w-screen overflow-x-hidden relative">
@@ -26,11 +26,7 @@ export function DashboardLayout() {
         </div>
       </div>
       <DashboardSidebar isOpen={sidebar.isOpen}>
-        {selectedScene ? (
-          <StoryForm selectedScene={selectedScene} key={selectedScene.id} />
-        ) : (
-          <StoryFormLoading />
-        )}
+        {selectedSceneId ? <StoryForm /> : <StoryFormLoading />}
       </DashboardSidebar>
     </div>
   );

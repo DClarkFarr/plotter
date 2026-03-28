@@ -111,6 +111,23 @@
 
 ---
 
+## Phase 8: Follow-up Changes (Requested)
+
+**Purpose**: Align implementation with updated UX and state management direction.
+
+- [x] T028 [P] Replace StoryFormLoading placeholder with skeleton UI in web/src/components/story/StoryFormLoading.tsx
+- [x] T029 [P] Add tag creation input group (name input, color picker, submit button right-aligned) in web/src/components/story/SceneTagsModal.tsx
+- [x] T030 [P] Add todo add-item input group in web/src/components/story/SceneTodoList.tsx
+- [x] T031 Refactor scene editor store to only hold `selectedSceneId`, `selectedPlotId`, and `isSaving` in web/src/store/sceneEditorStore.ts
+- [x] T032 Update sidebar/selection flow to resolve selected scene from queries instead of store state in web/src/components/layout/DashboardLayout.tsx and web/src/components/story/StoryForm.tsx
+- [x] T033 Update StoryForm inputs to use internal draft state + debounced mutations (no props->state syncing) in web/src/components/story/StoryForm.tsx
+- [x] T034 [P] Add tag creation endpoint and API client in express/src/routers/storyRouter.ts and web/src/api/stories.ts
+- [x] T035 [P] Add tag creation mutation in web/src/hooks/useStory.ts
+
+**Checkpoint**: Updated UX and state-management changes validated against quickstart
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

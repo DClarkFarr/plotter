@@ -9,6 +9,7 @@ import {
   listStoryTagsForUser,
   updateStoryById,
 } from "../services/storyService";
+import { createTag } from "../services/tagService";
 import {
   createPlot,
   getPlotForStory,
@@ -197,6 +198,29 @@ const applyStoryRoutes = () => {
       const tags = await listStoryTagsForUser(storyId, userId);
 
       res.status(200).json({ tags: tags.map((tag) => toTagResponse(tag)) });
+    }),
+  );
+
+  storyRouter.post(
+    "/:storyId/tags",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+
+      await getStoryForUser(storyId, userId);
+
+      const name = requireString(req.body?.name, "name");
+      const color = requireString(req.body?.color, "color");
+
+      const tag = await createTag({
+        name,
+        color,
+        variant: false,
+        variants: [],
+        storyId,
+      });
+
+      res.status(201).json({ tag: toTagResponse(tag) });
     }),
   );
 

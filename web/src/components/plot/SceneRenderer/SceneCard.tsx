@@ -1,8 +1,8 @@
 import { useMemo, type CSSProperties } from "react";
 import type { SceneRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
-import { useSidebarStore } from "../../../store/sidebarStore";
 import { useSceneEditorStore } from "../../../store/sceneEditorStore";
+import { useSidebarStore } from "../../../store/sidebarStore";
 
 function stripTagsButLeaveText(html: string) {
   const tempDiv = document.createElement("div");
@@ -11,8 +11,8 @@ function stripTagsButLeaveText(html: string) {
 }
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
-  const sidebar = useSidebarStore();
   const selectScene = useSceneEditorStore((s) => s.selectScene);
+  const openSidebar = useSidebarStore((s) => s.openSidebar);
   const descriptionText = useMemo(() => {
     return stripTagsButLeaveText(scene.description || "");
   }, [scene.description]);
@@ -24,8 +24,8 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   } as CSSProperties;
 
   const handleSelect = () => {
-    selectScene(scene);
-    sidebar.openSidebar();
+    selectScene(scene.id, plot.id);
+    openSidebar();
   };
 
   return (
