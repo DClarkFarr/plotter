@@ -25,14 +25,14 @@ export function DashboardTopbar() {
   return (
     <Navbar
       fluid
-      className="border-b border-slate-200 bg-white/90 backdrop-blur z-[100] sticky top-0"
+      className="border-b border-slate-200 bg-white/90 backdrop-blur z-[100] sticky top-0 justify-start"
     >
       <NavbarBrand as="span">
         <Link to="/dashboard" className="text-lg font-semibold text-slate-900">
           plotter
         </Link>
       </NavbarBrand>
-      <div id="dashboard-topbar"></div>
+      <div id="dashboard-topbar" className="mr-auto ml-8"></div>
       <div className="flex items-center gap-3">
         <Dropdown
           inline

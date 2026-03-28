@@ -90,7 +90,7 @@ export const DashboardSidebarBody = ({
       }}
     >
       {(isOpen || showOpenButton) && (
-        <div className="right-arrow absolute top-[100px] z-200 left-[-40px]">
+        <div className="right-arrow absolute top-[61px] z-200 left-[-40px]">
           <button
             className="p-2 bg-slate-500 text-white border border-slate-600 flex items-center justify-center h-10"
             onClick={onClickToggle}

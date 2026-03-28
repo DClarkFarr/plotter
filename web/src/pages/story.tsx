@@ -8,8 +8,12 @@ import {
 } from "../hooks/useStory";
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
-import IconLabelMultiple from "~icons/mdi/label-multiple";
 import { PlotGrid } from "../components/plot/PlotGrid";
+
+import IconViewGrid from "~icons/mdi/view-grid";
+import IconMenu from "~icons/mdi/menu";
+import IconFilter from "~icons/mdi/filter";
+import { Tooltip } from "flowbite-react";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -54,58 +58,67 @@ export function StoryPage() {
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               View
             </span>
-            <button
-              type="button"
-              onClick={() => setCardDisplay("grid")}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                cardDisplay === "grid"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              Grid
-            </button>
-            <button
-              type="button"
-              onClick={() => setCardDisplay("list")}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                cardDisplay === "list"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              List
-            </button>
+
+            <div className="button-group">
+              <Tooltip content="Grid view">
+                <button
+                  type="button"
+                  onClick={() => setCardDisplay("grid")}
+                  className={`button px-3 py-1 text-xs font-semibold ${
+                    cardDisplay === "grid"
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  <IconViewGrid className="text-sm" />
+                </button>
+              </Tooltip>
+              <Tooltip content="List view">
+                <button
+                  type="button"
+                  onClick={() => setCardDisplay("list")}
+                  className={`button px-3 py-1 text-xs font-semibold ${
+                    cardDisplay === "list"
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  <IconMenu className="text-sm" />
+                </button>
+              </Tooltip>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Card Size
             </span>
-            {(["sm", "md", "lg"] as const).map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => setCardSize(size)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  cardSize === size
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {size.toUpperCase()}
-              </button>
-            ))}
+            <div className="button-group">
+              {(["sm", "md", "lg"] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setCardSize(size)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    cardSize === size
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {size.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Tags
+              Filters
             </span>
             <button
               type="button"
               className={`rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600`}
             >
-              <IconLabelMultiple className="text-lg text-slate-600" />
+              <IconFilter className="text-base text-slate-600" />
             </button>
           </div>
         </div>
