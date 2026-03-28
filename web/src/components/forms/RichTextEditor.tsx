@@ -5,7 +5,6 @@ import {
   useEditorState,
   type EditorStateSnapshot,
 } from "@tiptap/react";
-import { TextStyleKit } from "@tiptap/extension-text-style";
 import StarterKit from "@tiptap/starter-kit";
 import { Button, ButtonGroup, Tooltip } from "flowbite-react";
 
@@ -36,7 +35,7 @@ export const RichTextEditor = ({
   isSimpleMode = false,
 }: RichTextEditorProps) => {
   const editor = useEditor({
-    extensions: [TextStyleKit, StarterKit],
+    extensions: [StarterKit],
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
