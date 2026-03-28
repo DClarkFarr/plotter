@@ -10,7 +10,14 @@ export const useGridSizes = ({ cardSize }: UseGridSizesProps) => {
     lg: 500,
   };
 
+  const paddingMap: Record<StoryCardSize, number> = {
+    sm: 12,
+    md: 24,
+    lg: 24,
+  };
+
   return {
     width: cardSizeMap[cardSize],
+    padding: paddingMap[cardSize],
   };
 };

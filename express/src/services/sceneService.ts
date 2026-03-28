@@ -9,6 +9,7 @@ import {
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
 } from "../models/scenes";
+import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
@@ -43,6 +44,20 @@ const assertTagsBelongToStory = async (
   }
 };
 
+const assertPovBelongsToStory = async (
+  storyId: ObjectId,
+  povId: string | ObjectId,
+): Promise<void> => {
+  const character = await getCharacterById(povId);
+  if (!character) {
+    throw new Error("POV character not found");
+  }
+
+  if (character.storyId.toHexString() !== storyId.toHexString()) {
+    throw new Error("POV character must belong to the same story");
+  }
+};
+
 export const getSceneForStory = async (
   storyId: string | ObjectId,
   sceneId: string | ObjectId,
@@ -64,6 +79,9 @@ export const createScene = async (
   );
 
   await assertTagsBelongToStory(plot.storyId, tagIds);
+  if (input.pov) {
+    await assertPovBelongsToStory(plot.storyId, input.pov);
+  }
   await shiftSceneIndices(plot._id, input.verticalIndex);
 
   return createSceneModel({
@@ -109,6 +127,10 @@ export const updateSceneById = async (
     await shiftSceneIndices(plot._id, updates.verticalIndex, current._id);
   }
 
+  if (updates.pov !== undefined && updates.pov !== null) {
+    await assertPovBelongsToStory(plot.storyId, updates.pov);
+  }
+
   let tagIds: ObjectId[] | undefined;
   if (updates.tags) {
     tagIds = updates.tags.map((tagId) => ensureObjectId(tagId, "tagId"));
@@ -144,6 +166,10 @@ export const updateSceneForStory = async (
       throw new Error("verticalIndex must be >= 0");
     }
     await shiftSceneIndices(plot._id, updates.verticalIndex, current._id);
+  }
+
+  if (updates.pov !== undefined && updates.pov !== null) {
+    await assertPovBelongsToStory(plot.storyId, updates.pov);
   }
 
   let tagIds: ObjectId[] | undefined;

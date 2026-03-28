@@ -14,7 +14,7 @@ import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import IconMoveRight from "~icons/mdi/arrow-right-thick";
 import IconMoveLeft from "~icons/mdi/arrow-left-thick";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
-import IconClose from "~icons/mdi/close-thick";
+import IconCheckThick from "~icons/mdi/check-thick";
 import { useClickOutside } from "../../../hooks/useClickOutside";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
@@ -41,13 +41,14 @@ export const PlotHeader = ({
   const theme = usePlotTheme(plot.color);
 
   const cardSize = useStoryStore((s) => s.cardSize);
-  const { width } = useGridSizes({ cardSize });
+  const { width, padding } = useGridSizes({ cardSize });
 
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
     "--column-width": `${width}px`,
+    "--card-padding": `${padding}px`,
   };
 
   const onClickOutside = useCallback(() => {
@@ -106,17 +107,21 @@ export const PlotHeader = ({
       <div
         ref={containerRef}
         style={themeStyles}
-        className="plot-header group w-[var(--column-width)] rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full relative z-10 text-[var(--plot-text)] transition-colors duration-300"
+        className="plot-header group w-[var(--column-width)] rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-[var(--card-padding)] h-full relative z-10 text-[var(--plot-text)] transition-colors duration-300"
       >
         <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
           <Button
-            color="gray"
+            color="green"
             size="xs"
             type="button"
             onClick={() => setIsEditing(false)}
           >
-            <Tooltip content="Close" className="whitespace-nowrap">
-              <IconClose />
+            <Tooltip
+              content="Save & Close"
+              className="whitespace-nowrap"
+              placement="left"
+            >
+              <IconCheckThick />
             </Tooltip>
           </Button>
         </ButtonGroup>
@@ -156,7 +161,7 @@ export const PlotHeader = ({
   return (
     <div
       style={themeStyles}
-      className="plot-header w-[var(--column-width)] group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full text-[var(--plot-text)] transition-colors duration-300"
+      className="plot-header w-[var(--column-width)] group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-[var(--card-padding)] h-full text-[var(--plot-text)] transition-colors duration-300"
     >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (

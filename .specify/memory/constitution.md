@@ -82,6 +82,7 @@ and production domain deployments.
 - All generated commit messages MUST follow Conventional Commits format.
 - Before writing code, ask clarifying questions for any spec ambiguity.
 - spec.md must remain technology-agnostic; technical details belong in plan.md.
+- When `exactOptionalPropertyTypes` is enabled, build request/update payloads by conditionally assigning optional fields and avoid passing `undefined` values.
 
 ## Governance
 

@@ -34,6 +34,20 @@ export interface Tag {
   storyId: string;
 }
 
+export interface Character {
+  id: string;
+  storyId: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+}
+
+export interface CreateCharacterInput {
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+}
+
 export interface CreateTagInput {
   name: string;
   color: string;
@@ -53,6 +67,7 @@ export interface Scene {
   todo: SceneTodoItem[];
   scene: string | null;
   verticalIndex: number;
+  pov: string | null;
 }
 
 export interface Plot {
@@ -86,6 +101,7 @@ export interface CreateSceneInput {
   tags?: string[];
   todo?: SceneTodoItem[];
   verticalIndex: number;
+  pov?: string | null;
 }
 
 export interface UpdateSceneInput {
@@ -95,6 +111,7 @@ export interface UpdateSceneInput {
   tags?: string[];
   todo?: SceneTodoItem[];
   verticalIndex?: number;
+  pov?: string | null;
 }
 
 // ─── Response Envelopes ───────────────────────────────────────────────────────
@@ -113,6 +130,14 @@ export interface StoriesResponse {
 
 export interface TagsResponse {
   tags: Tag[];
+}
+
+export interface CharactersResponse {
+  characters: Character[];
+}
+
+export interface CharacterResponse {
+  character: Character;
 }
 
 export interface TagResponse {

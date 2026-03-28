@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import {
   useCreateTagMutation,
+  useCreateCharacterMutation,
+  useStoryCharactersQuery,
   useStoryPlotsQuery,
   useStoryTagsQuery,
   useUpdateSceneMutation,
@@ -10,6 +12,8 @@ import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
+import { ScenePovSelect } from "./ScenePovSelect";
+import { ScenePovCreateRow } from "./ScenePovCreateRow";
 import { useDebounce } from "../../utils/useDebounce";
 import type { SceneTodoItem } from "../../api/types";
 
@@ -20,11 +24,15 @@ export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
+  const { data: characters = [], isLoading: isCharactersLoading } =
+    useStoryCharactersQuery(storyId);
   const updateSceneMutation = useUpdateSceneMutation(storyId);
   const createTagMutation = useCreateTagMutation(storyId);
+  const createCharacterMutation = useCreateCharacterMutation(storyId);
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
   const selectedPlotId = useSceneEditorStore((state) => state.selectedPlotId);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isPovCreateOpen, setIsPovCreateOpen] = useState(false);
 
   const selectedPlot = useMemo(() => {
     if (!selectedPlotId) {
@@ -54,6 +62,26 @@ export const SceneForm = () => {
 
     return null;
   }, [plots, selectedPlot, selectedSceneId]);
+
+  const sortedCharacters = useMemo(
+    () =>
+      [...characters].sort((a, b) =>
+        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
+      ),
+    [characters],
+  );
+
+  const selectedPov = useMemo(() => {
+    if (!selectedScene?.pov) {
+      return null;
+    }
+
+    return (
+      sortedCharacters.find(
+        (character) => character.id === selectedScene.pov,
+      ) ?? null
+    );
+  }, [sortedCharacters, selectedScene]);
 
   const [draftTitle, setDraftTitle] = useState(selectedScene?.title ?? "");
   const [descriptionHtml, setDescriptionHtml] = useState(
@@ -110,6 +138,33 @@ export const SceneForm = () => {
     createTagMutation.mutate({ name, color });
   };
 
+  const handlePovChange = (characterId: string | null) => {
+    if (!selectedScene) {
+      return;
+    }
+
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, pov: characterId });
+  };
+
+  const handleCreateCharacter = (name: string) => {
+    if (!selectedScene) {
+      return;
+    }
+
+    createCharacterMutation.mutate(
+      { title: name },
+      {
+        onSuccess: (character) => {
+          updateSceneMutation.mutate({
+            sceneId: selectedScene.id,
+            pov: character.id,
+          });
+          setIsPovCreateOpen(false);
+        },
+      },
+    );
+  };
+
   const handleToggleTodo = (index: number) => {
     if (!selectedScene) {
       return;
@@ -160,6 +215,34 @@ export const SceneForm = () => {
           onChange={(event) => handleTitleChange(event.target.value)}
           className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
         />
+        <div className="mt-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
+            POV
+          </p>
+          <ScenePovSelect
+            value={selectedPov}
+            options={sortedCharacters}
+            isLoading={isCharactersLoading}
+            onChange={(character) =>
+              handlePovChange(character ? character.id : null)
+            }
+            onAddCharacter={() => setIsPovCreateOpen(true)}
+          />
+          {isPovCreateOpen ? (
+            <ScenePovCreateRow
+              isSaving={createCharacterMutation.isPending}
+              onSave={handleCreateCharacter}
+              onCancel={() => setIsPovCreateOpen(false)}
+            />
+          ) : null}
+          {createCharacterMutation.error ? (
+            <div className="mt-2 text-xs text-rose-600">
+              {createCharacterMutation.error instanceof Error
+                ? createCharacterMutation.error.message
+                : "Unable to create character"}
+            </div>
+          ) : null}
+        </div>
       </div>
       <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">

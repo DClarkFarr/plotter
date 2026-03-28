@@ -9,6 +9,7 @@ export const COLLECTIONS = {
   users: "users",
   stories: "stories",
   tags: "tags",
+  characters: "characters",
   plots: "plots",
   scenes: "scenes",
   sessions: "sessions",

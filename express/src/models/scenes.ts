@@ -23,6 +23,7 @@ export interface SceneDefinition extends BaseModelBlueprint {
   todo: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
+  pov?: ObjectId | null;
 }
 
 export type SceneBlueprint = ModelBlueprint<SceneDefinition>;
@@ -66,6 +67,7 @@ export interface CreateSceneInput {
   todo?: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
+  pov?: string | ObjectId | null;
 }
 
 export const createScene = async (
@@ -93,6 +95,10 @@ export const createScene = async (
 
   if (input.scene !== undefined) {
     payload.scene = input.scene;
+  }
+
+  if (input.pov !== undefined) {
+    payload.pov = input.pov === null ? null : ensureObjectId(input.pov, "pov");
   }
 
   const result = await collection.insertOne(
@@ -182,6 +188,7 @@ export interface UpdateSceneInput {
   todo?: SceneTodoItem[];
   scene?: string;
   verticalIndex?: number;
+  pov?: string | ObjectId | null;
 }
 
 export const updateSceneById = async (
@@ -206,6 +213,11 @@ export const updateSceneById = async (
 
   if (updates.todo !== undefined) {
     updatePayload.todo = updates.todo;
+  }
+
+  if (updates.pov !== undefined) {
+    updatePayload.pov =
+      updates.pov === null ? null : ensureObjectId(updates.pov, "pov");
   }
 
   let plotId: ObjectId | undefined;

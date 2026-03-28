@@ -5,24 +5,32 @@ import { useSidebarStore } from "../../../store/sidebarStore";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
+import { useStoryCharactersQuery } from "../../../hooks/useStory";
+import { findCharacterById } from "../../../utils/characterLookup";
+import { CharacterDisplay } from "../../character/CharacterDisplay";
 
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
   const cardSize = useStoryStore((s) => s.cardSize);
+  const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
 
-  const { width } = useGridSizes({ cardSize });
+  const { width, padding } = useGridSizes({ cardSize });
 
   const descriptionText = useDescriptionExcerpt({
     description: scene.description,
     cardSize,
   });
 
+  const povCharacter = findCharacterById(characters, scene.pov);
+
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
+    "--card-padding": `${padding}px`,
+    "--column-width": `${width}px`,
   };
 
   const handleSelect = () => {
@@ -32,8 +40,8 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
 
   return (
     <div
-      style={{ ...themeStyles, "--column-width": `${width}px` }}
-      className="card card--empty w-[var(--column-width)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
+      style={themeStyles}
+      className="card card--empty p-[var(--card-padding)] w-[var(--column-width)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
       onClick={handleSelect}
       role="button"
       tabIndex={0}
@@ -44,16 +52,30 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
         }
       }}
     >
-      <div className="p-6 flex flex-col gap-2 h-full">
-        {cardSize !== "sm" && (
-          <div className="text-sm uppercase tracking-[0.2em] text-[var(--plot-text)]/70">
-            Row {scene.verticalIndex + 1}
-          </div>
-        )}
+      <div className={`flex flex-col gap-2 h-full relative`}>
+        <div className="flex gap-2 items-center">
+          {cardSize !== "sm" && (
+            <div className="text-sm uppercase tracking-[0.2em] text-[var(--plot-text)]/70">
+              Row {scene.verticalIndex + 1}
+            </div>
+          )}
+
+          {povCharacter ? (
+            <div className="ml-auto">
+              {cardSize !== "sm" ? (
+                <CharacterDisplay character={povCharacter} showColorDot />
+              ) : (
+                <CharacterDisplay character={povCharacter} avatarOnly />
+              )}
+            </div>
+          ) : null}
+        </div>
         <div
           className={`text-lg font-semibold ${cardSize === "md" ? "whitespace-nowrap overflow-hidden text-ellipsis" : ""}`}
         >
-          {scene.title?.trim() || "Untitled scene"}
+          <span className="inline-block">
+            {scene.title?.trim() || "Untitled scene"}
+          </span>
         </div>
         {cardSize === "md" && (
           <div className="text-sm text-[var(--plot-text)]/80 line-clamp-3">

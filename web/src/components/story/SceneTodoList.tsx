@@ -15,6 +15,8 @@ import { CSS } from "@dnd-kit/utilities";
 import type { SceneTodoItem } from "../../api/types";
 import { useState } from "react";
 
+import IconDragHorizontal from "~icons/mdi/drag-horizontal";
+
 export type SceneTodoListProps = {
   items: SceneTodoItem[];
   onToggle: (index: number) => void;
@@ -51,7 +53,7 @@ const TodoRow = ({ id, item, index, onToggle }: TodoRowProps) => {
         {...attributes}
         {...listeners}
       >
-        ••
+        <IconDragHorizontal className="h-4 w-4" />
       </button>
       <input
         type="checkbox"

@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createCharacter,
   createTag,
   createScene,
   createPlot,
   getStory,
+  listStoryCharacters,
   listStoryPlots,
   listStoryTags,
   updateScene,
@@ -13,8 +15,10 @@ import {
 } from "../api/stories";
 import type {
   CreateSceneInput,
+  CreateCharacterInput,
   CreateTagInput,
   CreatePlotInput,
+  Character,
   Plot,
   Scene,
   Story,
@@ -107,6 +111,15 @@ export function useStoryTagsQuery(storyId: string) {
   return useQuery({
     queryKey: ["story", storyId, "tags"],
     queryFn: () => listStoryTags(storyId),
+    enabled: Boolean(storyId),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useStoryCharactersQuery(storyId: string) {
+  return useQuery({
+    queryKey: ["story", storyId, "characters"],
+    queryFn: () => listStoryCharacters(storyId),
     enabled: Boolean(storyId),
     staleTime: 30 * 1000,
   });
@@ -309,6 +322,7 @@ export function useCreateSceneMutation(storyId: string) {
           todo: input.todo ?? [],
           scene: input.scene ?? null,
           verticalIndex: input.verticalIndex,
+          pov: input.pov ?? null,
         };
 
         const updated = previous.map((plot) => {
@@ -447,6 +461,73 @@ export function useUpdateSceneMutation(storyId: string) {
 
             return { ...plot, scenes: sortScenes(nextScenes) };
           });
+        },
+      );
+    },
+    onSettled: () => {
+      useSceneEditorStore.getState().setSaving(false);
+    },
+  });
+}
+
+export function useCreateCharacterMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateCharacterInput) =>
+      createCharacter(storyId, input),
+    onMutate: async (input) => {
+      useSceneEditorStore.getState().setSaving(true);
+      await queryClient.cancelQueries({
+        queryKey: ["story", storyId, "characters"],
+      });
+      const previous = queryClient.getQueryData<Character[]>([
+        "story",
+        storyId,
+        "characters",
+      ]);
+
+      const tempId = `temp-${Date.now()}`;
+      if (previous) {
+        const optimistic: Character = {
+          id: tempId,
+          storyId,
+          title: input.title,
+          description: input.description ?? null,
+          imageUrl: input.imageUrl ?? null,
+        };
+
+        queryClient.setQueryData<Character[]>(
+          ["story", storyId, "characters"],
+          [...previous, optimistic],
+        );
+      }
+
+      return { previous, tempId };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          ["story", storyId, "characters"],
+          context.previous,
+        );
+      }
+    },
+    onSuccess: (character, _input, context) => {
+      queryClient.setQueryData<Character[]>(
+        ["story", storyId, "characters"],
+        (current) => {
+          if (!current) {
+            return [character];
+          }
+
+          const replaced = current.map((entry) =>
+            entry.id === context?.tempId ? character : entry,
+          );
+          const hasCharacter = replaced.some(
+            (entry) => entry.id === character.id,
+          );
+          return hasCharacter ? replaced : [...replaced, character];
         },
       );
     },

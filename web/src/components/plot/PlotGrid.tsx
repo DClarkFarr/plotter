@@ -86,7 +86,6 @@ export const PlotGrid = ({
       rows.push(row);
     }
 
-    console.log("computing grid", rows);
     return rows;
   }, [plots, gridCols, gridRows]);
 

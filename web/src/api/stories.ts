@@ -1,6 +1,10 @@
 import { apiClient } from "../lib/apiClient";
 import {
   toApiError,
+  type Character,
+  type CharacterResponse,
+  type CharactersResponse,
+  type CreateCharacterInput,
   type CreateSceneInput,
   type CreateTagInput,
   type CreatePlotInput,
@@ -66,6 +70,19 @@ export async function listStoryTags(storyId: string): Promise<Tag[]> {
   }
 }
 
+export async function listStoryCharacters(
+  storyId: string,
+): Promise<Character[]> {
+  try {
+    const { data } = await apiClient.get<CharactersResponse>(
+      `/stories/${storyId}/characters`,
+    );
+    return data.characters;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function createTag(
   storyId: string,
   input: CreateTagInput,
@@ -76,6 +93,21 @@ export async function createTag(
       input,
     );
     return data.tag;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function createCharacter(
+  storyId: string,
+  input: CreateCharacterInput,
+): Promise<Character> {
+  try {
+    const { data } = await apiClient.post<CharacterResponse>(
+      `/stories/${storyId}/characters`,
+      input,
+    );
+    return data.character;
   } catch (err) {
     throw toApiError(err);
   }

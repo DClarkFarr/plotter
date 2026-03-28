@@ -66,6 +66,7 @@ const toSceneResponse = (scene: {
   todo: Array<{ text: string; isDone: boolean }>;
   scene?: string;
   verticalIndex: number;
+  pov?: { toHexString(): string } | null;
 }) => ({
   id: scene._id.toHexString(),
   title: scene.title,
@@ -75,6 +76,7 @@ const toSceneResponse = (scene: {
   todo: scene.todo,
   scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
+  pov: scene.pov ? scene.pov.toHexString() : null,
 });
 
 const toPlotResponse = (plot: {

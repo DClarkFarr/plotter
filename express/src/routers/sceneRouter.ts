@@ -38,6 +38,7 @@ const toSceneResponse = (scene: {
   todo: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
+  pov?: { toHexString(): string } | null;
 }) => ({
   id: scene._id.toHexString(),
   title: scene.title,
@@ -47,6 +48,7 @@ const toSceneResponse = (scene: {
   todo: scene.todo,
   scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
+  pov: scene.pov ? scene.pov.toHexString() : null,
 });
 
 const parseOptionalString = (value: unknown): string | undefined => {
@@ -109,6 +111,22 @@ const parseTodoItems = (value: unknown): SceneTodoItem[] | undefined => {
   });
 };
 
+const parseOptionalPov = (value: unknown): string | null | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new ValidationError("pov", "pov must be a string or null");
+  }
+
+  return value;
+};
+
 const handleError = (res: Response, error: unknown): void => {
   if (error instanceof AuthError) {
     res.status(error.status).json({ error: error.message });
@@ -157,6 +175,7 @@ const applySceneRoutes = () => {
       const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
       const todo = parseTodoItems(req.body?.todo);
+      const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = requireNumber(
         req.body?.verticalIndex,
         "verticalIndex",
@@ -168,6 +187,7 @@ const applySceneRoutes = () => {
         scene: scene ?? "",
         tags: tags ?? [],
         todo: todo ?? [],
+        pov: pov ?? null,
         plotId,
         verticalIndex,
       });
@@ -190,6 +210,7 @@ const applySceneRoutes = () => {
       const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
       const todo = parseTodoItems(req.body?.todo);
+      const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = optionalNumber(
         req.body?.verticalIndex,
         "verticalIndex",
@@ -201,7 +222,8 @@ const applySceneRoutes = () => {
         scene === undefined &&
         tags === undefined &&
         todo === undefined &&
-        verticalIndex === undefined
+        verticalIndex === undefined &&
+        pov === undefined
       ) {
         throw new ValidationError("body", "Update payload is empty");
       }
@@ -225,6 +247,9 @@ const applySceneRoutes = () => {
       }
       if (verticalIndex !== undefined) {
         toSet.verticalIndex = verticalIndex;
+      }
+      if (pov !== undefined) {
+        toSet.pov = pov;
       }
       const updated = await updateSceneForStory(storyId, sceneId, toSet);
 

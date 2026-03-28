@@ -20,7 +20,7 @@ export const EmptyCard = ({
 
   const cardSize = useStoryStore((s) => s.cardSize);
 
-  const { width } = useGridSizes({ cardSize });
+  const { width, padding } = useGridSizes({ cardSize });
 
   const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
 
@@ -29,6 +29,7 @@ export const EmptyCard = ({
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
     "--column-width": `${width}px`,
+    "--card-padding": `${padding}px`,
   };
 
   const handleCreate = async () => {
@@ -59,12 +60,12 @@ export const EmptyCard = ({
   return (
     <div
       style={themeStyles}
-      className={`card card--empty w-[var(--column-width)] h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
+      className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
         isDisabled ? "opacity-50" : ""
       }`}
     >
       <div
-        className={`p-6 flex ${cardSize !== "sm" && "flex-col"} gap-4 items-center justify-center h-full`}
+        className={`flex ${cardSize !== "sm" && "flex-col"} gap-4 items-center justify-center h-full`}
       >
         <div className="text-lg">Create scene</div>
         <div>
