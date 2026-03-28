@@ -14,7 +14,7 @@ import { SceneTodoList } from "./SceneTodoList";
 import { useDebounce } from "../../utils/useDebounce";
 import type { SceneTodoItem } from "../../api/types";
 
-export const StoryForm = () => {
+export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);

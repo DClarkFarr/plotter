@@ -3,9 +3,9 @@ import { DashboardTopbar } from "./DashboardTopbar";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { useSidebarStore } from "../../store/sidebarStore";
-import { StoryForm } from "../story/StoryForm";
-import { StoryFormLoading } from "../story/StoryFormLoading";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
+import { SceneForm } from "../story/SceneForm";
+import { SceneFormLoading } from "../story/SceneFormLoading";
 
 export function DashboardLayout() {
   useAuthRedirect();
@@ -26,7 +26,7 @@ export function DashboardLayout() {
         </div>
       </div>
       <DashboardSidebar isOpen={sidebar.isOpen} showOpenButton={false}>
-        {selectedSceneId ? <StoryForm /> : <StoryFormLoading />}
+        {selectedSceneId ? <SceneForm /> : <SceneFormLoading />}
       </DashboardSidebar>
     </div>
   );

@@ -1,4 +1,4 @@
-export const StoryFormLoading = () => {
+export const SceneFormLoading = () => {
   return (
     <div className="p-6 flex flex-col gap-4 animate-pulse">
       <div className="flex flex-col gap-2">
