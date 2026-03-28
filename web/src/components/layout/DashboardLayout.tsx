@@ -26,7 +26,11 @@ export function DashboardLayout() {
         </div>
       </div>
       <DashboardSidebar isOpen={sidebar.isOpen} showOpenButton={false}>
-        {selectedSceneId ? <SceneForm /> : <SceneFormLoading />}
+        {selectedSceneId ? (
+          <SceneForm key={selectedSceneId} />
+        ) : (
+          <SceneFormLoading />
+        )}
       </DashboardSidebar>
     </div>
   );

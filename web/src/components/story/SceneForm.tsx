@@ -149,21 +149,19 @@ export const SceneForm = () => {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Editing Scene
+    <div className="p-2 flex flex-col gap-4">
+      <div className="mb-4">
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
+          {selectedPlot?.title} - Row {selectedScene.verticalIndex + 1}
         </p>
+
         <input
           value={draftTitle}
           onChange={(event) => handleTitleChange(event.target.value)}
           className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
         />
-        <p className="text-sm text-slate-500">
-          Plot: {selectedPlot?.title || "Untitled Plot"}
-        </p>
       </div>
-      <div>
+      <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
           Description
         </p>
@@ -172,7 +170,7 @@ export const SceneForm = () => {
           onChange={handleDescriptionChange}
         />
       </div>
-      <div>
+      <div className="mb-4">
         <div className="flex justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">

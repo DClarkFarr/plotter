@@ -83,7 +83,7 @@ export const DashboardSidebarBody = ({
   return (
     <div
       id="dashboard-sidebar"
-      className={`dashboard-sidebar fixed z-100 top-0 h-screen min-w-[300px] max-w-[80vw] shadow w-[var(--sidebar-width)] ${isOpen ? "right-0" : `right-[var(--sidebar-right-open)]`}`}
+      className={`dashboard-sidebar transition-[right] ease-out fixed z-100 top-0 h-screen min-w-[300px] max-w-[80vw] shadow w-[var(--sidebar-width)] ${isOpen ? "right-0" : `right-[var(--sidebar-right-open)]`}`}
       style={{
         "--sidebar-width": `${width}px`,
         "--sidebar-right-open": `-${width}px`,

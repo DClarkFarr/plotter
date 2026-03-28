@@ -20,7 +20,7 @@ import IconFormatListNumbered from "~icons/mdi/format-list-numbered";
 import IconCodeBraces from "~icons/mdi/code-braces";
 import IconFormatQuoteClose from "~icons/mdi/format-quote-close";
 import IconMinus from "~icons/mdi/minus";
-import IconKeyboardReturn from "~icons/mdi/keyboard-return";
+// import IconKeyboardReturn from "~icons/mdi/keyboard-return";
 import IconUndo from "~icons/mdi/undo";
 import IconRedo from "~icons/mdi/redo";
 
@@ -97,18 +97,6 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
         </Tooltip>
       </ButtonGroup>
       <ButtonGroup className="button-group">
-        <Tooltip content="Code" className="whitespace-nowrap">
-          <Button
-            color={editorState.isCode ? "dark" : "gray"}
-            outline={!editorState.isCode}
-            size="xs"
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            disabled={!editorState.canCode}
-            aria-label="Code"
-          >
-            <IconCodeTags className="h-4 w-4" />
-          </Button>
-        </Tooltip>
         <Tooltip content="Clear marks" className="whitespace-nowrap">
           <Button
             color="gray"
@@ -198,7 +186,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             H4
           </Button>
         </Tooltip>
-        <Tooltip content="H5" className="whitespace-nowrap">
+        {/* <Tooltip content="H5" className="whitespace-nowrap">
           <Button
             color={editorState.isHeading5 ? "dark" : "gray"}
             outline={!editorState.isHeading5}
@@ -223,7 +211,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
           >
             H6
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </ButtonGroup>
       <ButtonGroup className="button-group">
         <Tooltip content="Bullet list" className="whitespace-nowrap">
@@ -246,6 +234,20 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             aria-label="Ordered list"
           >
             <IconFormatListNumbered className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+      </ButtonGroup>
+      <ButtonGroup className="button-group">
+        <Tooltip content="Code" className="whitespace-nowrap">
+          <Button
+            color={editorState.isCode ? "dark" : "gray"}
+            outline={!editorState.isCode}
+            size="xs"
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            disabled={!editorState.canCode}
+            aria-label="Code"
+          >
+            <IconCodeTags className="h-4 w-4" />
           </Button>
         </Tooltip>
         <Tooltip content="Code block" className="whitespace-nowrap">
@@ -283,7 +285,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             <IconMinus className="h-4 w-4" />
           </Button>
         </Tooltip>
-        <Tooltip content="Hard break" className="whitespace-nowrap">
+        {/* <Tooltip content="Hard break" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -293,7 +295,7 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
           >
             <IconKeyboardReturn className="h-4 w-4" />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </ButtonGroup>
       <ButtonGroup className="button-group">
         <Tooltip content="Undo" className="whitespace-nowrap">
