@@ -68,6 +68,7 @@ export const DashboardSidebarBody = ({
   const { ref } = useDraggable({
     id: "dashboard-sidebar",
     modifiers: [RestrictToHorizontalAxis],
+    handle: handleRef,
   });
 
   const sidebar = useSidebarStore();
