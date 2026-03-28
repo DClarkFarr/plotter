@@ -4,6 +4,7 @@ import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import IconPlus from "~icons/mdi/plus";
 import { useCreateSceneMutation } from "../../../hooks/useStory";
 import { useSceneEditorStore } from "../../../store/sceneEditorStore";
+import { useSidebarStore } from "../../../store/sidebarStore";
 
 export const EmptyCard = ({
   storyId,
@@ -14,6 +15,8 @@ export const EmptyCard = ({
   const theme = usePlotTheme(plot?.color);
   const createSceneMutation = useCreateSceneMutation(storyId);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
+  const openSidebar = useSidebarStore((s) => s.openSidebar);
+
   const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
   const themeStyles = {
     "--plot-color": theme.baseColor,
@@ -42,6 +45,7 @@ export const EmptyCard = ({
 
     if (scene?.id) {
       selectScene(scene.id, scene.plotId);
+      openSidebar();
     }
   };
 

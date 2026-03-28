@@ -186,7 +186,7 @@ export const PlotHeader = ({
             </Tooltip>
           </Button>
         ) : null}
-        <Button color="gray" size="xs" type="button" onClick={handleEdit}>
+        <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
           <Tooltip content="Edit">
             <IconLeadPencil />
           </Tooltip>
