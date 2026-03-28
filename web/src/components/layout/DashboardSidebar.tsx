@@ -63,12 +63,9 @@ export const DashboardSidebarBody = ({
   isOpen,
   showOpenButton,
 }: DashboardSidebarProps) => {
-  const handleRef = useRef<HTMLDivElement>(null);
-
-  const { ref } = useDraggable({
+  const { ref: dragRef } = useDraggable({
     id: "dashboard-sidebar",
     modifiers: [RestrictToHorizontalAxis],
-    handle: handleRef,
   });
 
   const sidebar = useSidebarStore();
@@ -85,7 +82,6 @@ export const DashboardSidebarBody = ({
 
   return (
     <div
-      ref={ref}
       id="dashboard-sidebar"
       className={`dashboard-sidebar fixed z-100 top-0 h-screen min-w-[300px] max-w-[80vw] shadow w-[var(--sidebar-width)] ${isOpen ? "right-0" : `right-[var(--sidebar-right-open)]`}`}
       style={{
@@ -103,11 +99,11 @@ export const DashboardSidebarBody = ({
           </button>
         </div>
       )}
+      <div
+        ref={dragRef}
+        className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"
+      ></div>
       <div className="relative scroll-y overflow-y-auto w-full h-full bg-gradient-to-b from-slate-50 via-white to-emerald-50 p-6">
-        <div
-          ref={handleRef}
-          className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"
-        ></div>
         {children}
       </div>
     </div>
