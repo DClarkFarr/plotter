@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
 import { getMe } from "../../api/auth";
+import { ApiError } from "../../api/types";
 
 export function RootLayout() {
   const { setUser, clearUser } = useAuthStore();
 
-  const { data, isError, isSuccess } = useQuery({
+  const { data, isSuccess, error } = useQuery({
     queryKey: ["me"],
     queryFn: getMe,
     retry: false,
@@ -21,10 +22,10 @@ export function RootLayout() {
   }, [isSuccess, data, setUser]);
 
   useEffect(() => {
-    if (isError) {
+    if (error instanceof ApiError) {
       clearUser();
     }
-  }, [isError, clearUser]);
+  }, [error, clearUser]);
 
   return <Outlet />;
 }
