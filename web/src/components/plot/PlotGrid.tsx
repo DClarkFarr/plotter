@@ -1,9 +1,6 @@
 import { useMemo } from "react";
 import type { Plot, Scene } from "../../api/types";
-import type {
-  StoryCardDisplay,
-  StoryCardSize,
-} from "../../store/storyStore.types";
+
 import type {
   EmptyRendererProps,
   SceneCardTypes,
@@ -19,8 +16,6 @@ export type PlotGridProps = {
   storyId: string;
   plots: Plot[];
   plotIndex: number;
-  cardSize: StoryCardSize;
-  cardDisplay: StoryCardDisplay;
   renderSceneCard?: SceneRenderer<SceneRendererProps>;
   renderEmptyCard?: SceneRenderer<EmptyRendererProps>;
 };
@@ -49,8 +44,6 @@ const getCellRowIndex = (gridIndex: number) => {
 export const PlotGrid = ({
   storyId,
   plots,
-  cardDisplay,
-  cardSize,
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
@@ -167,6 +160,10 @@ export const PlotGrid = ({
                 );
               } else if (cell.type === "scene") {
                 const plot = plotsByRowIndex.get(getCellColIndex(c));
+
+                if (!plot) {
+                  return <div>No plot found</div>;
+                }
                 const scene = scenesByColIndex
                   .get(plot?.id || "")
                   ?.get(getCellRowIndex(r));

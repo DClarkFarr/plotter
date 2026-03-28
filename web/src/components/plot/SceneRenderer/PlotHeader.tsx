@@ -1,4 +1,4 @@
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -16,6 +16,8 @@ import IconMoveLeft from "~icons/mdi/arrow-left-thick";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import IconClose from "~icons/mdi/close-thick";
 import { useClickOutside } from "../../../hooks/useClickOutside";
+import { useStoryStore } from "../../../store/storyStore";
+import { useGridSizes } from "../../../hooks/use-grid-sizes";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -37,11 +39,16 @@ export const PlotHeader = ({
   const [error, setError] = useState<string | null>(null);
   const updateMutation = useUpdatePlotMutation(storyId, plot.id);
   const theme = usePlotTheme(plot.color);
+
+  const cardSize = useStoryStore((s) => s.cardSize);
+  const { width } = useGridSizes({ cardSize });
+
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
-  } as CSSProperties;
+    "--column-width": `${width}px`,
+  };
 
   const onClickOutside = useCallback(() => {
     setIsEditing(false);
@@ -99,7 +106,7 @@ export const PlotHeader = ({
       <div
         ref={containerRef}
         style={themeStyles}
-        className="plot-header group rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full relative z-10 text-[var(--plot-text)] transition-colors duration-300"
+        className="plot-header group w-[var(--column-width)] rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full relative z-10 text-[var(--plot-text)] transition-colors duration-300"
       >
         <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
           <Button
@@ -149,7 +156,7 @@ export const PlotHeader = ({
   return (
     <div
       style={themeStyles}
-      className="plot-header group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full text-[var(--plot-text)] transition-colors duration-300"
+      className="plot-header w-[var(--column-width)] group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-6 h-full text-[var(--plot-text)] transition-colors duration-300"
     >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (
@@ -193,14 +200,18 @@ export const PlotHeader = ({
         </Button>
       </ButtonGroup>
 
-      <div className="flex items-start justify-between">
-        <div>
+      <div>
+        {cardSize !== "sm" && (
           <div className="text-xs uppercase tracking-[0.2em] opacity-70">
             Plot {plotIndex + 1}
           </div>
-          <h3 className="mt-2 text-lg font-semibold">{plot.title}</h3>
-          <p className="mt-2 text-sm opacity-80">{plot.description}</p>
-        </div>
+        )}
+        <h3
+          className={`mt-2 text-lg font-semibold ${cardSize !== "lg" && `whitespace-nowrap overflow-hidden text-ellipsis`}`}
+        >
+          {plot.title}
+        </h3>
+        <p className="mt-2 text-sm opacity-80">{plot.description}</p>
       </div>
     </div>
   );

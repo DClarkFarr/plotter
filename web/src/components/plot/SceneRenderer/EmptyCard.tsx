@@ -1,10 +1,11 @@
-import type { CSSProperties } from "react";
 import type { EmptyRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import IconPlus from "~icons/mdi/plus";
 import { useCreateSceneMutation } from "../../../hooks/useStory";
 import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 import { useSidebarStore } from "../../../store/sidebarStore";
+import { useStoryStore } from "../../../store/storyStore";
+import { useGridSizes } from "../../../hooks/use-grid-sizes";
 
 export const EmptyCard = ({
   storyId,
@@ -17,12 +18,16 @@ export const EmptyCard = ({
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
 
+  const cardSize = useStoryStore((s) => s.cardSize);
+
+  const { width } = useGridSizes({ cardSize });
+
   const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
   const themeStyles = {
     "--plot-color": theme.baseColor,
     "--plot-color-soft": theme.softColor,
     "--plot-text": theme.textColor,
-  } as CSSProperties;
+  };
 
   const handleCreate = async () => {
     if (!plot || isBusy) {
@@ -51,8 +56,8 @@ export const EmptyCard = ({
 
   return (
     <div
-      style={themeStyles}
-      className={`card card--empty h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
+      style={{ ...themeStyles, "--column-width": `${width}px` }}
+      className={`card card--empty w-[var(--column-width)] h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
         isDisabled ? "opacity-50" : ""
       }`}
     >

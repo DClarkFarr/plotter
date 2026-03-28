@@ -43,7 +43,6 @@
 - [x] T008 [P] [US1] Add scene lookup helpers for story scoping in express/src/models/scenes.ts
 - [x] T009 [P] [US1] Add create/update scene mutations with optimistic cache updates in web/src/hooks/useStory.ts
 - [x] T010 [US1] Wire EmptyCard create action to createScene mutation in web/src/components/plot/SceneRenderer/EmptyCard.tsx
-- [x] T011 [US1] Thread storyId/plot context into EmptyCard via web/src/components/plot/PlotGrid.tsx and web/src/components/plot/SortablePlot.tsx
 - [x] T012 [US1] Add scene selection actions and sidebar-open behavior in web/src/store/sceneEditorStore.ts
 - [x] T013 [US1] Render selected scene summary in sidebar using web/src/components/story/StoryForm.tsx and web/src/components/layout/DashboardLayout.tsx
 
