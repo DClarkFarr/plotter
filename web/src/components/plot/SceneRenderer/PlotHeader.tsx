@@ -163,7 +163,7 @@ export const PlotHeader = ({
       style={themeStyles}
       className="plot-header w-[var(--column-width)] group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-[var(--card-padding)] h-full text-[var(--plot-text)] transition-colors duration-300"
     >
-      <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <ButtonGroup className="absolute z-100 right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (
           <Button
             color="gray"

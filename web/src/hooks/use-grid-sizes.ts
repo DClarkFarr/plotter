@@ -16,8 +16,15 @@ export const useGridSizes = ({ cardSize }: UseGridSizesProps) => {
     lg: 24,
   };
 
+  const minHeight: Record<StoryCardSize, number> = {
+    sm: 100,
+    md: 160,
+    lg: 275,
+  };
+
   return {
     width: cardSizeMap[cardSize],
     padding: paddingMap[cardSize],
+    minHeight: minHeight[cardSize],
   };
 };

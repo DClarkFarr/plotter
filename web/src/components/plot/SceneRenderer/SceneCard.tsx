@@ -16,7 +16,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const cardSize = useStoryStore((s) => s.cardSize);
   const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
 
-  const { width, padding } = useGridSizes({ cardSize });
+  const { width, padding, minHeight } = useGridSizes({ cardSize });
 
   const descriptionText = useDescriptionExcerpt({
     description: scene.description,
@@ -31,6 +31,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
     "--plot-text": theme.textColor,
     "--card-padding": `${padding}px`,
     "--column-width": `${width}px`,
+    "--card-min-height": `${minHeight}px`,
   };
 
   const handleSelect = () => {
@@ -41,7 +42,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   return (
     <div
       style={themeStyles}
-      className="card card--empty p-[var(--card-padding)] w-[var(--column-width)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
+      className="card card--empty p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
       onClick={handleSelect}
       role="button"
       tabIndex={0}
@@ -84,7 +85,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
         )}
         {cardSize === "lg" && (
           <div
-            className="text-sm text-[var(--plot-text)]/80 line-clamp-3 tiptap"
+            className="text-sm text-[var(--plot-text)]/80 line-clamp-3 tiptap overflow-y-auto grow-1"
             dangerouslySetInnerHTML={{ __html: descriptionText }}
           ></div>
         )}
