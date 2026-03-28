@@ -63,7 +63,7 @@ export const DashboardSidebarBody = ({
   isOpen,
   showOpenButton,
 }: DashboardSidebarProps) => {
-  const handleRef = useRef<HTMLButtonElement>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
 
   const { ref } = useDraggable({
     id: "dashboard-sidebar",
@@ -87,7 +87,7 @@ export const DashboardSidebarBody = ({
     <div
       ref={ref}
       id="dashboard-sidebar"
-      className={`dashboard-sidebar fixed z-100 top-0 h-screen transition transition-[right] min-w-[300px] max-w-[80vw] shadow ease-out w-[var(--sidebar-width)] ${isOpen ? "right-0" : `right-[var(--sidebar-right-open)]`}`}
+      className={`dashboard-sidebar fixed z-100 top-0 h-screen min-w-[300px] max-w-[80vw] shadow w-[var(--sidebar-width)] ${isOpen ? "right-0" : `right-[var(--sidebar-right-open)]`}`}
       style={{
         "--sidebar-width": `${width}px`,
         "--sidebar-right-open": `-${width}px`,
@@ -96,7 +96,6 @@ export const DashboardSidebarBody = ({
       {(isOpen || showOpenButton) && (
         <div className="right-arrow absolute top-[100px] z-200 left-[-40px]">
           <button
-            ref={handleRef}
             className="p-2 bg-slate-500 text-white border border-slate-600 flex items-center justify-center h-10"
             onClick={onClickToggle}
           >
@@ -105,7 +104,10 @@ export const DashboardSidebarBody = ({
         </div>
       )}
       <div className="relative scroll-y overflow-y-auto w-full h-full bg-gradient-to-b from-slate-50 via-white to-emerald-50 p-6">
-        <div className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"></div>
+        <div
+          ref={handleRef}
+          className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"
+        ></div>
         {children}
       </div>
     </div>
