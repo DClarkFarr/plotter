@@ -69,7 +69,9 @@ export const PlotGrid = ({
       const row: GridCellTypes[] = [{ type: "col-header", index: r }];
 
       for (let c = 1; c < gridCols + 1; c++) {
-        const plot = plots[getCellColIndex(c)];
+        const plot = plots.find(
+          (p) => p.horizontalIndex === getCellColIndex(c),
+        );
         if (!plot) {
           row.push({ type: "empty" });
           continue;
@@ -83,6 +85,8 @@ export const PlotGrid = ({
       }
       rows.push(row);
     }
+
+    console.log("computing grid", rows);
     return rows;
   }, [plots, gridCols, gridRows]);
 
@@ -162,6 +166,12 @@ export const PlotGrid = ({
                 const plot = plotsByRowIndex.get(getCellColIndex(c));
 
                 if (!plot) {
+                  console.log({
+                    c,
+                    cellIndex: getCellColIndex(c),
+                    plot,
+                    plotsByRowIndex,
+                  });
                   return <div>No plot found</div>;
                 }
                 const scene = scenesByColIndex

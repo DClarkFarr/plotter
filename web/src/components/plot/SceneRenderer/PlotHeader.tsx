@@ -201,17 +201,18 @@ export const PlotHeader = ({
       </ButtonGroup>
 
       <div>
-        {cardSize !== "sm" && (
-          <div className="text-xs uppercase tracking-[0.2em] opacity-70">
-            Plot {plotIndex + 1}
-          </div>
-        )}
+        <div className="text-xs uppercase tracking-[0.2em] opacity-70">
+          Plot {plotIndex + 1}
+        </div>
         <h3
           className={`mt-2 text-lg font-semibold ${cardSize !== "lg" && `whitespace-nowrap overflow-hidden text-ellipsis`}`}
         >
           {plot.title}
         </h3>
-        <p className="mt-2 text-sm opacity-80">{plot.description}</p>
+
+        {cardSize !== "sm" && (
+          <p className="mt-2 text-sm opacity-80">{plot.description}</p>
+        )}
       </div>
     </div>
   );

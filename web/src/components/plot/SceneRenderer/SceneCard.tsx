@@ -7,7 +7,6 @@ import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
 
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
-  console.log("got plot", plot);
   const theme = usePlotTheme(plot.color);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
@@ -52,14 +51,20 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
           </div>
         )}
         <div
-          className={`text-lg font-semibold ${cardSize !== "lg" ? "whitespace-nowrap overflow-hidden text-ellipsis" : ""}`}
+          className={`text-lg font-semibold ${cardSize === "md" ? "whitespace-nowrap overflow-hidden text-ellipsis" : ""}`}
         >
           {scene.title?.trim() || "Untitled scene"}
         </div>
-        {cardSize != "sm" && (
+        {cardSize === "md" && (
           <div className="text-sm text-[var(--plot-text)]/80 line-clamp-3">
             {descriptionText || "No description yet."}
           </div>
+        )}
+        {cardSize === "lg" && (
+          <div
+            className="text-sm text-[var(--plot-text)]/80 line-clamp-3 tiptap"
+            dangerouslySetInnerHTML={{ __html: descriptionText }}
+          ></div>
         )}
       </div>
     </div>
