@@ -10,6 +10,12 @@ import {
 import type { Tag } from "../../api/types";
 import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 
+import IconDelete from "~icons/mdi/delete";
+import IconChevronDown from "~icons/mdi/chevron-down";
+import IconSourceBranch from "~icons/mdi/source-branch";
+import { useDeleteTagMutation } from "../../queries/tag/tag-mutation";
+import { alert } from "../../utils/alert";
+
 export type SceneTagsModalProps = {
   isOpen: boolean;
   tags: Tag[];
@@ -31,6 +37,7 @@ export const SceneTagsModal = ({
 }: SceneTagsModalProps) => {
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#64748b");
+  const [isDeleting, setIsDeleting] = useState("");
 
   const handleSubmit = () => {
     const trimmed = newTagName.trim();
@@ -51,6 +58,27 @@ export const SceneTagsModal = ({
   const onSafeClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     event.preventDefault();
+  };
+
+  const { mutateAsync } = useDeleteTagMutation();
+
+  const onClickDelete = async (tag: Tag) => {
+    if (isDeleting === tag.id) {
+      return;
+    }
+    setIsDeleting(tag.id);
+
+    try {
+      await mutateAsync({ tagId: tag.id, storyId: tag.storyId }).then(() => {
+        setIsDeleting("");
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsDeleting("");
+    }
   };
 
   const sortedTags = useMemo(() => {
@@ -130,11 +158,34 @@ export const SceneTagsModal = ({
                   <Label className="text-sm text-slate-700">{tag.name}</Label>
 
                   <div
-                    className="checkbox-actions ml-auto -my-2 -mr-3 p-2 bg-gray-100 rounded-l-lg text-sm button-group"
+                    className="checkbox-actions ml-auto -my-2 -mr-3 p-1 bg-gray-100 rounded-l-lg text-sm button-group"
                     onClick={onSafeClick}
                   >
-                    <div></div>
-                    <div></div>
+                    <div>
+                      {tag.variant ? (
+                        <Button type="button" color="gray" size="xs">
+                          <span>{tag.variants.length}</span>
+                          <span>
+                            <IconChevronDown className="ml-1" />
+                          </span>
+                        </Button>
+                      ) : (
+                        <Button type="button" color="sky" size="xs">
+                          <IconSourceBranch />
+                        </Button>
+                      )}
+                    </div>
+                    <div>
+                      <Button
+                        type="button"
+                        color="red"
+                        size="xs"
+                        onClick={() => onClickDelete(tag)}
+                        disabled={isDeleting === tag.id}
+                      >
+                        <IconDelete />
+                      </Button>
+                    </div>
                   </div>
                 </label>
               );

@@ -10,30 +10,41 @@ export function useDeleteTagMutation() {
   return useMutation({
     mutationFn: ({ storyId, tagId }: DeleteTagInput) =>
       deleteTag(storyId, tagId),
-    onMutate: async ({ storyId, tagId }) => {
-      await queryClient.cancelQueries({
-        queryKey: useStoryTagsQuery.queryKey(storyId),
-      });
+    // onMutate: async ({ storyId, tagId }) => {
+    //   await queryClient.cancelQueries({
+    //     queryKey: useStoryTagsQuery.queryKey(storyId),
+    //   });
 
-      const previous = queryClient.getQueryData<Tag[]>(
+    //   const previous = queryClient.getQueryData<Tag[]>(
+    //     useStoryTagsQuery.queryKey(storyId),
+    //   );
+
+    //   if (previous) {
+    //     queryClient.setQueryData<Tag[]>(
+    //       useStoryTagsQuery.queryKey(storyId),
+    //       previous.filter((tag) => tag.id !== tagId),
+    //     );
+    //   }
+    //   return { previous, tagId, storyId };
+    // },
+    // onError: (_error, _input, context) => {
+    //   if (context?.previous && context.storyId) {
+    //     queryClient.setQueryData(
+    //       useStoryTagsQuery.queryKey(context.storyId),
+    //       context.previous,
+    //     );
+    //   }
+    // },
+    onSuccess: (_data, { storyId, tagId }) => {
+      queryClient.setQueryData<Tag[]>(
         useStoryTagsQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [];
+          }
+          return current.filter((tag) => tag.id !== tagId);
+        },
       );
-
-      if (previous) {
-        queryClient.setQueryData<Tag[]>(
-          useStoryTagsQuery.queryKey(storyId),
-          previous.filter((tag) => tag.id !== tagId),
-        );
-      }
-      return { previous, tagId, storyId };
-    },
-    onError: (_error, _input, context) => {
-      if (context?.previous && context.storyId) {
-        queryClient.setQueryData(
-          useStoryTagsQuery.queryKey(context.storyId),
-          context.previous,
-        );
-      }
     },
   });
 }
