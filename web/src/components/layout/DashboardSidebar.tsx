@@ -7,11 +7,13 @@ import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
 
 export type DashboardSidebarProps = React.PropsWithChildren<{
   isOpen: boolean;
+  showOpenButton?: boolean;
 }>;
 
 export const DashboardSidebar = ({
   children,
   isOpen,
+  showOpenButton,
 }: DashboardSidebarProps) => {
   const sidebar = useSidebarStore();
   const initialWidthRef = useRef(sidebar.width);
@@ -49,7 +51,9 @@ export const DashboardSidebar = ({
         console.log(`Dropped`, c);
       }}
     >
-      <DashboardSidebarBody isOpen={isOpen}>{children}</DashboardSidebarBody>
+      <DashboardSidebarBody showOpenButton={showOpenButton} isOpen={isOpen}>
+        {children}
+      </DashboardSidebarBody>
     </DragDropProvider>
   );
 };
@@ -57,6 +61,7 @@ export const DashboardSidebar = ({
 export const DashboardSidebarBody = ({
   children,
   isOpen,
+  showOpenButton,
 }: DashboardSidebarProps) => {
   const handleRef = useRef<HTMLButtonElement>(null);
 
@@ -87,15 +92,17 @@ export const DashboardSidebarBody = ({
         "--sidebar-right-open": `-${width}px`,
       }}
     >
-      <div className="right-arrow absolute top-[100px] z-200 left-[-40px]">
-        <button
-          ref={handleRef}
-          className="p-2 bg-slate-500 text-white border border-slate-600 flex items-center justify-center h-10"
-          onClick={onClickToggle}
-        >
-          {isOpen ? <IconCollapseRight /> : <IconExpandLeft />}
-        </button>
-      </div>
+      {(isOpen || showOpenButton) && (
+        <div className="right-arrow absolute top-[100px] z-200 left-[-40px]">
+          <button
+            ref={handleRef}
+            className="p-2 bg-slate-500 text-white border border-slate-600 flex items-center justify-center h-10"
+            onClick={onClickToggle}
+          >
+            {isOpen ? <IconCollapseRight /> : <IconExpandLeft />}
+          </button>
+        </div>
+      )}
       <div className="relative scroll-y overflow-y-auto w-full h-full bg-gradient-to-b from-slate-50 via-white to-emerald-50 p-6">
         <div className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"></div>
         {children}

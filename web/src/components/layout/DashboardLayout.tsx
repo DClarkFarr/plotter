@@ -25,7 +25,7 @@ export function DashboardLayout() {
           <Outlet />
         </div>
       </div>
-      <DashboardSidebar isOpen={sidebar.isOpen}>
+      <DashboardSidebar isOpen={sidebar.isOpen} showOpenButton={false}>
         {selectedSceneId ? <StoryForm /> : <StoryFormLoading />}
       </DashboardSidebar>
     </div>
