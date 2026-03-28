@@ -135,11 +135,11 @@ export const PlotGrid = ({
                 return (
                   <div
                     key={`${r}-${c}`}
-                    className="col-header flex items-center justify-center bg-gray-100"
+                    className="col-header flex items-center justify-center bg-gray-200"
                     data-row={r}
                     data-col={c}
                   >
-                    <h4 className="font-bold text-2xl text-gray-500">
+                    <h4 className="text-xl uppercase text-gray-500 tracking-[0.2em]">
                       Row {r}
                     </h4>
                   </div>
