@@ -154,6 +154,15 @@ export const countScenesByPlotIds = async (
   return collection.countDocuments({ plotId: { $in: uniqueIds } });
 };
 
+export const countScenesByTagId = async (
+  tagId: string | ObjectId,
+): Promise<number> => {
+  const collection = getScenesCollection();
+  return collection.countDocuments({
+    tags: ensureObjectId(tagId, "tagId"),
+  });
+};
+
 export const getSceneById = async (
   id: string | ObjectId,
 ): Promise<SceneDocument | null> => {

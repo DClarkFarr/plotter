@@ -1,11 +1,7 @@
 import { Portal } from "../components/helpers/Portal";
 import { StoryHeading } from "../components/story/StoryHeading";
 import { StoryLoading } from "../components/story/StoryLoading";
-import {
-  useStoryPlotsQuery,
-  useStoryQuery,
-  useStoryTagsQuery,
-} from "../hooks/useStory";
+
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import { PlotGrid } from "../components/plot/PlotGrid";
@@ -14,6 +10,11 @@ import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
 import IconFilter from "~icons/mdi/filter";
 import { Tooltip } from "flowbite-react";
+import {
+  useStoryPlotsQuery,
+  useStoryQuery,
+  useStoryTagsQuery,
+} from "../queries/story/story-queries";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -32,20 +33,20 @@ export function StoryPage() {
     storyQuery.isLoading || tagsQuery.isLoading || plotsQuery.isLoading;
   const error = storyQuery.error || tagsQuery.error || plotsQuery.error;
 
+  if (isLoading) {
+    return (
+      <main className="h-full p-6">
+        <StoryLoading />
+      </main>
+    );
+  }
+
   if (error || !story) {
     return (
       <main className="h-full p-6">
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
           Unable to load this story. Please check the link and try again.
         </div>
-      </main>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <main className="h-full p-6">
-        <StoryLoading />
       </main>
     );
   }

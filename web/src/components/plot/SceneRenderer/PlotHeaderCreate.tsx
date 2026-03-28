@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Button, ButtonGroup, TextInput, Tooltip } from "flowbite-react";
 import type { Plot } from "../../../api/types";
-import { useCreatePlotMutation } from "../../../hooks/useStory";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 
 import IconCheckThick from "~icons/mdi/check-thick";
 import IconDotsCircle from "~icons/mdi/dots-circle";
+import { useCreatePlotMutation } from "../../../queries/plot/plot-mutations";
 
 export type PlotHeaderCreateProps = {
   storyId: string;

@@ -98,6 +98,14 @@ export async function createTag(
   }
 }
 
+export async function deleteTag(storyId: string, tagId: string): Promise<void> {
+  try {
+    await apiClient.delete<void>(`/stories/${storyId}/tags/${tagId}`);
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function createCharacter(
   storyId: string,
   input: CreateCharacterInput,

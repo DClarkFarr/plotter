@@ -1,11 +1,11 @@
 import type { EmptyRendererProps } from "../plot.types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 import IconPlus from "~icons/mdi/plus";
-import { useCreateSceneMutation } from "../../../hooks/useStory";
 import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 import { useSidebarStore } from "../../../store/sidebarStore";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
+import { useCreateSceneMutation } from "../../../queries/scene/scene-mutations";
 
 export const EmptyCard = ({
   storyId,

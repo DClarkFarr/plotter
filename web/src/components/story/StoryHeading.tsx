@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Textarea, TextInput } from "flowbite-react";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
-import { useUpdateStoryMutation } from "../../hooks/useStory";
+import { useUpdateStoryMutation } from "../../queries/story/story-mutations";
 
 interface StoryHeadingProps {
   storyId: string;

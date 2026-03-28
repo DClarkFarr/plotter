@@ -9,7 +9,7 @@ import {
   listStoryTagsForUser,
   updateStoryById,
 } from "../services/storyService";
-import { createTag } from "../services/tagService";
+import { createTag, deleteTagById } from "../services/tagService";
 import {
   createPlot,
   getPlotForStory,
@@ -223,6 +223,25 @@ const applyStoryRoutes = () => {
       });
 
       res.status(201).json({ tag: toTagResponse(tag) });
+    }),
+  );
+
+  storyRouter.delete(
+    "/:storyId/tags/:tagId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const tagId = assertparamIsString(req.params.tagId, "tagId");
+
+      await getStoryForUser(storyId, userId);
+
+      const deleted = await deleteTagById(storyId, tagId);
+      if (!deleted) {
+        res.status(404).json({ error: "Tag not found" });
+        return;
+      }
+
+      res.status(204).send();
     }),
   );
 

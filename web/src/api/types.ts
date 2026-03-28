@@ -58,6 +58,11 @@ export interface SceneTodoItem {
   isDone: boolean;
 }
 
+export interface DeleteTagInput {
+  storyId: string;
+  tagId: string;
+}
+
 export interface Scene {
   id: string;
   title: string;
@@ -97,6 +102,7 @@ export interface UpdatePlotInput {
 export interface CreateSceneInput {
   title: string;
   description: string;
+  plotId: string;
   scene?: string | null;
   tags?: string[];
   todo?: SceneTodoItem[];

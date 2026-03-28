@@ -1,5 +1,4 @@
 import {
-  Badge,
   Checkbox,
   Label,
   Modal,
@@ -9,7 +8,7 @@ import {
   Button,
 } from "flowbite-react";
 import type { Tag } from "../../api/types";
-import { useState } from "react";
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
 
 export type SceneTagsModalProps = {
   isOpen: boolean;
@@ -30,7 +29,6 @@ export const SceneTagsModal = ({
   onCreateTag,
   isCreating,
 }: SceneTagsModalProps) => {
-  const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#64748b");
 
@@ -43,6 +41,33 @@ export const SceneTagsModal = ({
     setNewTagName("");
   };
 
+  const onTypeEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const onSafeClick = (event: MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+
+  const sortedTags = useMemo(() => {
+    return [...tags].sort((a, b) => {
+      const aSelected = selectedTagIds.includes(a.id);
+      const bSelected = selectedTagIds.includes(b.id);
+      if (aSelected && !bSelected) {
+        return -1;
+      }
+      if (!aSelected && bSelected) {
+        return 1;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+  }, [tags, selectedTagIds]);
+
   return (
     <Modal
       dismissible
@@ -53,7 +78,7 @@ export const SceneTagsModal = ({
     >
       <ModalHeader>Scene Tags</ModalHeader>
       <ModalBody>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-8">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Add Tag
@@ -69,6 +94,7 @@ export const SceneTagsModal = ({
               <TextInput
                 value={newTagName}
                 onChange={(event) => setNewTagName(event.target.value)}
+                onKeyDown={onTypeEnter}
                 placeholder="New tag name"
                 className="flex-1"
               />
@@ -81,27 +107,12 @@ export const SceneTagsModal = ({
               </Button>
             </div>
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Selected
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {selectedTags.length === 0 ? (
-                <p className="text-sm text-slate-500">No tags selected.</p>
-              ) : (
-                selectedTags.map((tag) => (
-                  <Badge key={tag.id} color="light">
-                    {tag.name}
-                  </Badge>
-                ))
-              )}
-            </div>
-          </div>
+
           <div className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               All Tags
             </p>
-            {tags.map((tag) => {
+            {sortedTags.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
               return (
                 <label
@@ -117,6 +128,14 @@ export const SceneTagsModal = ({
                     style={{ "--tag-color": tag.color }}
                   ></div>
                   <Label className="text-sm text-slate-700">{tag.name}</Label>
+
+                  <div
+                    className="checkbox-actions ml-auto -my-2 -mr-3 p-2 bg-gray-100 rounded-l-lg text-sm button-group"
+                    onClick={onSafeClick}
+                  >
+                    <div></div>
+                    <div></div>
+                  </div>
                 </label>
               );
             })}

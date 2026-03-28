@@ -1,13 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import {
-  useCreateTagMutation,
-  useCreateCharacterMutation,
-  useStoryCharactersQuery,
-  useStoryPlotsQuery,
-  useStoryTagsQuery,
-  useUpdateSceneMutation,
-} from "../../hooks/useStory";
+
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
@@ -19,6 +12,14 @@ import type { SceneTodoItem } from "../../api/types";
 
 import IconLabelMultiple from "~icons/mdi/label-multiple";
 import { RichTextEditor } from "../forms/RichTextEditor";
+import {
+  useStoryCharactersQuery,
+  useStoryPlotsQuery,
+  useStoryTagsQuery,
+} from "../../queries/story/story-queries";
+import { useUpdateSceneMutation } from "../../queries/scene/scene-mutations";
+import { useCreateTagMutation } from "../../queries/tag/tag-mutation";
+import { useCreateCharacterMutation } from "../../queries/character/character-mutations";
 
 export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });

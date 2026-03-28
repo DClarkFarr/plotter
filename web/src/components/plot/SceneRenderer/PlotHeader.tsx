@@ -7,7 +7,6 @@ import {
   Tooltip,
 } from "flowbite-react";
 import type { Plot } from "../../../api/types";
-import { useUpdatePlotMutation } from "../../../hooks/useStory";
 import { useDebounce } from "../../../utils/useDebounce";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 
@@ -18,6 +17,7 @@ import IconCheckThick from "~icons/mdi/check-thick";
 import { useClickOutside } from "../../../hooks/useClickOutside";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
+import { useUpdatePlotMutation } from "../../../queries/plot/plot-mutations";
 
 export type PlotHeaderProps = {
   storyId: string;

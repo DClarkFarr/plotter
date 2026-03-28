@@ -5,9 +5,9 @@ import { useSidebarStore } from "../../../store/sidebarStore";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
-import { useStoryCharactersQuery } from "../../../hooks/useStory";
 import { findCharacterById } from "../../../utils/characterLookup";
 import { CharacterDisplay } from "../../character/CharacterDisplay";
+import { useStoryCharactersQuery } from "../../../queries/story/story-queries";
 
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
