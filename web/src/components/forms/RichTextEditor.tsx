@@ -8,20 +8,17 @@ import {
 import { TextStyleKit } from "@tiptap/extension-text-style";
 import StarterKit from "@tiptap/starter-kit";
 
-export type SceneDescriptionEditorProps = {
+export type RichTextEditorProps = {
   value: string;
-  onCommit: (value: string) => void;
+  onChange: (value: string) => void;
 };
 
-export const SceneDescriptionEditor = ({
-  value,
-  onCommit,
-}: SceneDescriptionEditorProps) => {
+export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [TextStyleKit, StarterKit],
     content: value,
     onUpdate: ({ editor }) => {
-      onCommit(editor.getHTML());
+      onChange(editor.getHTML());
     },
   });
 

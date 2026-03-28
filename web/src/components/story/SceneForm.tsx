@@ -7,12 +7,14 @@ import {
   useUpdateSceneMutation,
 } from "../../hooks/useStory";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
-import { SceneDescriptionEditor } from "./SceneDescriptionEditor";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
 import { useDebounce } from "../../utils/useDebounce";
 import type { SceneTodoItem } from "../../api/types";
+
+import IconLabelMultiple from "~icons/mdi/label-multiple";
+import { RichTextEditor } from "../forms/RichTextEditor";
 
 export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
@@ -165,15 +167,28 @@ export const SceneForm = () => {
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
           Description
         </p>
-        <SceneDescriptionEditor
+        <RichTextEditor
           value={descriptionHtml}
-          onCommit={handleDescriptionChange}
+          onChange={handleDescriptionChange}
         />
       </div>
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
-          Tags
-        </p>
+        <div className="flex justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
+              Tags
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => setIsTagModalOpen(true)}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+            >
+              <IconLabelMultiple className="inline-block w-4 h-4 mr-1" /> Manage
+            </button>
+          </div>
+        </div>
         <SceneTags
           tags={tags}
           selectedTagIds={selectedScene.tags}
