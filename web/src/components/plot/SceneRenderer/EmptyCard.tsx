@@ -48,7 +48,7 @@ export const EmptyCard = ({
   return (
     <div
       style={themeStyles}
-      className={`card card--empty border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
+      className={`card card--empty h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
         isDisabled ? "opacity-50" : ""
       }`}
     >
