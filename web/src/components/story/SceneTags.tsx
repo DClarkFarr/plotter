@@ -6,7 +6,7 @@ export type SceneTagsProps = {
   tags: Tag[];
   selectedTags: string[];
   tagVariants: SceneTagVariant[];
-  onOpen: () => void;
+  onOpen?: () => void;
 };
 
 export const SceneTags = ({
@@ -20,7 +20,7 @@ export const SceneTags = ({
     tagVariants.map((entry) => [entry.tagId, entry.variant]),
   );
 
-  if (selected.length === 0) {
+  if (selected.length === 0 && onOpen) {
     return (
       <button
         type="button"
@@ -39,7 +39,7 @@ export const SceneTags = ({
           key={tag.id}
           tag={tag}
           variant={variantMap.get(tag.id)}
-          onClick={onOpen}
+          onClick={onOpen ? () => onOpen() : () => {}}
         />
       ))}
     </div>

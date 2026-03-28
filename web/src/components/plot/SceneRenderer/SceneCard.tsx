@@ -7,7 +7,11 @@ import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
 import { findCharacterById } from "../../../utils/characterLookup";
 import { CharacterDisplay } from "../../character/CharacterDisplay";
-import { useStoryCharactersQuery } from "../../../queries/story/story-queries";
+import {
+  useStoryCharactersQuery,
+  useStoryTagsQuery,
+} from "../../../queries/story/story-queries";
+import { SceneTags } from "../../story/SceneTags";
 
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
@@ -15,6 +19,10 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const openSidebar = useSidebarStore((s) => s.openSidebar);
   const cardSize = useStoryStore((s) => s.cardSize);
   const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
+
+  const { data } = useStoryTagsQuery(plot.storyId);
+
+  const tags = data ?? [];
 
   const { width, padding, minHeight } = useGridSizes({ cardSize });
 
@@ -55,7 +63,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
     >
       <div className={`flex flex-col gap-2 h-full relative`}>
         <div className="flex gap-2 items-center">
-          {cardSize !== "sm" && (
+          {cardSize === "lg" && (
             <div className="text-sm uppercase tracking-[0.2em] text-[var(--plot-text)]/70">
               Row {scene.verticalIndex + 1}
             </div>
@@ -71,13 +79,19 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
             </div>
           ) : null}
         </div>
+
+        <SceneTags
+          tags={tags}
+          selectedTags={scene.tags ?? []}
+          tagVariants={scene.tagVariants ?? []}
+        />
+
         <div
           className={`text-lg font-semibold ${cardSize === "md" ? "whitespace-nowrap overflow-hidden text-ellipsis" : ""}`}
         >
-          <span className="inline-block">
-            {scene.title?.trim() || "Untitled scene"}
-          </span>
+          {scene.title?.trim() || "Untitled scene"}
         </div>
+
         {cardSize === "md" && (
           <div className="text-sm text-[var(--plot-text)]/80 line-clamp-3">
             {descriptionText || "No description yet."}
