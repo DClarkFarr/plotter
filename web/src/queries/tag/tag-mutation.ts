@@ -1,6 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { CreateTagInput, DeleteTagInput, Tag } from "../../api/types";
-import { createTag, deleteTag } from "../../api/stories";
+import type {
+  CreateTagInput,
+  DeleteTagInput,
+  Tag,
+  UpdateTagInput,
+} from "../../api/types";
+import {
+  addTagVariant,
+  createTag,
+  deleteTag,
+  deleteTagVariant,
+  updateTag,
+} from "../../api/stories";
 import { useStoryTagsQuery } from "../story/story-queries";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 
@@ -108,6 +119,95 @@ export function useCreateTagMutation(storyId: string) {
     },
     onSettled: () => {
       useSceneEditorStore.getState().setSaving(false);
+    },
+  });
+}
+
+type UpdateTagPayload = UpdateTagInput & {
+  tagId: string;
+};
+
+export function useUpdateTagMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateTagPayload) =>
+      updateTag(storyId, input.tagId, input),
+    onSuccess: (tag) => {
+      queryClient.setQueryData<Tag[]>(
+        useStoryTagsQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [tag];
+          }
+
+          const next = current.map((entry) =>
+            entry.id === tag.id ? tag : entry,
+          );
+          const hasTag = next.some((entry) => entry.id === tag.id);
+          return hasTag ? next : [...next, tag];
+        },
+      );
+    },
+  });
+}
+
+type AddTagVariantPayload = {
+  tagId: string;
+  name: string;
+};
+
+export function useAddTagVariantMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: AddTagVariantPayload) =>
+      addTagVariant(storyId, input.tagId, input.name),
+    onSuccess: (tag) => {
+      queryClient.setQueryData<Tag[]>(
+        useStoryTagsQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [tag];
+          }
+
+          const next = current.map((entry) =>
+            entry.id === tag.id ? tag : entry,
+          );
+          const hasTag = next.some((entry) => entry.id === tag.id);
+          return hasTag ? next : [...next, tag];
+        },
+      );
+    },
+  });
+}
+
+type DeleteTagVariantPayload = {
+  tagId: string;
+  variantName: string;
+};
+
+export function useDeleteTagVariantMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: DeleteTagVariantPayload) =>
+      deleteTagVariant(storyId, input.tagId, input.variantName),
+    onSuccess: (tag) => {
+      queryClient.setQueryData<Tag[]>(
+        useStoryTagsQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [tag];
+          }
+
+          const next = current.map((entry) =>
+            entry.id === tag.id ? tag : entry,
+          );
+          const hasTag = next.some((entry) => entry.id === tag.id);
+          return hasTag ? next : [...next, tag];
+        },
+      );
     },
   });
 }

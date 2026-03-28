@@ -35,6 +35,7 @@ const toSceneResponse = (scene: {
   description: string;
   plotId: { toHexString(): string };
   tags: Array<{ toHexString(): string }>;
+  tagVariants?: Array<{ tagId: { toHexString(): string }; variant: string }>;
   todo: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
@@ -45,6 +46,11 @@ const toSceneResponse = (scene: {
   description: scene.description,
   plotId: scene.plotId.toHexString(),
   tags: scene.tags.map((tagId) => tagId.toHexString()),
+  tagVariants:
+    scene.tagVariants?.map((entry) => ({
+      tagId: entry.tagId.toHexString(),
+      variant: entry.variant,
+    })) ?? [],
   todo: scene.todo,
   scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
@@ -80,6 +86,40 @@ const parseTagIds = (value: unknown): string[] | undefined => {
   });
 
   return tagIds;
+};
+
+const parseTagVariants = (
+  value: unknown,
+): Array<{ tagId: string; variant: string }> | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new ValidationError("tagVariants", "tagVariants must be an array");
+  }
+
+  return value.map((entry) => {
+    if (!entry || typeof entry !== "object") {
+      throw new ValidationError(
+        "tagVariants",
+        "tagVariants entries must be objects",
+      );
+    }
+
+    const tagId = (entry as { tagId?: unknown }).tagId;
+    const variant = (entry as { variant?: unknown }).variant;
+
+    if (typeof tagId !== "string") {
+      throw new ValidationError("tagVariants", "tagId must be a string");
+    }
+
+    if (typeof variant !== "string") {
+      throw new ValidationError("tagVariants", "variant must be a string");
+    }
+
+    return { tagId, variant };
+  });
 };
 
 const parseTodoItems = (value: unknown): SceneTodoItem[] | undefined => {
@@ -174,6 +214,7 @@ const applySceneRoutes = () => {
         : undefined;
       const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
+      const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
       const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = requireNumber(
@@ -186,6 +227,7 @@ const applySceneRoutes = () => {
         description: description ?? "",
         scene: scene ?? "",
         tags: tags ?? [],
+        ...(tagVariants !== undefined && { tagVariants }),
         todo: todo ?? [],
         pov: pov ?? null,
         plotId,
@@ -209,6 +251,7 @@ const applySceneRoutes = () => {
       const description = optionalString(req.body?.description, "description");
       const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
+      const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
       const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = optionalNumber(
@@ -221,6 +264,7 @@ const applySceneRoutes = () => {
         description === undefined &&
         scene === undefined &&
         tags === undefined &&
+        tagVariants === undefined &&
         todo === undefined &&
         verticalIndex === undefined &&
         pov === undefined
@@ -241,6 +285,9 @@ const applySceneRoutes = () => {
       }
       if (tags !== undefined) {
         toSet.tags = tags;
+      }
+      if (tagVariants !== undefined) {
+        toSet.tagVariants = tagVariants;
       }
       if (todo !== undefined) {
         toSet.todo = todo;

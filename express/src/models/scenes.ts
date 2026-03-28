@@ -20,10 +20,16 @@ export interface SceneDefinition extends BaseModelBlueprint {
   description: string;
   plotId: ObjectId;
   tags: ObjectId[];
+  tagVariants?: SceneTagVariant[];
   todo: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
   pov?: ObjectId | null;
+}
+
+export interface SceneTagVariant {
+  tagId: ObjectId;
+  variant: string;
 }
 
 export type SceneBlueprint = ModelBlueprint<SceneDefinition>;
@@ -64,10 +70,16 @@ export interface CreateSceneInput {
   description: string;
   plotId: string | ObjectId;
   tags?: Array<string | ObjectId>;
+  tagVariants?: Array<SceneTagVariantInput>;
   todo?: SceneTodoItem[];
   scene?: string;
   verticalIndex: number;
   pov?: string | ObjectId | null;
+}
+
+export interface SceneTagVariantInput {
+  tagId: string | ObjectId;
+  variant: string;
 }
 
 export const createScene = async (
@@ -82,12 +94,17 @@ export const createScene = async (
   const tagIds = (input.tags ?? []).map((tagId) =>
     ensureObjectId(tagId, "tagId"),
   );
+  const tagVariants = input.tagVariants?.map((entry) => ({
+    tagId: ensureObjectId(entry.tagId, "tagId"),
+    variant: entry.variant,
+  }));
 
   const payload: ModelInsertInput<SceneDefinition> = {
     title: input.title,
     description: input.description,
     plotId,
     tags: tagIds,
+    ...(tagVariants && { tagVariants }),
     todo: input.todo ?? [],
     verticalIndex: input.verticalIndex,
     ...createTimestamps(),
@@ -163,6 +180,21 @@ export const countScenesByTagId = async (
   });
 };
 
+export const countScenesByTagVariant = async (
+  tagId: string | ObjectId,
+  variant: string,
+): Promise<number> => {
+  const collection = getScenesCollection();
+  return collection.countDocuments({
+    tagVariants: {
+      $elemMatch: {
+        tagId: ensureObjectId(tagId, "tagId"),
+        variant,
+      },
+    },
+  });
+};
+
 export const getSceneById = async (
   id: string | ObjectId,
 ): Promise<SceneDocument | null> => {
@@ -194,6 +226,7 @@ export interface UpdateSceneInput {
   description?: string;
   plotId?: string | ObjectId;
   tags?: Array<string | ObjectId>;
+  tagVariants?: Array<SceneTagVariantInput>;
   todo?: SceneTodoItem[];
   scene?: string;
   verticalIndex?: number;
@@ -247,6 +280,13 @@ export const updateSceneById = async (
     const tagIds = updates.tags.map((tagId) => ensureObjectId(tagId, "tagId"));
 
     updatePayload.tags = tagIds;
+  }
+
+  if (updates.tagVariants) {
+    updatePayload.tagVariants = updates.tagVariants.map((entry) => ({
+      tagId: ensureObjectId(entry.tagId, "tagId"),
+      variant: entry.variant,
+    }));
   }
 
   const result = await collection.findOneAndUpdate(

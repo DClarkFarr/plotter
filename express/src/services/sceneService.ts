@@ -5,6 +5,7 @@ import {
   getSceneById,
   getSceneByIdForPlotIds,
   SceneDocument,
+  SceneTagVariantInput,
   shiftSceneIndices,
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
@@ -44,6 +45,50 @@ const assertTagsBelongToStory = async (
   }
 };
 
+const assertTagVariantsValid = async (
+  storyId: ObjectId,
+  tagVariants: SceneTagVariantInput[],
+  tagIds?: ObjectId[],
+): Promise<void> => {
+  if (tagVariants.length === 0) {
+    return;
+  }
+
+  const uniqueIds = Array.from(
+    new Set(
+      tagVariants.map((entry) =>
+        ensureObjectId(entry.tagId, "tagId").toHexString(),
+      ),
+    ),
+  ).map((value) => new ObjectId(value));
+  const tags = await listTagsByIds(uniqueIds);
+
+  if (tags.length !== uniqueIds.length) {
+    throw new Error("Tag variants must belong to the same story");
+  }
+
+  for (const entry of tagVariants) {
+    const tagId = ensureObjectId(entry.tagId, "tagId").toHexString();
+    const tag = tags.find((candidate) => candidate._id.toHexString() === tagId);
+
+    if (!tag || tag.storyId.toHexString() !== storyId.toHexString()) {
+      throw new Error("Tag variants must belong to the same story");
+    }
+
+    if (tagIds && !tagIds.some((id) => id.toHexString() === tagId)) {
+      throw new Error("Tag variants must reference selected tags");
+    }
+
+    if (!tag.variant) {
+      throw new Error("Tag variants must reference variant-enabled tags");
+    }
+
+    if (!tag.variants.includes(entry.variant)) {
+      throw new Error("Tag variants must use a valid variant");
+    }
+  }
+};
+
 const assertPovBelongsToStory = async (
   storyId: ObjectId,
   povId: string | ObjectId,
@@ -79,6 +124,9 @@ export const createScene = async (
   );
 
   await assertTagsBelongToStory(plot.storyId, tagIds);
+  if (input.tagVariants) {
+    await assertTagVariantsValid(plot.storyId, input.tagVariants, tagIds);
+  }
   if (input.pov) {
     await assertPovBelongsToStory(plot.storyId, input.pov);
   }
@@ -137,6 +185,11 @@ export const updateSceneById = async (
     await assertTagsBelongToStory(plot.storyId, tagIds);
   }
 
+  if (updates.tagVariants) {
+    const baseTagIds = tagIds ?? current.tags;
+    await assertTagVariantsValid(plot.storyId, updates.tagVariants, baseTagIds);
+  }
+
   return updateSceneByIdModel(id, {
     ...updates,
     ...(updates.plotId !== undefined && { plotId: plot._id }),
@@ -176,6 +229,11 @@ export const updateSceneForStory = async (
   if (updates.tags) {
     tagIds = updates.tags.map((tagId) => ensureObjectId(tagId, "tagId"));
     await assertTagsBelongToStory(plot.storyId, tagIds);
+  }
+
+  if (updates.tagVariants) {
+    const baseTagIds = tagIds ?? current.tags;
+    await assertTagVariantsValid(plot.storyId, updates.tagVariants, baseTagIds);
   }
 
   return updateSceneByIdModel(sceneId, {

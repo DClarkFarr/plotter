@@ -53,6 +53,13 @@ export interface CreateTagInput {
   color: string;
 }
 
+export interface UpdateTagInput {
+  name?: string;
+  color?: string;
+  variant?: boolean;
+  variants?: string[];
+}
+
 export interface SceneTodoItem {
   text: string;
   isDone: boolean;
@@ -69,10 +76,16 @@ export interface Scene {
   description: string;
   plotId: string;
   tags: string[];
+  tagVariants?: SceneTagVariant[];
   todo: SceneTodoItem[];
   scene: string | null;
   verticalIndex: number;
   pov: string | null;
+}
+
+export interface SceneTagVariant {
+  tagId: string;
+  variant: string;
 }
 
 export interface Plot {
@@ -105,6 +118,7 @@ export interface CreateSceneInput {
   plotId: string;
   scene?: string | null;
   tags?: string[];
+  tagVariants?: SceneTagVariant[];
   todo?: SceneTodoItem[];
   verticalIndex: number;
   pov?: string | null;
@@ -115,6 +129,7 @@ export interface UpdateSceneInput {
   description?: string;
   scene?: string | null;
   tags?: string[];
+  tagVariants?: SceneTagVariant[];
   todo?: SceneTodoItem[];
   verticalIndex?: number;
   pov?: string | null;

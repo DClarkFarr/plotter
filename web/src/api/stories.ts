@@ -7,6 +7,7 @@ import {
   type CreateCharacterInput,
   type CreateSceneInput,
   type CreateTagInput,
+  type UpdateTagInput,
   type CreatePlotInput,
   type Plot,
   type PlotResponse,
@@ -101,6 +102,54 @@ export async function createTag(
 export async function deleteTag(storyId: string, tagId: string): Promise<void> {
   try {
     await apiClient.delete<void>(`/stories/${storyId}/tags/${tagId}`);
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updateTag(
+  storyId: string,
+  tagId: string,
+  input: UpdateTagInput,
+): Promise<Tag> {
+  try {
+    const { data } = await apiClient.patch<TagResponse>(
+      `/stories/${storyId}/tags/${tagId}`,
+      input,
+    );
+    return data.tag;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function addTagVariant(
+  storyId: string,
+  tagId: string,
+  name: string,
+): Promise<Tag> {
+  try {
+    const { data } = await apiClient.post<TagResponse>(
+      `/stories/${storyId}/tags/${tagId}/variants`,
+      { name },
+    );
+    return data.tag;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function deleteTagVariant(
+  storyId: string,
+  tagId: string,
+  variantName: string,
+): Promise<Tag> {
+  try {
+    const encoded = encodeURIComponent(variantName);
+    const { data } = await apiClient.delete<TagResponse>(
+      `/stories/${storyId}/tags/${tagId}/variants/${encoded}`,
+    );
+    return data.tag;
   } catch (err) {
     throw toApiError(err);
   }

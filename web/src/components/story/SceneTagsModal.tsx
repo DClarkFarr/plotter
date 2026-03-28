@@ -1,6 +1,4 @@
 import {
-  Checkbox,
-  Label,
   Modal,
   ModalBody,
   ModalHeader,
@@ -8,36 +6,52 @@ import {
   Button,
 } from "flowbite-react";
 import type { Tag } from "../../api/types";
-import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 
-import IconDelete from "~icons/mdi/delete";
-import IconChevronDown from "~icons/mdi/chevron-down";
-import IconSourceBranch from "~icons/mdi/source-branch";
-import { useDeleteTagMutation } from "../../queries/tag/tag-mutation";
+import {
+  useAddTagVariantMutation,
+  useDeleteTagMutation,
+  useDeleteTagVariantMutation,
+  useUpdateTagMutation,
+} from "../../queries/tag/tag-mutation";
 import { alert } from "../../utils/alert";
+import { SceneTagRow } from "./SceneTagRow";
 
 export type SceneTagsModalProps = {
   isOpen: boolean;
   tags: Tag[];
-  selectedTagIds: string[];
+  selectedTags: SceneTagSelection[];
   onClose: () => void;
-  onToggle: (tagId: string) => void;
+  onToggleTag: (tagId: string) => void;
+  onSelectVariant: (tagId: string, variant: string) => void;
   onCreateTag: (name: string, color: string) => void;
   isCreating?: boolean;
+};
+
+export type SceneTagSelection = {
+  tagId: string;
+  variant?: string;
 };
 
 export const SceneTagsModal = ({
   isOpen,
   tags,
-  selectedTagIds,
+  selectedTags,
   onClose,
-  onToggle,
+  onToggleTag,
+  onSelectVariant,
   onCreateTag,
   isCreating,
 }: SceneTagsModalProps) => {
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#64748b");
   const [isDeleting, setIsDeleting] = useState("");
+  const [isUpdatingVariant, setIsUpdatingVariant] = useState("");
+  const [isAddingVariant, setIsAddingVariant] = useState("");
+  const [deletingVariant, setDeletingVariant] = useState<{
+    tagId: string;
+    variant: string;
+  } | null>(null);
 
   const handleSubmit = () => {
     const trimmed = newTagName.trim();
@@ -55,12 +69,11 @@ export const SceneTagsModal = ({
     }
   };
 
-  const onSafeClick = (event: MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-    event.preventDefault();
-  };
-
   const { mutateAsync } = useDeleteTagMutation();
+  const storyId = tags[0]?.storyId ?? "";
+  const { mutateAsync: updateTag } = useUpdateTagMutation(storyId);
+  const { mutateAsync: addVariant } = useAddTagVariantMutation(storyId);
+  const { mutateAsync: deleteVariant } = useDeleteTagVariantMutation(storyId);
 
   const onClickDelete = async (tag: Tag) => {
     if (isDeleting === tag.id) {
@@ -80,6 +93,68 @@ export const SceneTagsModal = ({
       setIsDeleting("");
     }
   };
+
+  const onConvertToVariant = async (tag: Tag) => {
+    if (isUpdatingVariant === tag.id) {
+      return;
+    }
+    if (!storyId) {
+      return;
+    }
+
+    setIsUpdatingVariant(tag.id);
+    try {
+      await updateTag({ tagId: tag.id, variant: true });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsUpdatingVariant("");
+    }
+  };
+
+  const onAddVariant = async (tagId: string, name: string) => {
+    if (!storyId) {
+      return;
+    }
+    setIsAddingVariant(tagId);
+    try {
+      await addVariant({ tagId, name });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsAddingVariant("");
+    }
+  };
+
+  const onDeleteVariant = async (tagId: string, variant: string) => {
+    if (!storyId) {
+      return;
+    }
+    setDeletingVariant({ tagId, variant });
+    try {
+      await deleteVariant({ tagId, variantName: variant });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setDeletingVariant(null);
+    }
+  };
+
+  const selectedTagIds = useMemo(
+    () => selectedTags.map((selection) => selection.tagId),
+    [selectedTags],
+  );
+  const selectedTagVariants = useMemo(
+    () =>
+      new Map(selectedTags.map((selection) => [selection.tagId, selection])),
+    [selectedTags],
+  );
 
   const sortedTags = useMemo(() => {
     return [...tags].sort((a, b) => {
@@ -142,52 +217,28 @@ export const SceneTagsModal = ({
             </p>
             {sortedTags.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
+              const selectedVariant = selectedTagVariants.get(tag.id)?.variant;
               return (
-                <label
+                <SceneTagRow
                   key={tag.id}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50"
-                >
-                  <Checkbox
-                    checked={checked}
-                    onChange={() => onToggle(tag.id)}
-                  />
-                  <div
-                    className="color-preview w-4 h-4 border border-1 border-black rounded-full bg-[var(--tag-color)]"
-                    style={{ "--tag-color": tag.color }}
-                  ></div>
-                  <Label className="text-sm text-slate-700">{tag.name}</Label>
-
-                  <div
-                    className="checkbox-actions ml-auto -my-2 -mr-3 p-1 bg-gray-100 rounded-l-lg text-sm button-group"
-                    onClick={onSafeClick}
-                  >
-                    <div>
-                      {tag.variant ? (
-                        <Button type="button" color="gray" size="xs">
-                          <span>{tag.variants.length}</span>
-                          <span>
-                            <IconChevronDown className="ml-1" />
-                          </span>
-                        </Button>
-                      ) : (
-                        <Button type="button" color="sky" size="xs">
-                          <IconSourceBranch />
-                        </Button>
-                      )}
-                    </div>
-                    <div>
-                      <Button
-                        type="button"
-                        color="red"
-                        size="xs"
-                        onClick={() => onClickDelete(tag)}
-                        disabled={isDeleting === tag.id}
-                      >
-                        <IconDelete />
-                      </Button>
-                    </div>
-                  </div>
-                </label>
+                  tag={tag}
+                  checked={checked}
+                  onToggle={onToggleTag}
+                  selectedVariant={selectedVariant}
+                  onSelectVariant={onSelectVariant}
+                  onConvertToVariant={onConvertToVariant}
+                  onDelete={onClickDelete}
+                  onAddVariant={onAddVariant}
+                  onDeleteVariant={onDeleteVariant}
+                  isDeleting={isDeleting === tag.id}
+                  isUpdatingVariant={isUpdatingVariant === tag.id}
+                  isAddingVariant={isAddingVariant === tag.id}
+                  deletingVariant={
+                    deletingVariant?.tagId === tag.id
+                      ? deletingVariant.variant
+                      : undefined
+                  }
+                />
               );
             })}
           </div>

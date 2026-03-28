@@ -1,15 +1,24 @@
-import type { Tag } from "../../api/types";
+import type { SceneTagVariant, Tag } from "../../api/types";
 import { TagBadge } from "./TagBadge";
 import IconPlusThick from "~icons/mdi/plus-thick";
 
 export type SceneTagsProps = {
   tags: Tag[];
-  selectedTagIds: string[];
+  selectedTags: string[];
+  tagVariants: SceneTagVariant[];
   onOpen: () => void;
 };
 
-export const SceneTags = ({ tags, selectedTagIds, onOpen }: SceneTagsProps) => {
-  const selected = tags.filter((tag) => selectedTagIds.includes(tag.id));
+export const SceneTags = ({
+  tags,
+  selectedTags,
+  tagVariants,
+  onOpen,
+}: SceneTagsProps) => {
+  const selected = tags.filter((tag) => selectedTags.includes(tag.id));
+  const variantMap = new Map(
+    tagVariants.map((entry) => [entry.tagId, entry.variant]),
+  );
 
   if (selected.length === 0) {
     return (
@@ -26,7 +35,12 @@ export const SceneTags = ({ tags, selectedTagIds, onOpen }: SceneTagsProps) => {
   return (
     <div className="flex flex-wrap gap-2">
       {selected.map((tag) => (
-        <TagBadge key={tag.id} tag={tag} onClick={onOpen} />
+        <TagBadge
+          key={tag.id}
+          tag={tag}
+          variant={variantMap.get(tag.id)}
+          onClick={onOpen}
+        />
       ))}
     </div>
   );

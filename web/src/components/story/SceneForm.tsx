@@ -128,11 +128,42 @@ export const SceneForm = () => {
       return;
     }
     const selectedTagIds = selectedScene.tags ?? [];
-    const next = selectedTagIds.includes(tagId)
+    const isSelected = selectedTagIds.includes(tagId);
+    const nextTags = isSelected
       ? selectedTagIds.filter((id) => id !== tagId)
       : [...selectedTagIds, tagId];
 
-    updateSceneMutation.mutate({ sceneId: selectedScene.id, tags: next });
+    const nextVariants = (selectedScene.tagVariants ?? []).filter(
+      (entry) => entry.tagId !== tagId,
+    );
+
+    updateSceneMutation.mutate({
+      sceneId: selectedScene.id,
+      tags: nextTags,
+      tagVariants: nextVariants,
+    });
+  };
+
+  const handleSelectVariant = (tagId: string, variant: string) => {
+    if (!selectedScene) {
+      return;
+    }
+
+    const selectedTagIds = selectedScene.tags ?? [];
+    const nextTags = selectedTagIds.includes(tagId)
+      ? selectedTagIds
+      : [...selectedTagIds, tagId];
+
+    const nextVariants = (selectedScene.tagVariants ?? []).filter(
+      (entry) => entry.tagId !== tagId,
+    );
+    nextVariants.push({ tagId, variant });
+
+    updateSceneMutation.mutate({
+      sceneId: selectedScene.id,
+      tags: nextTags,
+      tagVariants: nextVariants,
+    });
   };
 
   const handleCreateTag = (name: string, color: string) => {
@@ -274,16 +305,23 @@ export const SceneForm = () => {
         </div>
         <SceneTags
           tags={tags}
-          selectedTagIds={selectedScene.tags}
+          selectedTags={selectedScene.tags ?? []}
+          tagVariants={selectedScene.tagVariants ?? []}
           onOpen={() => setIsTagModalOpen(true)}
         />
       </div>
       <SceneTagsModal
         isOpen={isTagModalOpen}
         tags={tags}
-        selectedTagIds={selectedScene.tags}
+        selectedTags={(selectedScene.tags ?? []).map((tagId) => ({
+          tagId,
+          variant: selectedScene.tagVariants?.find(
+            (entry) => entry.tagId === tagId,
+          )?.variant,
+        }))}
         onClose={() => setIsTagModalOpen(false)}
-        onToggle={handleToggleTag}
+        onToggleTag={handleToggleTag}
+        onSelectVariant={handleSelectVariant}
         onCreateTag={handleCreateTag}
         isCreating={createTagMutation.isPending}
       />

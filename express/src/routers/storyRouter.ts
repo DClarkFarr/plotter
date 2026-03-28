@@ -9,7 +9,13 @@ import {
   listStoryTagsForUser,
   updateStoryById,
 } from "../services/storyService";
-import { createTag, deleteTagById } from "../services/tagService";
+import {
+  addVariantToTag,
+  createTag,
+  deleteTagById,
+  deleteVariantFromTag,
+  updateTagForStory,
+} from "../services/tagService";
 import {
   createPlot,
   getPlotForStory,
@@ -63,6 +69,7 @@ const toSceneResponse = (scene: {
   description: string;
   plotId: { toHexString(): string };
   tags: Array<{ toHexString(): string }>;
+  tagVariants?: Array<{ tagId: { toHexString(): string }; variant: string }>;
   todo: Array<{ text: string; isDone: boolean }>;
   scene?: string;
   verticalIndex: number;
@@ -73,6 +80,11 @@ const toSceneResponse = (scene: {
   description: scene.description,
   plotId: scene.plotId.toHexString(),
   tags: scene.tags.map((tagId) => tagId.toHexString()),
+  tagVariants:
+    scene.tagVariants?.map((entry) => ({
+      tagId: entry.tagId.toHexString(),
+      variant: entry.variant,
+    })) ?? [],
   todo: scene.todo,
   scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
@@ -125,6 +137,47 @@ const toStoryResponse = (
   createdAt: story.createdAt.toISOString(),
   updatedAt: story.updatedAt ? story.updatedAt.toISOString() : null,
 });
+
+const parseOptionalBoolean = (
+  value: unknown,
+  label: string,
+): boolean | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new ValidationError(label, `${label} must be a boolean`);
+  }
+
+  return value;
+};
+
+const parseOptionalStringArray = (
+  value: unknown,
+  label: string,
+): string[] | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new ValidationError(label, `${label} must be an array`);
+  }
+
+  return value.map((entry) => {
+    if (typeof entry !== "string") {
+      throw new ValidationError(label, `${label} must be an array of strings`);
+    }
+
+    const trimmed = entry.trim();
+    if (!trimmed) {
+      throw new ValidationError(label, `${label} entries must be non-empty`);
+    }
+
+    return trimmed;
+  });
+};
 
 const handleError = (res: Response, error: unknown): void => {
   if (error instanceof AuthError) {
@@ -223,6 +276,91 @@ const applyStoryRoutes = () => {
       });
 
       res.status(201).json({ tag: toTagResponse(tag) });
+    }),
+  );
+
+  storyRouter.patch(
+    "/:storyId/tags/:tagId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const tagId = assertparamIsString(req.params.tagId, "tagId");
+
+      await getStoryForUser(storyId, userId);
+
+      const name = optionalString(req.body?.name, "name");
+      const color = optionalString(req.body?.color, "color");
+      const variant = parseOptionalBoolean(req.body?.variant, "variant");
+      const variants = parseOptionalStringArray(req.body?.variants, "variants");
+
+      if (
+        name === undefined &&
+        color === undefined &&
+        variant === undefined &&
+        variants === undefined
+      ) {
+        throw new ValidationError("body", "Update payload is empty");
+      }
+
+      const updated = await updateTagForStory(storyId, tagId, {
+        ...(name !== undefined && { name }),
+        ...(color !== undefined && { color }),
+        ...(variant !== undefined && { variant }),
+        ...(variants !== undefined && { variants }),
+      });
+
+      if (!updated) {
+        res.status(404).json({ error: "Tag not found" });
+        return;
+      }
+
+      res.status(200).json({ tag: toTagResponse(updated) });
+    }),
+  );
+
+  storyRouter.post(
+    "/:storyId/tags/:tagId/variants",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const tagId = assertparamIsString(req.params.tagId, "tagId");
+
+      await getStoryForUser(storyId, userId);
+
+      const name = requireString(req.body?.name, "name");
+      const updated = await addVariantToTag(storyId, tagId, name);
+
+      if (!updated) {
+        res.status(404).json({ error: "Tag not found" });
+        return;
+      }
+
+      res.status(200).json({ tag: toTagResponse(updated) });
+    }),
+  );
+
+  storyRouter.delete(
+    "/:storyId/tags/:tagId/variants/:variantName",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const tagId = assertparamIsString(req.params.tagId, "tagId");
+      const rawVariant = assertparamIsString(
+        req.params.variantName,
+        "variantName",
+      );
+
+      await getStoryForUser(storyId, userId);
+
+      const variantName = decodeURIComponent(rawVariant);
+      const updated = await deleteVariantFromTag(storyId, tagId, variantName);
+
+      if (!updated) {
+        res.status(404).json({ error: "Tag not found" });
+        return;
+      }
+
+      res.status(200).json({ tag: toTagResponse(updated) });
     }),
   );
 

@@ -33,6 +33,7 @@ export function useCreateSceneMutation(storyId: string) {
           description: input.description,
           plotId: input.plotId,
           tags: input.tags ?? [],
+          tagVariants: input.tagVariants ?? [],
           todo: input.todo ?? [],
           scene: input.scene ?? null,
           verticalIndex: input.verticalIndex,
