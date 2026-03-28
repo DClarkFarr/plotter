@@ -15,7 +15,7 @@ import IconMoveRight from "~icons/mdi/arrow-right-thick";
 import IconMoveLeft from "~icons/mdi/arrow-left-thick";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import IconClose from "~icons/mdi/close-thick";
-import { useClickOutside } from "../../../hooks/use-click-outside";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
 export type PlotHeaderProps = {
   storyId: string;
