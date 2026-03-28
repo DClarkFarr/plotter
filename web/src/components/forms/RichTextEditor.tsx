@@ -27,9 +27,14 @@ import IconRedo from "~icons/mdi/redo";
 export type RichTextEditorProps = {
   value: string;
   onChange: (value: string) => void;
+  isSimpleMode?: boolean;
 };
 
-export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
+export const RichTextEditor = ({
+  value,
+  onChange,
+  isSimpleMode = false,
+}: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [TextStyleKit, StarterKit],
     content: value,
@@ -40,13 +45,19 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
 
   return (
     <div className="">
-      {editor && <MenuBar editor={editor} />}
+      {editor && <MenuBar editor={editor} isSimpleMode={isSimpleMode} />}
       <EditorContent editor={editor} />
     </div>
   );
 };
 
-export const MenuBar = ({ editor }: { editor: Editor }) => {
+export const MenuBar = ({
+  editor,
+  isSimpleMode,
+}: {
+  editor: Editor;
+  isSimpleMode: boolean;
+}) => {
   const editorState = useEditorState({
     editor,
     selector: menuBarStateSelector,
@@ -109,84 +120,87 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             <IconFormatClear className="h-4 w-4" />
           </Button>
         </Tooltip>
-        <Tooltip content="Clear nodes" className="whitespace-nowrap">
-          <Button
-            color="gray"
-            outline
-            size="xs"
-            onClick={() => editor.chain().focus().clearNodes().run()}
-            disabled={!editorState.canClearNodes}
-            aria-label="Clear nodes"
-          >
-            <IconBroom className="h-4 w-4" />
-          </Button>
-        </Tooltip>
+        {!isSimpleMode && (
+          <Tooltip content="Clear nodes" className="whitespace-nowrap">
+            <Button
+              color="gray"
+              outline
+              size="xs"
+              onClick={() => editor.chain().focus().clearNodes().run()}
+              disabled={!editorState.canClearNodes}
+              aria-label="Clear nodes"
+            >
+              <IconBroom className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+        )}
       </ButtonGroup>
-      <ButtonGroup className="button-group">
-        <Tooltip content="Paragraph" className="whitespace-nowrap">
-          <Button
-            color={editorState.isParagraph ? "dark" : "gray"}
-            outline={!editorState.isParagraph}
-            size="xs"
-            onClick={() => editor.chain().focus().setParagraph().run()}
-            aria-label="Paragraph"
-          >
-            P
-          </Button>
-        </Tooltip>
-        <Tooltip content="H1" className="whitespace-nowrap">
-          <Button
-            color={editorState.isHeading1 ? "dark" : "gray"}
-            outline={!editorState.isHeading1}
-            size="xs"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 1 }).run()
-            }
-            aria-label="Heading 1"
-          >
-            H1
-          </Button>
-        </Tooltip>
-        <Tooltip content="H2" className="whitespace-nowrap">
-          <Button
-            color={editorState.isHeading2 ? "dark" : "gray"}
-            outline={!editorState.isHeading2}
-            size="xs"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-            aria-label="Heading 2"
-          >
-            H2
-          </Button>
-        </Tooltip>
-        <Tooltip content="H3" className="whitespace-nowrap">
-          <Button
-            color={editorState.isHeading3 ? "dark" : "gray"}
-            outline={!editorState.isHeading3}
-            size="xs"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 3 }).run()
-            }
-            aria-label="Heading 3"
-          >
-            H3
-          </Button>
-        </Tooltip>
-        <Tooltip content="H4" className="whitespace-nowrap">
-          <Button
-            color={editorState.isHeading4 ? "dark" : "gray"}
-            outline={!editorState.isHeading4}
-            size="xs"
-            onClick={() =>
-              editor.chain().focus().toggleHeading({ level: 4 }).run()
-            }
-            aria-label="Heading 4"
-          >
-            H4
-          </Button>
-        </Tooltip>
-        {/* <Tooltip content="H5" className="whitespace-nowrap">
+      {!isSimpleMode && (
+        <ButtonGroup className="button-group">
+          <Tooltip content="Paragraph" className="whitespace-nowrap">
+            <Button
+              color={editorState.isParagraph ? "dark" : "gray"}
+              outline={!editorState.isParagraph}
+              size="xs"
+              onClick={() => editor.chain().focus().setParagraph().run()}
+              aria-label="Paragraph"
+            >
+              P
+            </Button>
+          </Tooltip>
+          <Tooltip content="H1" className="whitespace-nowrap">
+            <Button
+              color={editorState.isHeading1 ? "dark" : "gray"}
+              outline={!editorState.isHeading1}
+              size="xs"
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              aria-label="Heading 1"
+            >
+              H1
+            </Button>
+          </Tooltip>
+          <Tooltip content="H2" className="whitespace-nowrap">
+            <Button
+              color={editorState.isHeading2 ? "dark" : "gray"}
+              outline={!editorState.isHeading2}
+              size="xs"
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              aria-label="Heading 2"
+            >
+              H2
+            </Button>
+          </Tooltip>
+          <Tooltip content="H3" className="whitespace-nowrap">
+            <Button
+              color={editorState.isHeading3 ? "dark" : "gray"}
+              outline={!editorState.isHeading3}
+              size="xs"
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+              aria-label="Heading 3"
+            >
+              H3
+            </Button>
+          </Tooltip>
+          <Tooltip content="H4" className="whitespace-nowrap">
+            <Button
+              color={editorState.isHeading4 ? "dark" : "gray"}
+              outline={!editorState.isHeading4}
+              size="xs"
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 4 }).run()
+              }
+              aria-label="Heading 4"
+            >
+              H4
+            </Button>
+          </Tooltip>
+          {/* <Tooltip content="H5" className="whitespace-nowrap">
           <Button
             color={editorState.isHeading5 ? "dark" : "gray"}
             outline={!editorState.isHeading5}
@@ -212,7 +226,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             H6
           </Button>
         </Tooltip> */}
-      </ButtonGroup>
+        </ButtonGroup>
+      )}
       <ButtonGroup className="button-group">
         <Tooltip content="Bullet list" className="whitespace-nowrap">
           <Button
@@ -237,55 +252,58 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
           </Button>
         </Tooltip>
       </ButtonGroup>
-      <ButtonGroup className="button-group">
-        <Tooltip content="Code" className="whitespace-nowrap">
-          <Button
-            color={editorState.isCode ? "dark" : "gray"}
-            outline={!editorState.isCode}
-            size="xs"
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            disabled={!editorState.canCode}
-            aria-label="Code"
-          >
-            <IconCodeTags className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Code block" className="whitespace-nowrap">
-          <Button
-            color={editorState.isCodeBlock ? "dark" : "gray"}
-            outline={!editorState.isCodeBlock}
-            size="xs"
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            aria-label="Code block"
-          >
-            <IconCodeBraces className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-        <Tooltip content="Blockquote" className="whitespace-nowrap">
-          <Button
-            color={editorState.isBlockquote ? "dark" : "gray"}
-            outline={!editorState.isBlockquote}
-            size="xs"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            aria-label="Blockquote"
-          >
-            <IconFormatQuoteClose className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-      </ButtonGroup>
-      <ButtonGroup className="button-group">
-        <Tooltip content="Horizontal rule" className="whitespace-nowrap">
-          <Button
-            color="gray"
-            outline
-            size="xs"
-            onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            aria-label="Horizontal rule"
-          >
-            <IconMinus className="h-4 w-4" />
-          </Button>
-        </Tooltip>
-        {/* <Tooltip content="Hard break" className="whitespace-nowrap">
+      {!isSimpleMode && (
+        <ButtonGroup className="button-group">
+          <Tooltip content="Code" className="whitespace-nowrap">
+            <Button
+              color={editorState.isCode ? "dark" : "gray"}
+              outline={!editorState.isCode}
+              size="xs"
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              disabled={!editorState.canCode}
+              aria-label="Code"
+            >
+              <IconCodeTags className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Code block" className="whitespace-nowrap">
+            <Button
+              color={editorState.isCodeBlock ? "dark" : "gray"}
+              outline={!editorState.isCodeBlock}
+              size="xs"
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              aria-label="Code block"
+            >
+              <IconCodeBraces className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Blockquote" className="whitespace-nowrap">
+            <Button
+              color={editorState.isBlockquote ? "dark" : "gray"}
+              outline={!editorState.isBlockquote}
+              size="xs"
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              aria-label="Blockquote"
+            >
+              <IconFormatQuoteClose className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      )}
+      {!isSimpleMode && (
+        <ButtonGroup className="button-group">
+          <Tooltip content="Horizontal rule" className="whitespace-nowrap">
+            <Button
+              color="gray"
+              outline
+              size="xs"
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              aria-label="Horizontal rule"
+            >
+              <IconMinus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          {/* <Tooltip content="Hard break" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -296,7 +314,8 @@ export const MenuBar = ({ editor }: { editor: Editor }) => {
             <IconKeyboardReturn className="h-4 w-4" />
           </Button>
         </Tooltip> */}
-      </ButtonGroup>
+        </ButtonGroup>
+      )}
       <ButtonGroup className="button-group">
         <Tooltip content="Undo" className="whitespace-nowrap">
           <Button

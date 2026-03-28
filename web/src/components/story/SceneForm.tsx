@@ -168,6 +168,7 @@ export const SceneForm = () => {
         <RichTextEditor
           value={descriptionHtml}
           onChange={handleDescriptionChange}
+          isSimpleMode
         />
       </div>
       <div className="mb-4">
