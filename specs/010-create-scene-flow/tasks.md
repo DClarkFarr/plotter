@@ -41,7 +41,7 @@
 - [x] T006 [US1] Mount scene router under stories in express/src/routers/apiRouter.ts
 - [x] T007 [P] [US1] Extend scene workflow helpers in express/src/services/sceneService.ts (story ownership checks, create/update orchestration)
 - [x] T008 [P] [US1] Add scene lookup helpers for story scoping in express/src/models/scenes.ts
-- [x] T009 [P] [US1] Add create/update scene mutations with optimistic cache updates in web/src/hooks/useStory.ts
+- [x] T009 [P] [US1] Add create/update scene mutations with optimistic cache updates in web/src/queries/scene/scene-mutations.ts
 - [x] T010 [US1] Wire EmptyCard create action to createScene mutation in web/src/components/plot/SceneRenderer/EmptyCard.tsx
 - [x] T012 [US1] Add scene selection actions and sidebar-open behavior in web/src/store/sceneEditorStore.ts
 - [x] T013 [US1] Render selected scene summary in sidebar using web/src/components/story/StoryForm.tsx and web/src/components/layout/DashboardLayout.tsx
@@ -61,7 +61,7 @@
 - [x] T014 [P] [US2] Add TipTap dependencies in web/package.json
 - [x] T015 [US2] Implement in-place title input styling in web/src/components/story/StoryForm.tsx
 - [x] T016 [US2] Add rich text editor component in web/src/components/story/SceneDescriptionEditor.tsx
-- [x] T017 [US2] Persist title/description edits via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T017 [US2] Persist title/description edits via updateScene mutation in web/src/queries/scene/scene-mutations.ts
 
 **Checkpoint**: User Story 2 is fully functional and testable independently
 
@@ -78,7 +78,7 @@
 - [x] T018 [P] [US3] Create inline tag badge list in web/src/components/story/SceneTags.tsx
 - [x] T019 [P] [US3] Create tag selection modal in web/src/components/story/SceneTagsModal.tsx
 - [x] T020 [US3] Wire modal state to web/src/store/sceneEditorStore.ts and useStoryTagsQuery in web/src/components/story/StoryForm.tsx
-- [x] T021 [US3] Persist tag changes via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T021 [US3] Persist tag changes via updateScene mutation in web/src/queries/scene/scene-mutations.ts
 
 **Checkpoint**: User Story 3 is fully functional and testable independently
 
@@ -95,7 +95,7 @@
 - [x] T022 [P] [US4] Add dnd-kit dependencies in web/package.json
 - [x] T023 [US4] Build todo list UI in web/src/components/story/SceneTodoList.tsx
 - [x] T024 [US4] Add dnd-kit sortable behavior in web/src/components/story/SceneTodoList.tsx
-- [x] T025 [US4] Persist todo updates via updateScene mutation in web/src/hooks/useStory.ts
+- [x] T025 [US4] Persist todo updates via updateScene mutation in web/src/queries/scene/scene-mutations.ts
 
 **Checkpoint**: User Story 4 is fully functional and testable independently
 
@@ -106,7 +106,7 @@
 **Purpose**: Improvements that affect multiple user stories
 
 - [x] T026 Update quickstart validation notes in specs/010-create-scene-flow/quickstart.md
-- [x] T027 [P] Review error handling consistency in express/src/routers/sceneRouter.ts and web/src/hooks/useStory.ts
+- [x] T027 [P] Review error handling consistency in express/src/routers/sceneRouter.ts and web/src/queries/scene/scene-mutations.ts
 
 ---
 
@@ -121,7 +121,7 @@
 - [x] T032 Update sidebar/selection flow to resolve selected scene from queries instead of store state in web/src/components/layout/DashboardLayout.tsx and web/src/components/story/StoryForm.tsx
 - [x] T033 Update StoryForm inputs to use internal draft state + debounced mutations (no props->state syncing) in web/src/components/story/StoryForm.tsx
 - [x] T034 [P] Add tag creation endpoint and API client in express/src/routers/storyRouter.ts and web/src/api/stories.ts
-- [x] T035 [P] Add tag creation mutation in web/src/hooks/useStory.ts
+- [x] T035 [P] Add tag creation mutation in web/src/queries/tag/tag-mutation.ts
 
 **Checkpoint**: Updated UX and state-management changes validated against quickstart
 

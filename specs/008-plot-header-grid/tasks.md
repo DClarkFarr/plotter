@@ -25,7 +25,7 @@
 - [x] T003 Add plot create endpoint in express/src/routers/storyRouter.ts with validation and error handling
 - [x] T004 Add plot update endpoint in express/src/routers/storyRouter.ts with validation and error handling
 - [x] T005 [P] Add plot create/update functions in web/src/api/stories.ts
-- [x] T006 [P] Add plot create/update mutations with optimistic cache updates in web/src/hooks/useStory.ts
+- [x] T006 [P] Add plot create/update mutations with optimistic cache updates in web/src/queries/plot/plot-mutations.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

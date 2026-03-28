@@ -32,7 +32,7 @@
 - [x] T008 Update scene router parsing and response mapping for pov in express/src/routers/sceneRouter.ts
 - [x] T009 Add Character types and pov field to scenes in web/src/api/types.ts
 - [x] T010 Add list/create character API methods in web/src/api/stories.ts
-- [x] T011 Update story hooks with character queries/mutations and pov optimistic updates in web/src/hooks/useStory.ts
+- [x] T011 Update character queries/mutations and POV optimistic updates in web/src/queries/character/character-mutations.ts and web/src/queries/scene/scene-mutations.ts
 
 ---
 

@@ -26,7 +26,7 @@
 - [x] T002 [P] Extend API domain types for Tag/Plot/Scene and responses in web/src/api/types.ts
 - [x] T003 [P] Add story tags, plots-with-scenes, and update story API calls in web/src/api/stories.ts
 - [x] T004 [P] Create Zustand story UI store for filters and card settings in web/src/store/storyStore.ts
-- [x] T005 Add React Query hooks for story, tags, plots, and update mutation in web/src/hooks/useStory.ts
+- [x] T005 Add React Query hooks for story, tags, plots, and update mutation in web/src/queries/story/story-queries.ts and web/src/queries/story/story-mutations.ts
 - [x] T006 [P] Add listScenesByPlotIds helper in express/src/models/scenes.ts
 - [x] T007 Add story tags and plots-with-scenes service helpers in express/src/services/storyService.ts
 - [x] T008 Add PATCH/GET story endpoints for tags, plots, and update in express/src/routers/storyRouter.ts

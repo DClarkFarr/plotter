@@ -76,6 +76,12 @@ A user can still navigate the story page safely when data is missing, delayed, o
 - **FR-011**: Clicking save MUST update the in-page state immediately, trigger a refresh of story data, and return to view mode.
 - **FR-012**: If any required data fetch fails, the page MUST display a clear error state and avoid showing stale values.
 
+### Data Access Organization
+
+- Queries and mutations are organized by model so data access is discoverable and consistent.
+- Query keys are defined through shared helper methods to keep caching and invalidation aligned.
+- This structure reduces ambiguity as the data surface grows and avoids inconsistent cache identifiers.
+
 ### Key Entities _(include if feature involves data)_
 
 - **Story**: Represents the story metadata, including title and description.

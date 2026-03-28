@@ -80,6 +80,12 @@ Writers cannot create scenes in columns that do not yet have a plot header, prev
 - **FR-011**: Create and update actions MUST provide immediate UI feedback while the change is being saved and roll back on failure with an error state.
 - **FR-012**: The system MUST expose or reuse plot create and plot update operations required for this feature.
 
+### Data Access Organization
+
+- Queries and mutations are organized by model so plot data access remains easy to locate.
+- Query keys are defined through shared helper methods to keep caching and invalidation consistent.
+- This structure reduces ambiguity as the data surface grows and avoids inconsistent cache identifiers.
+
 ### Acceptance Coverage
 
 - **FR-001**: Covered by User Story 1, Scenario 1 (empty columns present and actionable).
