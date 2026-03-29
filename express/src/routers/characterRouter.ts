@@ -2,7 +2,9 @@ import express, { Request, Response } from "express";
 import { AuthError, ValidationError } from "../services/authService";
 import {
   createCharacterForStory,
+  deleteCharacterForStory,
   listCharactersForStory,
+  updateCharacterForStory,
 } from "../services/characterService";
 import { getStoryForUser } from "../services/storyService";
 import type { CreateCharacterInput } from "../models/characters";
@@ -66,6 +68,11 @@ const handleError = (res: Response, error: unknown): void => {
   if (error instanceof Error) {
     if (error.message === "Story not found") {
       res.status(404).json({ error: error.message });
+      return;
+    }
+
+    if (error.message === "Character is assigned to scenes") {
+      res.status(409).json({ error: error.message });
       return;
     }
 
@@ -133,6 +140,76 @@ const applyCharacterRoutes = () => {
       const created = await createCharacterForStory(toSet);
 
       res.status(201).json({ character: toCharacterResponse(created) });
+    }),
+  );
+
+  characterRouter.patch(
+    "/:storyId/characters/:characterId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const characterId = assertparamIsString(
+        req.params.characterId,
+        "characterId",
+      );
+
+      const story = await getStoryForUser(storyId, userId);
+      if (!story) {
+        throw new Error("Story not found");
+      }
+
+      const title = parseOptionalStringField(req.body?.title, "title");
+      const description = parseOptionalStringField(
+        req.body?.description,
+        "description",
+      );
+      const imageUrl = parseOptionalStringField(req.body?.imageUrl, "imageUrl");
+
+      if (
+        title === undefined &&
+        description === undefined &&
+        imageUrl === undefined
+      ) {
+        throw new ValidationError("body", "Update payload is empty");
+      }
+
+      const updated = await updateCharacterForStory(storyId, characterId, {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(imageUrl !== undefined && { imageUrl }),
+      });
+
+      if (!updated) {
+        res.status(404).json({ error: "Character not found" });
+        return;
+      }
+
+      res.status(200).json({ character: toCharacterResponse(updated) });
+    }),
+  );
+
+  characterRouter.delete(
+    "/:storyId/characters/:characterId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const characterId = assertparamIsString(
+        req.params.characterId,
+        "characterId",
+      );
+
+      const story = await getStoryForUser(storyId, userId);
+      if (!story) {
+        throw new Error("Story not found");
+      }
+
+      const deleted = await deleteCharacterForStory(storyId, characterId);
+      if (!deleted) {
+        res.status(404).json({ error: "Character not found" });
+        return;
+      }
+
+      res.status(204).send();
     }),
   );
 };

@@ -36,3 +36,4 @@ VITE_CDN_BASE_URL=http://localhost:4000
 - Edit a character name/description inline and confirm the list updates.
 - Upload a character image and confirm it loads via `VITE_CDN_BASE_URL`.
 - Attempt to delete a character assigned as a scene POV and confirm deletion is blocked with a clear message.
+- Verify `/uploads/characters` returns the uploaded image when requested directly.

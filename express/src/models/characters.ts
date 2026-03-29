@@ -135,3 +135,14 @@ export const updateCharacterById = async (
 
   return result;
 };
+
+export const deleteCharacterById = async (
+  id: string | ObjectId,
+): Promise<boolean> => {
+  const collection = getCharactersCollection();
+  const result = await collection.deleteOne({
+    _id: ensureObjectId(id, "characterId"),
+  });
+
+  return result.deletedCount === 1;
+};

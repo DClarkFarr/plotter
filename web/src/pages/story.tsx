@@ -9,12 +9,15 @@ import { PlotGrid } from "../components/plot/PlotGrid";
 import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
 import IconFilter from "~icons/mdi/filter";
+import IconAccountGroup from "~icons/mdi/account-group";
+import IconTag from "~icons/mdi/tag";
 import { Tooltip } from "flowbite-react";
 import {
   useStoryPlotsQuery,
   useStoryQuery,
   useStoryTagsQuery,
 } from "../queries/story/story-queries";
+import { useSidebarStore } from "../store/sidebarStore";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -25,6 +28,8 @@ export function StoryPage() {
   const plotsQuery = useStoryPlotsQuery(storyId);
   const { cardDisplay, cardSize, setCardDisplay, setCardSize } =
     useStoryStore();
+  const addSidebarView = useSidebarStore((state) => state.addSidebarView);
+  const openSidebar = useSidebarStore((state) => state.openSidebar);
 
   const story = storyQuery.data;
   const plots = plotsQuery.data ?? [];
@@ -121,6 +126,38 @@ export function StoryPage() {
             >
               <IconFilter className="text-base text-slate-600" />
             </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Assets
+            </span>
+            <div className="button-group">
+              <Tooltip content="Manage characters">
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSidebarView("character");
+                    openSidebar();
+                  }}
+                  className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
+                >
+                  <IconAccountGroup className="text-sm" />
+                </button>
+              </Tooltip>
+              <Tooltip content="Manage tags">
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSidebarView("tag");
+                    openSidebar();
+                  }}
+                  className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
+                >
+                  <IconTag className="text-sm" />
+                </button>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </Portal>

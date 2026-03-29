@@ -48,6 +48,17 @@ export interface CreateCharacterInput {
   imageUrl?: string | null;
 }
 
+export interface UpdateCharacterInput {
+  title?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+}
+
+export interface DeleteCharacterInput {
+  storyId: string;
+  characterId: string;
+}
+
 export interface CreateTagInput {
   name: string;
   color: string;

@@ -20,6 +20,7 @@ import {
   type Story,
   type StoryResponse,
   type StoriesResponse,
+  type UpdateCharacterInput,
   type UpdateSceneInput,
   type UpdatePlotInput,
 } from "./types";
@@ -165,6 +166,35 @@ export async function createCharacter(
       input,
     );
     return data.character;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updateCharacter(
+  storyId: string,
+  characterId: string,
+  input: UpdateCharacterInput,
+): Promise<Character> {
+  try {
+    const { data } = await apiClient.patch<CharacterResponse>(
+      `/stories/${storyId}/characters/${characterId}`,
+      input,
+    );
+    return data.character;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function deleteCharacter(
+  storyId: string,
+  characterId: string,
+): Promise<void> {
+  try {
+    await apiClient.delete<void>(
+      `/stories/${storyId}/characters/${characterId}`,
+    );
   } catch (err) {
     throw toApiError(err);
   }

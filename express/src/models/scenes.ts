@@ -195,6 +195,15 @@ export const countScenesByTagVariant = async (
   });
 };
 
+export const countScenesByPovCharacter = async (
+  characterId: string | ObjectId,
+): Promise<number> => {
+  const collection = getScenesCollection();
+  return collection.countDocuments({
+    pov: ensureObjectId(characterId, "characterId"),
+  });
+};
+
 export const getSceneById = async (
   id: string | ObjectId,
 ): Promise<SceneDocument | null> => {

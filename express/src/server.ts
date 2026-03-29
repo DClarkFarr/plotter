@@ -1,10 +1,13 @@
 import dotenv from "dotenv";
+import express from "express";
+import path from "path";
 
 dotenv.config({ path: [".env.local", ".env"] });
 
 import { app } from "./utils/app";
 
 import { apiRouter } from "./routers/apiRouter";
+import { uploadRouter } from "./routers/uploadRouter";
 import { webRouter } from "./routers/webRouter";
 
 const startServer = async () => {
@@ -21,6 +24,8 @@ const startServer = async () => {
   app.setupSessions();
 
   app.api.use("/api", apiRouter);
+  app.api.use("/uploads", uploadRouter);
+  app.api.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
   app.api.use("/", webRouter);
 
   app.listen();

@@ -1,5 +1,6 @@
 import { deriveAvatarInitials } from "../layout/avatarInitials";
 import { deriveAvatarColor } from "../../utils/avatarColor";
+import { resolveCharacterImageUrl } from "../../utils/characterImage";
 
 interface CharacterAvatarProps {
   name: string;
@@ -16,6 +17,7 @@ export const CharacterAvatar = ({
 }: CharacterAvatarProps) => {
   const initials = deriveAvatarInitials(name);
   const fallbackColor = deriveAvatarColor(name);
+  const resolvedImageUrl = resolveCharacterImageUrl(imageUrl);
 
   const sizeMap = {
     sm: "h-5 w-5",
@@ -31,7 +33,7 @@ export const CharacterAvatar = ({
     return (
       <div
         className={`rounded-full overflow-hidden flex items-center justify-center font-semibold text-white ${sizeMap.dot}`}
-        style={imageUrl ? undefined : { backgroundColor: fallbackColor }}
+        style={{ backgroundColor: fallbackColor }}
       ></div>
     );
   }
@@ -39,10 +41,14 @@ export const CharacterAvatar = ({
   return (
     <div
       className={`rounded-full overflow-hidden flex items-center justify-center font-semibold text-white ${size ? sizeMap[size] : sizeMap.md} ${size ? textMap[size] : textMap.md}`}
-      style={imageUrl ? undefined : { backgroundColor: fallbackColor }}
+      style={resolvedImageUrl ? undefined : { backgroundColor: fallbackColor }}
     >
-      {imageUrl ? (
-        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+      {resolvedImageUrl ? (
+        <img
+          src={resolvedImageUrl}
+          alt={name}
+          className="h-full w-full object-cover"
+        />
       ) : (
         <span>{!showColorDot && initials}</span>
       )}

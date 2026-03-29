@@ -1,6 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Character, CreateCharacterInput } from "../../api/types";
-import { createCharacter } from "../../api/stories";
+import type {
+  Character,
+  CreateCharacterInput,
+  DeleteCharacterInput,
+  UpdateCharacterInput,
+} from "../../api/types";
+import {
+  createCharacter,
+  deleteCharacter,
+  updateCharacter,
+} from "../../api/stories";
+import { uploadCharacterImage } from "../../api/uploads";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useStoryCharactersQuery } from "../story/story-queries";
 
@@ -66,5 +76,60 @@ export function useCreateCharacterMutation(storyId: string) {
     onSettled: () => {
       useSceneEditorStore.getState().setSaving(false);
     },
+  });
+}
+
+type UpdateCharacterPayload = UpdateCharacterInput & {
+  characterId: string;
+};
+
+export function useUpdateCharacterMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateCharacterPayload) =>
+      updateCharacter(storyId, input.characterId, input),
+    onSuccess: (character) => {
+      queryClient.setQueryData<Character[]>(
+        useStoryCharactersQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [character];
+          }
+
+          const next = current.map((entry) =>
+            entry.id === character.id ? character : entry,
+          );
+          const hasCharacter = next.some((entry) => entry.id === character.id);
+          return hasCharacter ? next : [...next, character];
+        },
+      );
+    },
+  });
+}
+
+export function useDeleteCharacterMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ storyId, characterId }: DeleteCharacterInput) =>
+      deleteCharacter(storyId, characterId),
+    onSuccess: (_data, { storyId, characterId }) => {
+      queryClient.setQueryData<Character[]>(
+        useStoryCharactersQuery.queryKey(storyId),
+        (current) => {
+          if (!current) {
+            return [];
+          }
+          return current.filter((character) => character.id !== characterId);
+        },
+      );
+    },
+  });
+}
+
+export function useUploadCharacterImageMutation() {
+  return useMutation({
+    mutationFn: (file: File) => uploadCharacterImage(file),
   });
 }

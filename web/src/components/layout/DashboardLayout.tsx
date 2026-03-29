@@ -6,6 +6,8 @@ import { useSidebarStore } from "../../store/sidebarStore";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { SceneForm } from "../story/SceneForm";
 import { SceneFormLoading } from "../story/SceneFormLoading";
+import { ManageCharactersPanel } from "../story/ManageCharactersPanel";
+import { ManageTagsPanel } from "../story/ManageTagsPanel";
 
 export function DashboardLayout() {
   useAuthRedirect();
@@ -40,11 +42,9 @@ export function DashboardLayout() {
             )}
           </>
         )}
-        {currentView === "character" && (
-          <div>TODO: Character sidebar content</div>
-        )}
+        {currentView === "character" && <ManageCharactersPanel />}
 
-        {currentView === "tag" && <div>TODO: Tag sidebar content</div>}
+        {currentView === "tag" && <ManageTagsPanel />}
       </DashboardSidebar>
     </div>
   );
