@@ -127,7 +127,7 @@ const toStoryResponse = (
     createdAt: Date;
     updatedAt?: Date;
   },
-  stats: { plots: number; scenes: number },
+  stats: { plots: number; scenes: number; characters: number; tags: number },
 ) => ({
   id: story._id.toHexString(),
   title: story.title,

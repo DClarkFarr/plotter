@@ -13,6 +13,8 @@ export interface AuthUser {
 export interface StoryStats {
   plots: number;
   scenes: number;
+  characters: number;
+  tags: number;
 }
 
 export interface Story {

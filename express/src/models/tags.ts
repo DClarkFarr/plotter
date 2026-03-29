@@ -74,6 +74,15 @@ export const listTags = async (
   return collection.find(filter).limit(limit).toArray();
 };
 
+export const countTagsByStoryId = async (
+  storyId: string | ObjectId,
+): Promise<number> => {
+  const collection = getTagsCollection();
+  return collection.countDocuments({
+    storyId: ensureObjectId(storyId, "storyId"),
+  });
+};
+
 export const listTagsByIds = async (
   ids: Array<string | ObjectId>,
 ): Promise<TagDocument[]> => {

@@ -23,6 +23,7 @@ Auto-generated from all feature plans. Last updated: 2026-03-29
 - TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap (014-assets-management)
 - MongoDB for story data; filesystem `/uploads` for character images (served publicly) (014-assets-management)
 - MongoDB (scene documents) (015-soft-delete-scene)
+- TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons (016-storycard-badges)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -42,9 +43,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 016-storycard-badges: Added TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons
 - 015-soft-delete-scene: Added TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap
 - 014-assets-management: Added TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap
-- 013-tag-variant-management: Added TypeScript (Node.js + React) + Express, MongoDB driver, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 
 
 <!-- MANUAL ADDITIONS START -->

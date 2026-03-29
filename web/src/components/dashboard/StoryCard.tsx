@@ -33,6 +33,10 @@ export function StoryCard({ story, onClick }: StoryCardProps) {
             <Badge color="light">{story.stats.plots} plots</Badge>
 
             <Badge color="light">{story.stats.scenes} scenes</Badge>
+
+            <Badge color="light">{story.stats.characters} characters</Badge>
+
+            <Badge color="light">{story.stats.tags} tags</Badge>
           </div>
         </div>
         <div className="self-center">

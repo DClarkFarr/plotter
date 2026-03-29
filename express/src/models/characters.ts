@@ -79,6 +79,15 @@ export const listCharacters = async (
   return collection.find(filter).limit(limit).sort({ title: 1 }).toArray();
 };
 
+export const countCharactersByStoryId = async (
+  storyId: string | ObjectId,
+): Promise<number> => {
+  const collection = getCharactersCollection();
+  return collection.countDocuments({
+    storyId: ensureObjectId(storyId, "storyId"),
+  });
+};
+
 export const listCharactersByIds = async (
   ids: Array<string | ObjectId>,
 ): Promise<CharacterDocument[]> => {

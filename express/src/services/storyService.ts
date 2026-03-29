@@ -18,7 +18,8 @@ import {
   listPlots,
 } from "../models/plots";
 import { countScenesByPlotIds, listScenesByPlotIds } from "../models/scenes";
-import { listTags } from "../models/tags";
+import { countTagsByStoryId, listTags } from "../models/tags";
+import { countCharactersByStoryId } from "../models/characters";
 import { AuthError } from "./authService";
 
 const validateStoryPermissionsUsers = async (
@@ -96,6 +97,8 @@ export const getStoryForUser = async (
 export interface StoryStats {
   plots: number;
   scenes: number;
+  characters: number;
+  tags: number;
 }
 
 export const getStoryStats = async (
@@ -106,9 +109,13 @@ export const getStoryStats = async (
     listPlotIdsByStoryId(storyId),
   ]);
 
-  const scenes = await countScenesByPlotIds(plotIds);
+  const [scenes, characters, tags] = await Promise.all([
+    countScenesByPlotIds(plotIds),
+    countCharactersByStoryId(storyId),
+    countTagsByStoryId(storyId),
+  ]);
 
-  return { plots, scenes };
+  return { plots, scenes, characters, tags };
 };
 
 export const listStoryTagsForUser = async (
