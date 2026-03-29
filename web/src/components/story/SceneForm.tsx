@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
+import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
+import { useSidebarStore } from "../../store/sidebarStore";
 import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
@@ -17,9 +19,13 @@ import {
   useStoryPlotsQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
-import { useUpdateSceneMutation } from "../../queries/scene/scene-mutations";
+import {
+  useDeleteSceneMutation,
+  useUpdateSceneMutation,
+} from "../../queries/scene/scene-mutations";
 import { useCreateTagMutation } from "../../queries/tag/tag-mutation";
 import { useCreateCharacterMutation } from "../../queries/character/character-mutations";
+import { alert } from "../../utils/alert";
 
 export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
@@ -28,12 +34,16 @@ export const SceneForm = () => {
   const { data: characters = [], isLoading: isCharactersLoading } =
     useStoryCharactersQuery(storyId);
   const updateSceneMutation = useUpdateSceneMutation(storyId);
+  const deleteSceneMutation = useDeleteSceneMutation(storyId);
   const createTagMutation = useCreateTagMutation(storyId);
   const createCharacterMutation = useCreateCharacterMutation(storyId);
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
   const selectedPlotId = useSceneEditorStore((state) => state.selectedPlotId);
+  const clearSelection = useSceneEditorStore((state) => state.clearSelection);
+  const closeSidebar = useSidebarStore((state) => state.closeSidebar);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isPovCreateOpen, setIsPovCreateOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const selectedPlot = useMemo(() => {
     if (!selectedPlotId) {
@@ -223,6 +233,23 @@ export const SceneForm = () => {
     updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
+  const handleConfirmDelete = async () => {
+    if (!selectedScene) {
+      return;
+    }
+
+    try {
+      await deleteSceneMutation.mutateAsync(selectedScene.id);
+      setIsDeleteModalOpen(false);
+      clearSelection();
+      closeSidebar();
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    }
+  };
+
   if (isLoading) {
     return <div className="p-6 text-sm text-slate-500">Loading scene...</div>;
   }
@@ -343,6 +370,60 @@ export const SceneForm = () => {
             : "Unable to save scene changes"}
         </div>
       ) : null}
+      <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 mt-8">
+        <div className="flex items-center justify-between">
+          <div className="text-xs uppercase tracking-[0.2em] text-rose-500">
+            Danger Zone
+          </div>
+          <div>
+            <Button
+              type="button"
+              color="red"
+              size="lg"
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={deleteSceneMutation.isPending}
+            >
+              Delete Scene
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        dismissible
+        show={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        size="md"
+        className="z-999"
+      >
+        <ModalHeader>Are you sure you want to delete?</ModalHeader>
+        <ModalBody>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-slate-600">
+              This will remove the scene from the active story grid. You can not
+              undo this action right now.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                color="gray"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={deleteSceneMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                color="red"
+                onClick={handleConfirmDelete}
+                disabled={deleteSceneMutation.isPending}
+              >
+                Yes, delete scene
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
     </div>
   );
 };

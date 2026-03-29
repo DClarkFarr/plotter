@@ -5,7 +5,7 @@ import type {
   Scene,
   UpdateSceneInput,
 } from "../../api/types";
-import { createScene, updateScene } from "../../api/stories";
+import { createScene, deleteScene, updateScene } from "../../api/stories";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useStoryPlotsQuery } from "../story/story-queries";
 import { shiftScenesForInsert, sortScenes } from "./scene-helpers";
@@ -187,6 +187,62 @@ export function useUpdateSceneMutation(storyId: string) {
             return { ...plot, scenes: sortScenes(nextScenes) };
           });
         },
+      );
+    },
+    onSettled: () => {
+      useSceneEditorStore.getState().setSaving(false);
+    },
+  });
+}
+
+const removeSceneFromPlots = (plots: Plot[], sceneId: string) =>
+  plots.map((plot) => {
+    const found = plot.scenes.find((scene) => scene.id === sceneId);
+    if (!found) {
+      return plot;
+    }
+    return {
+      ...plot,
+      scenes: plot.scenes.filter((scene) => scene.id !== sceneId),
+    };
+  });
+
+export function useDeleteSceneMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sceneId: string) => deleteScene(storyId, sceneId),
+    onMutate: async (sceneId) => {
+      useSceneEditorStore.getState().setSaving(true);
+      await queryClient.cancelQueries({
+        queryKey: useStoryPlotsQuery.queryKey(storyId),
+      });
+      const previous = queryClient.getQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(storyId),
+      );
+
+      if (previous) {
+        queryClient.setQueryData<Plot[]>(
+          useStoryPlotsQuery.queryKey(storyId),
+          removeSceneFromPlots(previous, sceneId),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_error, _sceneId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          useStoryPlotsQuery.queryKey(storyId),
+          context.previous,
+        );
+      }
+    },
+    onSuccess: (_data, sceneId) => {
+      queryClient.setQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(storyId),
+        (current) =>
+          current ? removeSceneFromPlots(current, sceneId) : current,
       );
     },
     onSettled: () => {

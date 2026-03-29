@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import {
   createScene as createSceneModel,
   CreateSceneInput,
+  deleteSceneById,
   getSceneById,
   getSceneByIdForPlotIds,
   SceneDocument,
@@ -241,4 +242,22 @@ export const updateSceneForStory = async (
     ...(updates.plotId !== undefined && { plotId: plot._id }),
     ...(tagIds !== undefined && { tags: tagIds }),
   });
+};
+
+export const deleteSceneForStory = async (
+  storyId: string | ObjectId,
+  sceneId: string | ObjectId,
+): Promise<boolean> => {
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  const current = await getSceneForStory(storyObjectId, sceneId);
+  if (!current) {
+    return false;
+  }
+
+  const plot = await assertPlotExists(current.plotId);
+  if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
+    return false;
+  }
+
+  return deleteSceneById(sceneId);
 };

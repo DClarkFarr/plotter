@@ -25,6 +25,7 @@ export interface SceneDefinition extends BaseModelBlueprint {
   scene?: string;
   verticalIndex: number;
   pov?: ObjectId | null;
+  deletedAt?: Date | null;
 }
 
 export interface SceneTagVariant {
@@ -43,9 +44,17 @@ export const ensureSceneIndexes = async (): Promise<void> => {
   await collection.createIndex({ plotId: 1 });
   await collection.createIndex(
     { plotId: 1, verticalIndex: 1 },
-    { unique: true },
+    {
+      unique: true,
+      partialFilterExpression: { deletedAt: { $eq: null } },
+    },
   );
 };
+
+const activeSceneFilter = (filter: Record<string, unknown> = {}) => ({
+  ...filter,
+  deletedAt: null,
+});
 
 export const shiftSceneIndices = async (
   plotId: ObjectId,
@@ -53,10 +62,10 @@ export const shiftSceneIndices = async (
   excludeId?: ObjectId,
 ): Promise<void> => {
   const collection = getScenesCollection();
-  const filter: Record<string, unknown> = {
+  const filter: Record<string, unknown> = activeSceneFilter({
     plotId,
     verticalIndex: { $gte: fromIndex },
-  };
+  });
 
   if (excludeId) {
     filter._id = { $ne: excludeId };
@@ -107,6 +116,7 @@ export const createScene = async (
     ...(tagVariants && { tagVariants }),
     todo: input.todo ?? [],
     verticalIndex: input.verticalIndex,
+    deletedAt: null,
     ...createTimestamps(),
   };
 
@@ -138,7 +148,7 @@ export const listScenes = async (
     ? { plotId: ensureObjectId(options.plotId, "plotId") }
     : {};
 
-  return collection.find(filter).limit(limit).toArray();
+  return collection.find(activeSceneFilter(filter)).limit(limit).toArray();
 };
 
 export const listScenesByPlotIds = async (
@@ -153,7 +163,9 @@ export const listScenesByPlotIds = async (
     return [];
   }
 
-  return collection.find({ plotId: { $in: uniqueIds } }).toArray();
+  return collection
+    .find(activeSceneFilter({ plotId: { $in: uniqueIds } }))
+    .toArray();
 };
 
 export const countScenesByPlotIds = async (
@@ -168,16 +180,18 @@ export const countScenesByPlotIds = async (
     return 0;
   }
 
-  return collection.countDocuments({ plotId: { $in: uniqueIds } });
+  return collection.countDocuments(
+    activeSceneFilter({ plotId: { $in: uniqueIds } }),
+  );
 };
 
 export const countScenesByTagId = async (
   tagId: string | ObjectId,
 ): Promise<number> => {
   const collection = getScenesCollection();
-  return collection.countDocuments({
-    tags: ensureObjectId(tagId, "tagId"),
-  });
+  return collection.countDocuments(
+    activeSceneFilter({ tags: ensureObjectId(tagId, "tagId") }),
+  );
 };
 
 export const countScenesByTagVariant = async (
@@ -185,30 +199,36 @@ export const countScenesByTagVariant = async (
   variant: string,
 ): Promise<number> => {
   const collection = getScenesCollection();
-  return collection.countDocuments({
-    tagVariants: {
-      $elemMatch: {
-        tagId: ensureObjectId(tagId, "tagId"),
-        variant,
+  return collection.countDocuments(
+    activeSceneFilter({
+      tagVariants: {
+        $elemMatch: {
+          tagId: ensureObjectId(tagId, "tagId"),
+          variant,
+        },
       },
-    },
-  });
+    }),
+  );
 };
 
 export const countScenesByPovCharacter = async (
   characterId: string | ObjectId,
 ): Promise<number> => {
   const collection = getScenesCollection();
-  return collection.countDocuments({
-    pov: ensureObjectId(characterId, "characterId"),
-  });
+  return collection.countDocuments(
+    activeSceneFilter({
+      pov: ensureObjectId(characterId, "characterId"),
+    }),
+  );
 };
 
 export const getSceneById = async (
   id: string | ObjectId,
 ): Promise<SceneDocument | null> => {
   const collection = getScenesCollection();
-  return collection.findOne({ _id: ensureObjectId(id, "sceneId") });
+  return collection.findOne(
+    activeSceneFilter({ _id: ensureObjectId(id, "sceneId") }),
+  );
 };
 
 export const getSceneByIdForPlotIds = async (
@@ -227,7 +247,9 @@ export const getSceneByIdForPlotIds = async (
     return null;
   }
 
-  return collection.findOne({ _id: sceneId, plotId: { $in: uniquePlotIds } });
+  return collection.findOne(
+    activeSceneFilter({ _id: sceneId, plotId: { $in: uniquePlotIds } }),
+  );
 };
 
 export interface UpdateSceneInput {
@@ -311,9 +333,10 @@ export const deleteSceneById = async (
   id: string | ObjectId,
 ): Promise<boolean> => {
   const collection = getScenesCollection();
-  const result = await collection.deleteOne({
-    _id: ensureObjectId(id, "sceneId"),
-  });
+  const result = await collection.findOneAndUpdate(
+    activeSceneFilter({ _id: ensureObjectId(id, "sceneId") }),
+    { $set: { deletedAt: new Date(), ...touchTimestamps() } },
+  );
 
-  return result.deletedCount === 1;
+  return Boolean(result);
 };

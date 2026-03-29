@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { AuthError, ValidationError } from "../services/authService";
 import {
   createSceneForStory,
+  deleteSceneForStory,
   updateSceneForStory,
 } from "../services/sceneService";
 import { getStoryForUser } from "../services/storyService";
@@ -306,6 +307,25 @@ const applySceneRoutes = () => {
       }
 
       res.status(200).json({ scene: toSceneResponse(updated) });
+    }),
+  );
+
+  sceneRouter.delete(
+    "/:storyId/scenes/:sceneId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const sceneId = assertparamIsString(req.params.sceneId, "sceneId");
+
+      await getStoryForUser(storyId, userId);
+
+      const deleted = await deleteSceneForStory(storyId, sceneId);
+      if (!deleted) {
+        res.status(404).json({ error: "Scene not found" });
+        return;
+      }
+
+      res.status(204).send();
     }),
   );
 };

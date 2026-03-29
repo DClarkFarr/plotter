@@ -258,6 +258,17 @@ export async function createScene(
   }
 }
 
+export async function deleteScene(
+  storyId: string,
+  sceneId: string,
+): Promise<void> {
+  try {
+    await apiClient.delete<void>(`/stories/${storyId}/scenes/${sceneId}`);
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function updateScene(
   storyId: string,
   sceneId: string,
