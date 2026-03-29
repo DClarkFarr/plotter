@@ -61,16 +61,17 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
         }
       }}
     >
+      <div className="-mt-[var(--card-padding)] -ml-[var(--card-padding)] pt-0.5 pl-0.5 pb-1">
+        <SceneTags
+          tags={tags}
+          selectedTags={scene.tags ?? []}
+          tagVariants={scene.tagVariants ?? []}
+        />
+      </div>
       <div className={`flex flex-col gap-2 h-full relative`}>
         <div className="flex gap-2 items-center">
-          {cardSize === "lg" && (
-            <div className="text-sm uppercase tracking-[0.2em] text-[var(--plot-text)]/70">
-              Row {scene.verticalIndex + 1}
-            </div>
-          )}
-
           {povCharacter ? (
-            <div className="ml-auto">
+            <div>
               {cardSize !== "sm" ? (
                 <CharacterDisplay character={povCharacter} showColorDot />
               ) : (
@@ -79,12 +80,6 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
             </div>
           ) : null}
         </div>
-
-        <SceneTags
-          tags={tags}
-          selectedTags={scene.tags ?? []}
-          tagVariants={scene.tagVariants ?? []}
-        />
 
         <div
           className={`text-lg font-semibold ${cardSize === "md" ? "whitespace-nowrap overflow-hidden text-ellipsis" : ""}`}
