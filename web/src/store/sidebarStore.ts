@@ -12,6 +12,7 @@ export type SidebarStore = {
   setWidth: (width: number) => void;
   openSidebar: () => void;
   closeSidebar: () => void;
+  clearAllViews: () => void;
 };
 export const useSidebarStore = create<SidebarStore>((set) => ({
   isOpen: false,
@@ -30,4 +31,5 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   getCurrentView(views) {
     return views[views.length - 1] ?? null;
   },
+  clearAllViews: () => set({ views: [] }),
 }));

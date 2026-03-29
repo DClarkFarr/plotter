@@ -1,41 +1,122 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { TextInput } from "flowbite-react";
 import { useStoryTagsQuery } from "../../queries/story/story-queries";
-import { useUpdateTagMutation } from "../../queries/tag/tag-mutation";
+import {
+  useAddTagVariantMutation,
+  useDeleteTagMutation,
+  useDeleteTagVariantMutation,
+  useUpdateTagMutation,
+} from "../../queries/tag/tag-mutation";
 import type { Tag } from "../../api/types";
 import { alert } from "../../utils/alert";
+import { ManageTagRow } from "./ManageTagRow";
 
 export function ManageTagsPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const tagsQuery = useStoryTagsQuery(storyId);
   const tags = tagsQuery.data ?? [];
   const { mutateAsync: updateTag } = useUpdateTagMutation(storyId);
-  const [localNames, setLocalNames] = useState<Record<string, string>>({});
+  const { mutateAsync: deleteTag } = useDeleteTagMutation();
+  const { mutateAsync: addVariant } = useAddTagVariantMutation(storyId);
+  const { mutateAsync: deleteVariant } = useDeleteTagVariantMutation(storyId);
+  const [query, setQuery] = useState("");
+  const [isDeleting, setIsDeleting] = useState("");
+  const [isUpdatingVariant, setIsUpdatingVariant] = useState("");
+  const [isAddingVariant, setIsAddingVariant] = useState("");
+  const [deletingVariant, setDeletingVariant] = useState<{
+    tagId: string;
+    variant: string;
+  } | null>(null);
 
   const sortedTags = useMemo(
     () => [...tags].sort((a, b) => a.name.localeCompare(b.name)),
     [tags],
   );
 
-  const handleNameChange = (tag: Tag, value: string) => {
-    setLocalNames((prev) => ({ ...prev, [tag.id]: value }));
-  };
-
-  const handleNameCommit = async (tag: Tag) => {
-    const nextName = (localNames[tag.id] ?? tag.name).trim();
-    if (!nextName || nextName === tag.name) {
-      setLocalNames((prev) => ({ ...prev, [tag.id]: tag.name }));
-      return;
+  const filteredTags = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return sortedTags;
     }
 
+    return sortedTags.filter((tag) => {
+      if (tag.name.toLowerCase().includes(normalized)) {
+        return true;
+      }
+
+      return tag.variants.some((variant) =>
+        variant.toLowerCase().includes(normalized),
+      );
+    });
+  }, [query, sortedTags]);
+
+  const handleRename = async (tagId: string, nextName: string) => {
     try {
-      await updateTag({ tagId: tag.id, name: nextName });
+      await updateTag({ tagId, name: nextName });
+      return true;
     } catch (error) {
       if (error instanceof Error) {
         alert.error(error.message);
       }
-      setLocalNames((prev) => ({ ...prev, [tag.id]: tag.name }));
+      return false;
+    }
+  };
+
+  const handleDelete = async (tag: Tag) => {
+    if (isDeleting === tag.id) {
+      return;
+    }
+    setIsDeleting(tag.id);
+    try {
+      await deleteTag({ storyId: tag.storyId, tagId: tag.id });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsDeleting("");
+    }
+  };
+
+  const handleConvertToVariant = async (tag: Tag) => {
+    if (isUpdatingVariant === tag.id) {
+      return;
+    }
+    setIsUpdatingVariant(tag.id);
+    try {
+      await updateTag({ tagId: tag.id, variant: true });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsUpdatingVariant("");
+    }
+  };
+
+  const handleAddVariant = async (tagId: string, name: string) => {
+    setIsAddingVariant(tagId);
+    try {
+      await addVariant({ tagId, name });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setIsAddingVariant("");
+    }
+  };
+
+  const handleDeleteVariant = async (tagId: string, variant: string) => {
+    setDeletingVariant({ tagId, variant });
+    try {
+      await deleteVariant({ tagId, variantName: variant });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    } finally {
+      setDeletingVariant(null);
     }
   };
 
@@ -69,32 +150,39 @@ export function ManageTagsPanel() {
           Rename tags and keep your story organized.
         </p>
       </div>
-      <div className="flex flex-col gap-3">
-        {sortedTags.map((tag) => (
-          <div
-            key={tag.id}
-            className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"
-          >
-            <div
-              className="h-4 w-4 rounded-full border border-black"
-              style={{ backgroundColor: tag.color }}
-            ></div>
-            <TextInput
-              sizing="sm"
-              value={localNames[tag.id] ?? tag.name}
-              onChange={(event) => handleNameChange(tag, event.target.value)}
-              onBlur={() => handleNameCommit(tag)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleNameCommit(tag);
-                }
-              }}
-              className="flex-1"
-            />
-          </div>
-        ))}
+      <div>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search tags"
+          className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+        />
       </div>
+      {filteredTags.length === 0 ? (
+        <div className="text-sm text-slate-500">No tags found.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {filteredTags.map((tag) => (
+            <ManageTagRow
+              key={tag.id}
+              tag={tag}
+              onRename={handleRename}
+              onConvertToVariant={handleConvertToVariant}
+              onDelete={handleDelete}
+              onAddVariant={handleAddVariant}
+              onDeleteVariant={handleDeleteVariant}
+              isDeleting={isDeleting === tag.id}
+              isUpdatingVariant={isUpdatingVariant === tag.id}
+              isAddingVariant={isAddingVariant === tag.id}
+              deletingVariant={
+                deletingVariant?.tagId === tag.id
+                  ? deletingVariant.variant
+                  : undefined
+              }
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
