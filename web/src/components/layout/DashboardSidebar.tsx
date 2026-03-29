@@ -4,6 +4,7 @@ import { useSidebarStore } from "../../store/sidebarStore";
 import { useCallback, useRef } from "react";
 import { useDraggable, DragDropProvider } from "@dnd-kit/react";
 import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
+import { useShallow } from "zustand/react/shallow";
 
 export type DashboardSidebarProps = React.PropsWithChildren<{
   isOpen: boolean;
@@ -68,17 +69,21 @@ export const DashboardSidebarBody = ({
     modifiers: [RestrictToHorizontalAxis],
   });
 
-  const sidebar = useSidebarStore();
+  const { width, openSidebar, closeSidebar } = useSidebarStore(
+    useShallow((state) => ({
+      width: state.width,
+      openSidebar: state.openSidebar,
+      closeSidebar: state.closeSidebar,
+    })),
+  );
 
   const onClickToggle = useCallback(() => {
     if (isOpen) {
-      sidebar.closeSidebar();
+      closeSidebar();
     } else {
-      sidebar.openSidebar();
+      openSidebar();
     }
-  }, [isOpen, sidebar]);
-
-  const width = sidebar.width;
+  }, [isOpen, openSidebar, closeSidebar]);
 
   return (
     <div

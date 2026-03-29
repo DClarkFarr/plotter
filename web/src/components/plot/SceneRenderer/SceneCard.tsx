@@ -17,6 +17,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
+  const addSidebarView = useSidebarStore((s) => s.addSidebarView);
   const cardSize = useStoryStore((s) => s.cardSize);
   const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
 
@@ -45,6 +46,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const handleSelect = () => {
     selectScene(scene.id, plot.id);
     openSidebar();
+    addSidebarView("scene");
   };
 
   return (

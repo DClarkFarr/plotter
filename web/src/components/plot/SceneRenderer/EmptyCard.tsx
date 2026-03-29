@@ -17,6 +17,7 @@ export const EmptyCard = ({
   const createSceneMutation = useCreateSceneMutation(storyId);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
+  const addSidebarView = useSidebarStore((s) => s.addSidebarView);
 
   const cardSize = useStoryStore((s) => s.cardSize);
 
@@ -54,6 +55,7 @@ export const EmptyCard = ({
     if (scene?.id) {
       selectScene(scene.id, scene.plotId);
       openSidebar();
+      addSidebarView("scene");
     }
   };
 

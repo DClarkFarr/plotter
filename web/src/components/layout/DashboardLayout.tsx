@@ -10,6 +10,11 @@ import { SceneFormLoading } from "../story/SceneFormLoading";
 export function DashboardLayout() {
   useAuthRedirect();
   const sidebar = useSidebarStore();
+
+  const { isOpen, getCurrentView, views } = sidebar;
+
+  const currentView = getCurrentView(views);
+
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
 
   return (
@@ -25,12 +30,21 @@ export function DashboardLayout() {
           <Outlet />
         </div>
       </div>
-      <DashboardSidebar isOpen={sidebar.isOpen} showOpenButton={false}>
-        {selectedSceneId ? (
-          <SceneForm key={selectedSceneId} />
-        ) : (
-          <SceneFormLoading />
+      <DashboardSidebar isOpen={isOpen} showOpenButton={false}>
+        {currentView === "scene" && (
+          <>
+            {selectedSceneId ? (
+              <SceneForm key={selectedSceneId} />
+            ) : (
+              <SceneFormLoading />
+            )}
+          </>
         )}
+        {currentView === "character" && (
+          <div>TODO: Character sidebar content</div>
+        )}
+
+        {currentView === "tag" && <div>TODO: Tag sidebar content</div>}
       </DashboardSidebar>
     </div>
   );

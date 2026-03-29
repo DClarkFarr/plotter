@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-28
+Auto-generated from all feature plans. Last updated: 2026-03-29
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -20,6 +20,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-28
 - TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite (012-update-query-structure)
 - MongoDB (API persistence) (012-update-query-structure)
 - TypeScript (Node.js + React) + Express, MongoDB driver, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons (013-tag-variant-management)
+- TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap (014-assets-management)
+- MongoDB for story data; filesystem `/uploads` for character images (served publicly) (014-assets-management)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -39,9 +41,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 014-assets-management: Added TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap
 - 013-tag-variant-management: Added TypeScript (Node.js + React) + Express, MongoDB driver, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 - 012-update-query-structure: Added TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite
-- 011-scene-pov: Added TypeScript (Node.js for backend, React 19 for frontend) + Express 5, MongoDB driver; TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, react-selec
 
 
 <!-- MANUAL ADDITIONS START -->
