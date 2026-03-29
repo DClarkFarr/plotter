@@ -41,7 +41,11 @@ class App {
   }
 
   public setupSecurity(): void {
-    this.api.use(helmet());
+    this.api.use(
+      helmet({
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+      }),
+    );
   }
 
   public setupCors(): void {
