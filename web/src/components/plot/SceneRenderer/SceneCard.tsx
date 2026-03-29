@@ -7,11 +7,14 @@ import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
 import { findCharacterById } from "../../../utils/characterLookup";
 import { CharacterDisplay } from "../../character/CharacterDisplay";
+import { Button, ButtonGroup } from "flowbite-react";
 import {
   useStoryCharactersQuery,
   useStoryTagsQuery,
 } from "../../../queries/story/story-queries";
 import { SceneTags } from "../../story/SceneTags";
+import IconDragHorizontal from "~icons/mdi/drag-horizontal";
+import IconLeadPencil from "~icons/mdi/lead-pencil";
 
 export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
@@ -49,20 +52,29 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
     addSidebarView("scene");
   };
 
+  const handleEdit = () => {
+    handleSelect();
+  };
+
   return (
     <div
       style={themeStyles}
-      className="card card--empty p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
-      onClick={handleSelect}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          handleSelect();
-        }
-      }}
+      className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
     >
+      <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <Button color="gray" size="xs" type="button" aria-label="Move scene">
+          <IconDragHorizontal />
+        </Button>
+        <Button
+          color="cyan"
+          size="xs"
+          type="button"
+          aria-label="Edit scene"
+          onClick={handleEdit}
+        >
+          <IconLeadPencil />
+        </Button>
+      </ButtonGroup>
       <div className="-mt-[var(--card-padding)] -ml-[var(--card-padding)] pt-0.5 pl-0.5 pb-1">
         <SceneTags
           tags={tags}
