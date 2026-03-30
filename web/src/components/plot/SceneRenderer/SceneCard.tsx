@@ -15,8 +15,14 @@ import {
 import { SceneTags } from "../../story/SceneTags";
 import IconDragHorizontal from "~icons/mdi/drag-horizontal";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
+import { useSortable } from "@dnd-kit/react/sortable";
 
-export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
+export const SceneCard = ({
+  plot,
+  scene,
+  plotIndex,
+  sceneIndex,
+}: SceneRendererProps) => {
   const theme = usePlotTheme(plot.color);
   const selectScene = useSceneEditorStore((s) => s.selectScene);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
@@ -34,6 +40,15 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
     description: scene.description,
     cardSize,
   });
+
+  const { ref, isDragging } = useSortable({
+    id: scene.id,
+    index: sceneIndex,
+    group: plotIndex,
+    type: "item",
+  });
+
+  console.log("scene", plotIndex, sceneIndex, { isDragging });
 
   const povCharacter = findCharacterById(characters, scene.pov);
 
@@ -58,6 +73,7 @@ export const SceneCard = ({ plot, scene }: SceneRendererProps) => {
 
   return (
     <div
+      ref={ref}
       style={themeStyles}
       className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
     >

@@ -178,7 +178,7 @@ export function StoryPage() {
       </h2>
 
       <div className="plots-wrapper bg-gray-100">
-        <PlotGrid storyId={storyId} plots={plots} plotIndex={0} />
+        <PlotGrid storyId={storyId} plots={plots} />
       </div>
     </main>
   );

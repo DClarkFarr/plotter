@@ -6,12 +6,15 @@ import { useSidebarStore } from "../../../store/sidebarStore";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useCreateSceneMutation } from "../../../queries/scene/scene-mutations";
+import { useDroppable } from "@dnd-kit/react";
+import { CollisionPriority } from "@dnd-kit/abstract";
 
 export const EmptyCard = ({
   storyId,
   isDisabled,
   plot,
   sceneIndex,
+  plotIndex,
 }: EmptyRendererProps) => {
   const theme = usePlotTheme(plot?.color);
   const createSceneMutation = useCreateSceneMutation(storyId);
@@ -24,6 +27,19 @@ export const EmptyCard = ({
   const { width, padding } = useGridSizes({ cardSize });
 
   const isBusy = createSceneMutation.isPending || Boolean(isDisabled);
+
+  const { isDropTarget, ref } = useDroppable({
+    id: `empty-${plot?.id}-${sceneIndex}`,
+    accept: "item",
+    type: "droppable",
+    data: {
+      plot: plot,
+      verticalIndex: sceneIndex,
+    },
+    collisionPriority: CollisionPriority.Low,
+  });
+
+  console.log("empty", plotIndex, sceneIndex, { isDropTarget });
 
   const themeStyles = {
     "--plot-color": theme.baseColor,
@@ -61,8 +77,9 @@ export const EmptyCard = ({
 
   return (
     <div
+      ref={ref}
       style={themeStyles}
-      className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border border-[var(--plot-color)] radius-2 bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 self-stretch ${
+      className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border radius-2 transition-all duration-250 ${isDropTarget ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`} ${
         isDisabled ? "opacity-50" : ""
       }`}
     >
