@@ -12,6 +12,7 @@ import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
+import { useSceneEditorStore } from "../../store/sceneEditorStore";
 
 export type PlotGridProps = {
   storyId: string;
@@ -47,17 +48,52 @@ export const PlotGrid = ({
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
+  const dragMode = useSceneEditorStore((state) => state.dragMode);
+
+  const handleDragEnd = (
+    targetPlot: Plot,
+    targetVerticalIndex: number,
+    sourcePlot: Plot,
+    sourceScene: Scene,
+  ) => {
+    console.log("handle drag end", {
+      targetPlot,
+      targetVerticalIndex,
+      sourcePlot,
+      sourceScene,
+      dragMode,
+    });
+  };
+
   return (
     <div className="w-full h-full">
       <DragDropProvider
-        onDragStart={(event, manager) => {
-          console.log("drag start", { event, manager });
+        onDragStart={(event) => {
+          console.log("on drag start", event);
         }}
         onDragOver={(event, manager) => {
           console.log("on drag over", { event, manager });
         }}
-        onDragEnd={(event, manager) => {
-          console.log("on drag end", { event, manager });
+        onDragEnd={(event) => {
+          const { target, source } = event.operation;
+          console.log("source was", source);
+          if (
+            target &&
+            target.type === "droppable" &&
+            source &&
+            source.type === "item"
+          ) {
+            const { plot, verticalIndex } = target.data as {
+              plot: Plot;
+              verticalIndex: number;
+            };
+            const { plot: sourcePlot, scene: sourceScene } =
+              (source.data as {
+                plot: Plot;
+                scene: Scene;
+              }) || {};
+            handleDragEnd(plot, verticalIndex, sourcePlot, sourceScene);
+          }
         }}
       >
         <PlotGridBody

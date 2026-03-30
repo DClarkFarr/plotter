@@ -46,6 +46,10 @@ export const SceneCard = ({
     index: sceneIndex,
     group: plotIndex,
     type: "item",
+    data: {
+      plot,
+      scene,
+    },
   });
 
   console.log("scene", plotIndex, sceneIndex, { isDragging });
