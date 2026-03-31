@@ -1,4 +1,8 @@
+import { useMutation } from "@tanstack/react-query";
+import { moveSingleSceneWithinPlot } from "../api/stories";
+
 export type MoveSingleCardWithinPlotProps = {
+  storyId: string;
   plotId: string;
   sceneId: string;
   fromIndex: number;
@@ -10,21 +14,11 @@ export type MoveSingleCardBetweenPlotsProps = MoveSingleCardWithinPlotProps & {
 };
 
 const useMoveSingleWithinPlot = () => {
-  const moveSingleCardWithinPlot = ({
-    plotId,
-    sceneId,
-    fromIndex,
-    toIndex,
-  }: MoveSingleCardWithinPlotProps) => {
-    console.log("moveSingleCardWithinPlot", {
-      plotId,
-      sceneId,
-      fromIndex,
-      toIndex,
-    });
-  };
+  const { mutateAsync, isIdle } = useMutation({
+    mutationFn: moveSingleSceneWithinPlot,
+  });
 
-  return { moveSingleCardWithinPlot };
+  return { moveSingleCardWithinPlot: mutateAsync, isMutating: !isIdle };
 };
 
 const useMoveSingleBetweenPlots = () => {

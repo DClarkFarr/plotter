@@ -35,6 +35,7 @@ export interface UpdateStoryInput {
 }
 
 export interface MoveSingleSceneWithinPlotInput {
+  storyId: string;
   plotId: string;
   sceneId: string;
   fromIndex: number;
@@ -297,12 +298,11 @@ export async function updateScene(
 }
 
 export async function moveSingleSceneWithinPlot(
-  storyId: string,
   input: MoveSingleSceneWithinPlotInput,
 ): Promise<void> {
   try {
     await apiClient.post<void>(
-      `/stories/${storyId}/scenes/${input.sceneId}/move-within-plot`,
+      `/stories/${input.storyId}/scenes/${input.sceneId}/move-within-plot`,
       input,
     );
   } catch (err) {

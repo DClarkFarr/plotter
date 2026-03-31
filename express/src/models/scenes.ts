@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { Collection, Filter, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -143,7 +143,7 @@ export const listScenes = async (
   options: ListScenesOptions = {},
 ): Promise<SceneDocument[]> => {
   const collection = getScenesCollection();
-  const limit = options.limit ?? 50;
+  const limit = options.limit ?? 500;
   const filter = options.plotId
     ? { plotId: ensureObjectId(options.plotId, "plotId") }
     : {};
@@ -339,4 +339,37 @@ export const deleteSceneById = async (
   );
 
   return Boolean(result);
+};
+
+export const getScenesByPlotIdAndVerticalIndexRange = async (
+  plotId: ObjectId,
+  sceneId: ObjectId,
+  isMovingUp: boolean,
+  rangeStart: number,
+  rangeEnd: number,
+) => {
+  const collection = getScenesCollection();
+
+  const filter: Filter<SceneDocument> = {
+    plotId,
+    verticalIndex: isMovingUp
+      ? { $gte: rangeStart, $lt: rangeEnd }
+      : { $gt: rangeStart, $lte: rangeEnd },
+    _id: { $ne: sceneId },
+  };
+  const affectedScenes = await collection
+    .find(activeSceneFilter(filter))
+    .toArray();
+
+  const nextScene = await collection.findOne(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: isMovingUp ? rangeEnd + 1 : rangeStart - 1,
+    }),
+  );
+
+  return {
+    affectedScenes,
+    nextScene,
+  };
 };

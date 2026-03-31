@@ -10,6 +10,7 @@ import {
   shiftSceneIndices,
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
+  getScenesByPlotIdAndVerticalIndexRange,
 } from "../models/scenes";
 import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
@@ -22,6 +23,14 @@ const assertPlotExists = async (plotId: string | ObjectId) => {
     throw new Error("Plot not found");
   }
   return plot;
+};
+
+const assertSceneExists = async (sceneId: string | ObjectId) => {
+  const scene = await getSceneById(sceneId);
+  if (!scene) {
+    throw new Error("Scene not found");
+  }
+  return scene;
 };
 
 const assertTagsBelongToStory = async (
@@ -260,4 +269,41 @@ export const deleteSceneForStory = async (
   }
 
   return deleteSceneById(sceneId);
+};
+
+export type MoveSingleSceneWithinPlotInput = {
+  plotId: string | ObjectId;
+  sceneId: string | ObjectId;
+  fromIndex: number;
+  toIndex: number;
+};
+export const moveSingleCardWithinPlot = async (
+  input: MoveSingleSceneWithinPlotInput,
+) => {
+  const plotId = ensureObjectId(input.plotId, "plotId");
+  const sceneId = ensureObjectId(input.sceneId, "sceneId");
+
+  const plot = await assertPlotExists(plotId);
+  const scene = await assertSceneExists(sceneId);
+
+  const { fromIndex, toIndex } = input;
+
+  // step one, decide direction
+  const isMovingUp = toIndex > fromIndex;
+
+  // step 2, build selection range
+  const rangeStart = Math.min(fromIndex, toIndex);
+  const rangeEnd = Math.max(fromIndex, toIndex);
+
+  // step 3, fetch affected scenes
+  const { affectedScenes, nextScene } =
+    await getScenesByPlotIdAndVerticalIndexRange(
+      plotId,
+      sceneId,
+      isMovingUp,
+      rangeStart,
+      rangeEnd,
+    );
+
+  return { affectedScenes, nextScene };
 };

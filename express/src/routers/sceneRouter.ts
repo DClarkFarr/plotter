@@ -3,6 +3,7 @@ import { AuthError, ValidationError } from "../services/authService";
 import {
   createSceneForStory,
   deleteSceneForStory,
+  moveSingleCardWithinPlot,
   updateSceneForStory,
 } from "../services/sceneService";
 import { getStoryForUser } from "../services/storyService";
@@ -326,9 +327,15 @@ const applySceneRoutes = () => {
         toIndex: requireNumber(req.body?.toIndex, "toIndex"),
       };
 
-      // TODO: Complete this endpoint.
-      void payload;
-      res.status(501).json({ error: "Not implemented" });
+      const { affectedScenes, nextScene } =
+        await moveSingleCardWithinPlot(payload);
+
+      res
+        .status(200)
+        .json({
+          affectedScenes: affectedScenes.map(toSceneResponse),
+          nextScene: nextScene ? toSceneResponse(nextScene) : null,
+        });
     }),
   );
 

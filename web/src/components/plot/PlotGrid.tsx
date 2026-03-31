@@ -69,6 +69,7 @@ export const PlotGrid = ({
     if (targetPlot.id === sourcePlot.id) {
       if (dragMode === "singleCard") {
         moveSingleCardWithinPlot({
+          storyId: sourcePlot.storyId,
           plotId: targetPlot.id,
           sceneId: sourceScene.id,
           fromIndex: sourceScene.verticalIndex,
@@ -80,6 +81,7 @@ export const PlotGrid = ({
     } else {
       if (dragMode === "singleCard") {
         moveSingleCardBetweenPlots({
+          storyId: sourcePlot.storyId,
           plotId: sourcePlot.id,
           targetPlotId: targetPlot.id,
           sceneId: sourceScene.id,
