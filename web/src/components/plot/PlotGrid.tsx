@@ -13,6 +13,7 @@ import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
+import { MoveSceneMutations } from "../../hooks/useSceneMoveMutations";
 
 export type PlotGridProps = {
   storyId: string;
@@ -50,12 +51,45 @@ export const PlotGrid = ({
 }: PlotGridProps) => {
   const dragMode = useSceneEditorStore((state) => state.dragMode);
 
+  const { moveSingleCardWithinPlot } =
+    MoveSceneMutations.useMoveSingleWithinPlot();
+  const { moveSingleCardBetweenPlots } =
+    MoveSceneMutations.useMoveSingleBetweenPlots();
+
   const handleDragEnd = (
     targetPlot: Plot,
     targetVerticalIndex: number,
     sourcePlot: Plot,
     sourceScene: Scene,
   ) => {
+    if (!sourcePlot || !sourceScene) {
+      return;
+    }
+
+    if (targetPlot.id === sourcePlot.id) {
+      if (dragMode === "singleCard") {
+        moveSingleCardWithinPlot({
+          plotId: targetPlot.id,
+          sceneId: sourceScene.id,
+          fromIndex: sourceScene.verticalIndex,
+          toIndex: targetVerticalIndex,
+        });
+      } else {
+        console.warn("Unknown drag mode", { dragMode });
+      }
+    } else {
+      if (dragMode === "singleCard") {
+        moveSingleCardBetweenPlots({
+          plotId: sourcePlot.id,
+          targetPlotId: targetPlot.id,
+          sceneId: sourceScene.id,
+          fromIndex: sourceScene.verticalIndex,
+          toIndex: targetVerticalIndex,
+        });
+      } else {
+        console.warn("Unknown drag mode", { dragMode });
+      }
+    }
     console.log("handle drag end", {
       targetPlot,
       targetVerticalIndex,

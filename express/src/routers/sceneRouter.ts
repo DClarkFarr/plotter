@@ -310,6 +310,51 @@ const applySceneRoutes = () => {
     }),
   );
 
+  sceneRouter.post(
+    "/:storyId/scenes/:sceneId/move-within-plot",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const sceneId = assertparamIsString(req.params.sceneId, "sceneId");
+
+      await getStoryForUser(storyId, userId);
+
+      const payload = {
+        plotId: requireString(req.body?.plotId, "plotId"),
+        sceneId,
+        fromIndex: requireNumber(req.body?.fromIndex, "fromIndex"),
+        toIndex: requireNumber(req.body?.toIndex, "toIndex"),
+      };
+
+      // TODO: Complete this endpoint.
+      void payload;
+      res.status(501).json({ error: "Not implemented" });
+    }),
+  );
+
+  sceneRouter.post(
+    "/:storyId/scenes/:sceneId/move-between-plots",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const sceneId = assertparamIsString(req.params.sceneId, "sceneId");
+
+      await getStoryForUser(storyId, userId);
+
+      const payload = {
+        plotId: requireString(req.body?.plotId, "plotId"),
+        targetPlotId: requireString(req.body?.targetPlotId, "targetPlotId"),
+        sceneId,
+        fromIndex: requireNumber(req.body?.fromIndex, "fromIndex"),
+        toIndex: requireNumber(req.body?.toIndex, "toIndex"),
+      };
+
+      // TODO: Complete this endpoint.
+      void payload;
+      res.status(501).json({ error: "Not implemented" });
+    }),
+  );
+
   sceneRouter.delete(
     "/:storyId/scenes/:sceneId",
     handleAsync(async (req, res) => {

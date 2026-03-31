@@ -34,6 +34,17 @@ export interface UpdateStoryInput {
   description?: string;
 }
 
+export interface MoveSingleSceneWithinPlotInput {
+  plotId: string;
+  sceneId: string;
+  fromIndex: number;
+  toIndex: number;
+}
+
+export interface MoveSingleSceneBetweenPlotsInput extends MoveSingleSceneWithinPlotInput {
+  targetPlotId: string;
+}
+
 export async function listStories(): Promise<Story[]> {
   try {
     const { data } = await apiClient.get<StoriesResponse>("/stories");
@@ -280,6 +291,34 @@ export async function updateScene(
       input,
     );
     return data.scene;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function moveSingleSceneWithinPlot(
+  storyId: string,
+  input: MoveSingleSceneWithinPlotInput,
+): Promise<void> {
+  try {
+    await apiClient.post<void>(
+      `/stories/${storyId}/scenes/${input.sceneId}/move-within-plot`,
+      input,
+    );
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function moveSingleSceneBetweenPlots(
+  storyId: string,
+  input: MoveSingleSceneBetweenPlotsInput,
+): Promise<void> {
+  try {
+    await apiClient.post<void>(
+      `/stories/${storyId}/scenes/${input.sceneId}/move-between-plots`,
+      input,
+    );
   } catch (err) {
     throw toApiError(err);
   }
