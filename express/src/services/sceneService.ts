@@ -7,10 +7,11 @@ import {
   getSceneByIdForPlotIds,
   SceneDocument,
   SceneTagVariantInput,
-  shiftSceneIndices,
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
   getScenesByPlotIdAndVerticalIndexRange,
+  shiftScenesByIds,
+  getSceneByVerticalIndex,
 } from "../models/scenes";
 import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
@@ -99,6 +100,16 @@ const assertTagVariantsValid = async (
   }
 };
 
+const assertPlotScenePositionIsOpen = async (
+  plotId: ObjectId,
+  verticalIndex: number,
+): Promise<void> => {
+  const found = await getSceneByVerticalIndex(plotId, verticalIndex);
+  if (found) {
+    throw new Error("Scene verticalIndex is already occupied");
+  }
+};
+
 const assertPovBelongsToStory = async (
   storyId: ObjectId,
   povId: string | ObjectId,
@@ -140,7 +151,6 @@ export const createScene = async (
   if (input.pov) {
     await assertPovBelongsToStory(plot.storyId, input.pov);
   }
-  await shiftSceneIndices(plot._id, input.verticalIndex);
 
   return createSceneModel({
     ...input,
@@ -177,12 +187,10 @@ export const updateSceneById = async (
 
   const targetPlotId = updates.plotId ?? current.plotId;
   const plot = await assertPlotExists(targetPlotId);
-
   if (updates.verticalIndex !== undefined) {
     if (updates.verticalIndex < 0) {
       throw new Error("verticalIndex must be >= 0");
     }
-    await shiftSceneIndices(plot._id, updates.verticalIndex, current._id);
   }
 
   if (updates.pov !== undefined && updates.pov !== null) {
@@ -223,14 +231,11 @@ export const updateSceneForStory = async (
   if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
     throw new Error("Plot not found");
   }
-
   if (updates.verticalIndex !== undefined) {
     if (updates.verticalIndex < 0) {
       throw new Error("verticalIndex must be >= 0");
     }
-    await shiftSceneIndices(plot._id, updates.verticalIndex, current._id);
   }
-
   if (updates.pov !== undefined && updates.pov !== null) {
     await assertPovBelongsToStory(plot.storyId, updates.pov);
   }
@@ -296,7 +301,7 @@ export const moveSingleCardWithinPlot = async (
   const rangeEnd = Math.max(fromIndex, toIndex);
 
   // step 3, fetch affected scenes
-  const { affectedScenes, nextScene } =
+  const { affectedScenes, sceneInSpot } =
     await getScenesByPlotIdAndVerticalIndexRange(
       plotId,
       sceneId,
@@ -305,5 +310,28 @@ export const moveSingleCardWithinPlot = async (
       rangeEnd,
     );
 
-  return { affectedScenes, nextScene };
+  const changedScenes = [];
+  if (sceneInSpot) {
+    // step 4. shift affected scenes
+    changedScenes.push(
+      ...(await shiftScenesByIds(
+        plotId,
+        affectedScenes.map((s) => s._id),
+        isMovingUp ? 1 : -1,
+      )),
+    );
+  }
+
+  // step 5, move target scene to new index
+  await assertPlotScenePositionIsOpen(scene.plotId, toIndex);
+
+  const updatedScene = await updateSceneById(sceneId, {
+    verticalIndex: toIndex,
+  });
+
+  if (updatedScene) {
+    changedScenes.push(updatedScene);
+  }
+
+  return changedScenes;
 };

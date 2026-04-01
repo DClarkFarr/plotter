@@ -299,12 +299,16 @@ export async function updateScene(
 
 export async function moveSingleSceneWithinPlot(
   input: MoveSingleSceneWithinPlotInput,
-): Promise<void> {
+) {
   try {
-    await apiClient.post<void>(
-      `/stories/${input.storyId}/scenes/${input.sceneId}/move-within-plot`,
-      input,
-    );
+    return await apiClient
+      .post<{
+        scenes: Scene[];
+      }>(
+        `/stories/${input.storyId}/scenes/${input.sceneId}/move-within-plot`,
+        input,
+      )
+      .then((res) => res.data);
   } catch (err) {
     throw toApiError(err);
   }

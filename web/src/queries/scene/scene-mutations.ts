@@ -5,7 +5,12 @@ import type {
   Scene,
   UpdateSceneInput,
 } from "../../api/types";
-import { createScene, deleteScene, updateScene } from "../../api/stories";
+import {
+  createScene,
+  deleteScene,
+  moveSingleSceneWithinPlot,
+  updateScene,
+} from "../../api/stories";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useStoryPlotsQuery } from "../story/story-queries";
 import { shiftScenesForInsert, sortScenes } from "./scene-helpers";
@@ -250,3 +255,146 @@ export function useDeleteSceneMutation(storyId: string) {
     },
   });
 }
+
+export type MoveSingleCardWithinPlotProps = {
+  storyId: string;
+  plotId: string;
+  sceneId: string;
+  fromIndex: number;
+  toIndex: number;
+};
+
+export type MoveSingleCardBetweenPlotsProps = MoveSingleCardWithinPlotProps & {
+  targetPlotId: string;
+};
+
+const useMoveSingleWithinPlot = () => {
+  const queryClient = useQueryClient();
+
+  const { mutateAsync, isIdle } = useMutation({
+    mutationFn: moveSingleSceneWithinPlot,
+
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: useStoryPlotsQuery.queryKey(input.storyId),
+      });
+
+      const previous = queryClient.getQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(input.storyId),
+      );
+
+      if (previous) {
+        const updated = previous.map((plot) => {
+          if (plot.id !== input.plotId) {
+            return plot;
+          }
+
+          // update only the drag/dropped scene optimistically
+          const plotScenes = [...plot.scenes];
+
+          return {
+            ...plot,
+            scenes: sortScenes(
+              recursivelyBumpScenes(plotScenes, input.sceneId, input.toIndex),
+            ),
+          };
+        });
+
+        queryClient.setQueryData<Plot[]>(
+          useStoryPlotsQuery.queryKey(input.storyId),
+          updated,
+        );
+      }
+
+      return { previous };
+    },
+    // onError: (_error, input, context) => {
+    //   if (context?.previous) {
+    //     queryClient.setQueryData(
+    //       useStoryPlotsQuery.queryKey(input.storyId),
+    //       context.previous,
+    //     );
+    //   }
+    // },
+    // onSuccess: ({ scenes }, input) => {
+    //   queryClient.setQueryData<Plot[]>(
+    //     useStoryPlotsQuery.queryKey(input.storyId),
+    //     (current) => {
+    //       if (!current) {
+    //         return current;
+    //       }
+
+    //       return findAndUpdatePlotScenes(current, scenes);
+    //     },
+    //   );
+    // },
+  });
+
+  return { moveSingleCardWithinPlot: mutateAsync, isMutating: !isIdle };
+};
+
+export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {
+  const sceneMap = new Map(scenes.map((scene) => [scene.id, scene]));
+
+  return plots.map((plot) => {
+    const hasScene = plot.scenes.some((scene) => sceneMap.has(scene.id));
+    if (!hasScene) {
+      return plot;
+    }
+
+    const nextScenes = plot.scenes.map(
+      (scene) => sceneMap.get(scene.id) ?? scene,
+    );
+
+    return { ...plot, scenes: sortScenes(nextScenes) };
+  });
+};
+
+const recursivelyBumpScenes = (
+  scenes: Scene[],
+  targetSceneId: string,
+  targetIndex: number,
+): Scene[] => {
+  const foundInSpot = scenes.find(
+    (scene) => scene.verticalIndex === targetIndex,
+  );
+
+  if (foundInSpot) {
+    scenes = recursivelyBumpScenes(
+      scenes,
+      foundInSpot.id,
+      foundInSpot.verticalIndex + 1,
+    );
+  }
+
+  return scenes.map((scene) =>
+    scene.id === targetSceneId
+      ? { ...scene, verticalIndex: targetIndex }
+      : scene,
+  );
+};
+
+const useMoveSingleBetweenPlots = () => {
+  const moveSingleCardBetweenPlots = ({
+    plotId,
+    sceneId,
+    fromIndex,
+    toIndex,
+    targetPlotId,
+  }: MoveSingleCardBetweenPlotsProps) => {
+    console.log("moveSingleCardBetweenPlots", {
+      plotId,
+      sceneId,
+      fromIndex,
+      toIndex,
+      targetPlotId,
+    });
+  };
+
+  return { moveSingleCardBetweenPlots };
+};
+
+export const MoveSceneMutations = {
+  useMoveSingleWithinPlot,
+  useMoveSingleBetweenPlots,
+};

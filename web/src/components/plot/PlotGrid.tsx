@@ -13,7 +13,7 @@ import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
-import { MoveSceneMutations } from "../../hooks/useSceneMoveMutations";
+import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 
 export type PlotGridProps = {
   storyId: string;

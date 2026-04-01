@@ -56,22 +56,55 @@ const activeSceneFilter = (filter: Record<string, unknown> = {}) => ({
   deletedAt: null,
 });
 
-export const shiftSceneIndices = async (
+export const shiftScenesByIds = async (
   plotId: ObjectId,
-  fromIndex: number,
-  excludeId?: ObjectId,
-): Promise<void> => {
+  sceneIds: ObjectId[],
+  shift: 1 | -1,
+) => {
   const collection = getScenesCollection();
+
+  await collection.updateMany(
+    activeSceneFilter({ plotId, _id: { $in: sceneIds } }),
+    { $inc: { verticalIndex: shift } },
+  );
+
+  // return updated documents
+  return collection
+    .find(activeSceneFilter({ plotId, _id: { $in: sceneIds } }))
+    .toArray();
+};
+
+export const shiftScenesByRange = async (
+  plotId: ObjectId,
+  minIndex: number | undefined,
+  maxIndex: number | undefined,
+  shift: 1 | -1,
+  excludeId?: ObjectId,
+) => {
+  const collection = getScenesCollection();
+
+  const verticalIndexFilter: Partial<{ $gte: number; $lte: number }> = {};
+
+  if (minIndex !== undefined) {
+    verticalIndexFilter.$gte = minIndex;
+  }
+
+  if (maxIndex !== undefined) {
+    verticalIndexFilter.$lte = maxIndex;
+  }
+
   const filter: Record<string, unknown> = activeSceneFilter({
     plotId,
-    verticalIndex: { $gte: fromIndex },
+    verticalIndex: verticalIndexFilter,
   });
 
   if (excludeId) {
     filter._id = { $ne: excludeId };
   }
 
-  await collection.updateMany(filter, { $inc: { verticalIndex: 1 } });
+  await collection.updateMany(filter, { $inc: { verticalIndex: shift } });
+
+  return collection.find(filter).toArray();
 };
 
 export interface CreateSceneInput {
@@ -252,6 +285,19 @@ export const getSceneByIdForPlotIds = async (
   );
 };
 
+export const getSceneByVerticalIndex = async (
+  plotId: string | ObjectId,
+  verticalIndex: number,
+): Promise<SceneDocument | null> => {
+  const collection = getScenesCollection();
+  return collection.findOne(
+    activeSceneFilter({
+      plotId: ensureObjectId(plotId, "plotId"),
+      verticalIndex,
+    }),
+  );
+};
+
 export interface UpdateSceneInput {
   title?: string;
   description?: string;
@@ -359,17 +405,34 @@ export const getScenesByPlotIdAndVerticalIndexRange = async (
   };
   const affectedScenes = await collection
     .find(activeSceneFilter(filter))
+    .sort({ verticalIndex: 1 })
     .toArray();
 
-  const nextScene = await collection.findOne(
+  const sceneInFront = await collection.findOne(
     activeSceneFilter({
       plotId,
       verticalIndex: isMovingUp ? rangeEnd + 1 : rangeStart - 1,
     }),
   );
 
+  const sceneInBack = await collection.findOne(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: isMovingUp ? rangeStart - 1 : rangeEnd + 1,
+    }),
+  );
+
+  const sceneInSpot = await collection.findOne(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: isMovingUp ? rangeEnd : rangeStart,
+    }),
+  );
+
   return {
     affectedScenes,
-    nextScene,
+    sceneInFront,
+    sceneInBack,
+    sceneInSpot,
   };
 };

@@ -327,15 +327,11 @@ const applySceneRoutes = () => {
         toIndex: requireNumber(req.body?.toIndex, "toIndex"),
       };
 
-      const { affectedScenes, nextScene } =
-        await moveSingleCardWithinPlot(payload);
+      const changedScenes = await moveSingleCardWithinPlot(payload);
 
-      res
-        .status(200)
-        .json({
-          affectedScenes: affectedScenes.map(toSceneResponse),
-          nextScene: nextScene ? toSceneResponse(nextScene) : null,
-        });
+      res.status(200).json({
+        scenes: changedScenes.map(toSceneResponse),
+      });
     }),
   );
 

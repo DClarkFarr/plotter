@@ -79,7 +79,7 @@ export const SceneCard = ({
     <div
       ref={ref}
       style={themeStyles}
-      className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-colors duration-300 cursor-pointer hover:bg-[var(--plot-color-soft)]"
+      className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-[background-color] duration-3000 cursor-pointer hover:bg-[var(--plot-color-soft)]"
     >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <Button color="gray" size="xs" type="button" aria-label="Move scene">

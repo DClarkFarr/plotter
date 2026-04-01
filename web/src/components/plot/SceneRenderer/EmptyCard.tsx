@@ -36,7 +36,7 @@ export const EmptyCard = ({
       plot: plot,
       verticalIndex: sceneIndex,
     },
-    collisionPriority: CollisionPriority.Low,
+    collisionPriority: CollisionPriority.Normal,
   });
 
   console.log("empty", plotIndex, sceneIndex, { isDropTarget });
