@@ -12,6 +12,7 @@ import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
+// import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 
@@ -92,18 +93,15 @@ export const PlotGrid = ({
         console.warn("Unknown drag mode", { dragMode });
       }
     }
-    console.log("handle drag end", {
-      targetPlot,
-      targetVerticalIndex,
-      sourcePlot,
-      sourceScene,
-      dragMode,
-    });
   };
 
   return (
     <div className="w-full h-full">
       <DragDropProvider
+        plugins={(defaults) => [
+          ...defaults,
+          // Feedback.configure({ dropAnimation: null }),
+        ]}
         onDragStart={(event) => {
           console.log("on drag start", event);
         }}
@@ -112,13 +110,16 @@ export const PlotGrid = ({
         }}
         onDragEnd={(event) => {
           const { target, source } = event.operation;
-          console.log("source was", source);
+          console.log("source was", source, event);
           if (
             target &&
             target.type === "droppable" &&
             source &&
             source.type === "item"
           ) {
+            console.log("cancelling");
+            event.operation.target?.destroy();
+
             const { plot, verticalIndex } = target.data as {
               plot: Plot;
               verticalIndex: number;
