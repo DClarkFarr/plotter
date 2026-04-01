@@ -41,7 +41,11 @@ export const SceneCard = ({
     cardSize,
   });
 
-  const { ref, isDragging } = useSortable({
+  const {
+    ref: containerRef,
+    isDragging,
+    handleRef,
+  } = useSortable({
     id: scene.id,
     index: sceneIndex,
     group: plotIndex,
@@ -77,12 +81,18 @@ export const SceneCard = ({
 
   return (
     <div
-      ref={ref}
+      ref={containerRef}
       style={themeStyles}
-      className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)] transition-[background-color] duration-3000 cursor-pointer hover:bg-[var(--plot-color-soft)]"
+      className="card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full bg-[var(--plot-color)] text-[var(--plot-text)]  hover:bg-[var(--plot-color-soft)]"
     >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <Button color="gray" size="xs" type="button" aria-label="Move scene">
+        <Button
+          ref={handleRef}
+          color="gray"
+          size="xs"
+          type="button"
+          aria-label="Move scene"
+        >
           <IconDragHorizontal />
         </Button>
         <Button
