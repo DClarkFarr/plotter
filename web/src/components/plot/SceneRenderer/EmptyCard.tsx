@@ -32,7 +32,7 @@ export const EmptyCard = memo(
 
     const { isDropTarget, ref } = useDroppable({
       id: `empty-${plot?.id}-${sceneIndex}`,
-      accept: "item",
+      accept: "scene",
       type: "droppable",
       data: {
         plot: plot,

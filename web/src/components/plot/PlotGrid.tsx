@@ -114,12 +114,12 @@ export const PlotGrid = ({
         onDragEnd={(event, manager) => {
           const { target, source } = event.operation;
 
-          console.log("source was", source, event);
+          console.log("source type", source?.type, "target type", target?.type);
           if (
             target &&
-            target.type === "droppable" &&
+            ["droppable", "scene"].includes(String(target.type)) &&
             source &&
-            source.type === "item"
+            source.type === "scene"
           ) {
             const feedback = manager.plugins.find(
               (plugin) => plugin instanceof Feedback,
@@ -232,7 +232,6 @@ const PlotGridBody = ({
           style={{ "--grid-cols": gridCols }}
         >
           {grid.map((row, r) => {
-            const nextRow = grid[r + 1];
             return (
               <>
                 {row.map((cell, c) => {
@@ -334,29 +333,16 @@ const PlotGridBody = ({
                     cell.type === "plot"
                   ) {
                     return <div className="nbsp" data-r={r} data-c={c}></div>;
-                  } else if (cell.type === "empty") {
+                  } else {
                     return (
                       <div
-                        className="drop-scene p-2 bg-gray-300 rounded"
+                        className="scene-actions p-1 bg-gray-300 rounded"
                         data-enabled="false"
                         data-r={r}
                         data-c={c}
                       ></div>
                     );
-                  } else if (cell.type === "scene") {
-                    return (
-                      <div
-                        className={`drop-scene p-2 ${nextRow?.[c]?.type === "scene" ? "bg-emerald-300" : "bg-red-300"} rounded`}
-                        data-enabled={
-                          nextRow?.[c]?.type === "scene" ? "true" : "false"
-                        }
-                        data-r={r}
-                        data-c={c}
-                      ></div>
-                    );
                   }
-
-                  return null;
                 })}
               </>
             );
