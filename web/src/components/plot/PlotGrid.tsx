@@ -117,9 +117,6 @@ export const PlotGrid = ({
             source &&
             source.type === "item"
           ) {
-            console.log("cancelling");
-            event.operation.target?.destroy();
-
             const { plot, verticalIndex } = target.data as {
               plot: Plot;
               verticalIndex: number;
