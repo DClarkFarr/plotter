@@ -12,7 +12,7 @@ import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
-// import { Feedback } from "@dnd-kit/dom";
+import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 
@@ -98,18 +98,22 @@ export const PlotGrid = ({
   return (
     <div className="w-full h-full">
       <DragDropProvider
-        plugins={(defaults) => [
-          ...defaults,
-          // Feedback.configure({ dropAnimation: null }),
-        ]}
-        onDragStart={(event) => {
+        onDragStart={(event, manager) => {
+          const feedback = manager.plugins.find(
+            (plugin) => plugin instanceof Feedback,
+          );
+          if (feedback) {
+            feedback.dropAnimation = undefined;
+          }
+
           console.log("on drag start", event);
         }}
         onDragOver={(event, manager) => {
           console.log("on drag over", { event, manager });
         }}
-        onDragEnd={(event) => {
+        onDragEnd={(event, manager) => {
           const { target, source } = event.operation;
+
           console.log("source was", source, event);
           if (
             target &&
@@ -117,6 +121,14 @@ export const PlotGrid = ({
             source &&
             source.type === "item"
           ) {
+            const feedback = manager.plugins.find(
+              (plugin) => plugin instanceof Feedback,
+            );
+
+            if (feedback) {
+              feedback.dropAnimation = null;
+            }
+
             const { plot, verticalIndex } = target.data as {
               plot: Plot;
               verticalIndex: number;
