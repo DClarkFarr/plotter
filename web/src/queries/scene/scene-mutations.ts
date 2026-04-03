@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type {
   CreateSceneInput,
   Plot,
@@ -279,59 +283,136 @@ const useMoveSingleWithinPlot = () => {
         queryKey: useStoryPlotsQuery.queryKey(input.storyId),
       });
 
-      const previous = queryClient.getQueryData<Plot[]>(
-        useStoryPlotsQuery.queryKey(input.storyId),
+      let previousPlots =
+        queryClient.getQueryData<Plot[]>(
+          useStoryPlotsQuery.queryKey(input.storyId),
+        ) ?? [];
+
+      const shouldShift = moveRequiresShift(
+        queryClient,
+        input.storyId,
+        input.plotId,
+        input.toIndex,
       );
 
-      if (previous) {
-        const updated = previous.map((plot) => {
-          if (plot.id !== input.plotId) {
-            return plot;
-          }
-
-          // update only the drag/dropped scene optimistically
-          const plotScenes = [...plot.scenes];
-
-          return {
-            ...plot,
-            scenes: sortScenes(
-              recursivelyBumpScenes(plotScenes, input.sceneId, input.toIndex),
-            ),
-          };
-        });
-
-        queryClient.setQueryData<Plot[]>(
-          useStoryPlotsQuery.queryKey(input.storyId),
-          updated,
+      if (shouldShift) {
+        const shiftedResources = shiftGridUpwardOnIndex(
+          previousPlots,
+          input.toIndex,
         );
+        previousPlots = shiftedResources.plots;
       }
 
-      return { previous };
+      // update scene vertical index
+      previousPlots = previousPlots.map((plot) => {
+        if (plot.id === input.plotId) {
+          return {
+            ...plot,
+            scenes: plot.scenes.map((scene) => {
+              if (scene.id === input.sceneId) {
+                return { ...scene, verticalIndex: input.toIndex };
+              }
+              return scene;
+            }),
+          };
+        }
+        return plot;
+      });
+
+      queryClient.setQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(input.storyId),
+        previousPlots,
+      );
+
+      return {
+        previous: {
+          plots: previousPlots,
+        },
+      };
     },
     onError: (_error, input, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
           useStoryPlotsQuery.queryKey(input.storyId),
-          context.previous,
+          context.previous.plots,
         );
       }
     },
-    // onSuccess: ({ scenes }, input) => {
-    //   queryClient.setQueryData<Plot[]>(
-    //     useStoryPlotsQuery.queryKey(input.storyId),
-    //     (current) => {
-    //       if (!current) {
-    //         return current;
-    //       }
-
-    //       return findAndUpdatePlotScenes(current, scenes);
-    //     },
-    //   );
-    // },
+    onSuccess: ({ scenes }, input) => {
+      console.log("apply scenes", scenes, "from", input);
+    },
   });
 
   return { moveSingleCardWithinPlot: mutateAsync, isMutating: !isIdle };
 };
+
+function shiftGridUpwardOnIndex(plots: Plot[], targetVerticalIndex: number) {
+  /**
+   * Currently just updating plots
+   */
+  return {
+    plots: plots.map((plot) => {
+      const hasScenesToUpdate = plot.scenes.some(
+        (scene) => scene.verticalIndex >= targetVerticalIndex,
+      );
+      if (!hasScenesToUpdate) {
+        return plot;
+      }
+
+      return {
+        ...plot,
+        scenes: plot.scenes.map((scene) =>
+          scene.verticalIndex >= targetVerticalIndex
+            ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
+            : scene,
+        ),
+      };
+    }),
+  };
+}
+
+function moveRequiresShift(
+  queryClient: QueryClient,
+  storyId: string,
+  targetPlotId: string,
+  targetVerticalIndex: number,
+) {
+  // Check full grid.
+  // currently just supporting scenes
+
+  const hasScene = hasSceneOnIndex(
+    queryClient,
+    storyId,
+    targetPlotId,
+    targetVerticalIndex,
+  );
+
+  return hasScene;
+}
+
+function hasSceneOnIndex(
+  queryClient: QueryClient,
+  storyId: string,
+  targetPlotId: string,
+  targetVerticalIndex: number,
+) {
+  const plots = queryClient.getQueryData<Plot[]>(
+    useStoryPlotsQuery.queryKey(storyId),
+  );
+  if (!plots) {
+    return false;
+  }
+
+  const targetPlot = plots.find((plot) => plot.id === targetPlotId);
+  if (!targetPlot) {
+    return false;
+  }
+
+  const hasSceneAtTargetIndex = targetPlot.scenes.some(
+    (scene) => scene.verticalIndex === targetVerticalIndex,
+  );
+  return hasSceneAtTargetIndex;
+}
 
 export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {
   const sceneMap = new Map(scenes.map((scene) => [scene.id, scene]));
@@ -348,30 +429,6 @@ export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {
 
     return { ...plot, scenes: sortScenes(nextScenes) };
   });
-};
-
-const recursivelyBumpScenes = (
-  scenes: Scene[],
-  targetSceneId: string,
-  targetIndex: number,
-): Scene[] => {
-  const foundInSpot = scenes.find(
-    (scene) => scene.verticalIndex === targetIndex,
-  );
-
-  if (foundInSpot) {
-    scenes = recursivelyBumpScenes(
-      scenes,
-      foundInSpot.id,
-      foundInSpot.verticalIndex + 1,
-    );
-  }
-
-  return scenes.map((scene) =>
-    scene.id === targetSceneId
-      ? { ...scene, verticalIndex: targetIndex }
-      : scene,
-  );
 };
 
 const useMoveSingleBetweenPlots = () => {

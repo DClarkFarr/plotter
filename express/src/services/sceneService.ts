@@ -9,14 +9,14 @@ import {
   SceneTagVariantInput,
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
-  getScenesByPlotIdAndVerticalIndexRange,
-  shiftScenesByIds,
   getSceneByVerticalIndex,
+  shiftScenesUpwardFromIndex,
 } from "../models/scenes";
 import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
+import { getPlotForStory } from "./plotService";
 
 const assertPlotExists = async (plotId: string | ObjectId) => {
   const plot = await getPlotById(plotId);
@@ -288,62 +288,78 @@ export const moveSingleCardWithinPlot = async (
   const plotId = ensureObjectId(input.plotId, "plotId");
   const sceneId = ensureObjectId(input.sceneId, "sceneId");
 
-  throw new Error("Scene moving is currently disabled");
-
   const plot = await assertPlotExists(plotId);
   const scene = await assertSceneExists(sceneId);
 
-  const { fromIndex, toIndex } = input;
+  const { /* fromIndex, */ toIndex } = input;
 
-  // step one, decide direction
-  const isMovingUp = toIndex > fromIndex;
+  // step 1: check if a shift is required.
+  const shouldShiftOnIndex = await sceneMoveRequiresShift(plotId, toIndex);
 
-  // step 2, build selection range
-  const rangeStart = Math.min(fromIndex, toIndex);
-  const rangeEnd = Math.max(fromIndex, toIndex);
-
-  // step 3, fetch affected scenes
-  const { affectedScenes, sceneInSpot } =
-    await getScenesByPlotIdAndVerticalIndexRange(
-      plotId,
-      sceneId,
-      isMovingUp,
-      rangeStart,
-      rangeEnd,
-    );
-
-  console.log("got stuff", {
-    plotId,
-    sceneId,
-    isMovingUp,
-    rangeStart,
-    rangeEnd,
-    affectedScenes,
-    sceneInSpot,
-  });
-
-  const changedScenes = [];
-  if (sceneInSpot) {
-    // step 4. shift affected scenes
-    changedScenes.push(
-      ...(await shiftScenesByIds(
-        plotId,
-        affectedScenes.map((s) => s._id),
-        isMovingUp ? 1 : -1,
-      )),
-    );
+  // step 2: shift scenes and return resources
+  const scenesToUpdate: SceneDocument[] = [];
+  if (shouldShiftOnIndex) {
+    const { scenes: shiftedScenes } = await shiftGridUpwardOnIndex({
+      verticalIndex: toIndex,
+      storyId: plot.storyId,
+    });
+    scenesToUpdate.push(...shiftedScenes);
   }
 
-  // step 5, move target scene to new index
+  // step 3: move target scene to new index
   await assertPlotScenePositionIsOpen(scene.plotId, toIndex);
 
   const updatedScene = await updateSceneById(sceneId, {
     verticalIndex: toIndex,
   });
-
   if (updatedScene) {
-    changedScenes.push(updatedScene);
+    scenesToUpdate.push(updatedScene);
   }
 
-  return changedScenes;
+  return {
+    scenes: scenesToUpdate,
+  };
+};
+
+export const sceneMoveRequiresShift = async (
+  targetPlotId: ObjectId,
+  targetVerticalIndex: number,
+): Promise<boolean> => {
+  // step 1: Check if there is anything on that index.
+  // Currently, only checking scenes. Add more resources here.
+
+  const existingScene = await getSceneByVerticalIndex(
+    targetPlotId,
+    targetVerticalIndex,
+  );
+
+  // step 2: if any resources are found, return true
+  // Currently only checking existingScene scene
+  return Boolean(existingScene);
+};
+
+export const shiftGridUpwardOnIndex = async ({
+  verticalIndex,
+  storyId,
+}: {
+  verticalIndex: number;
+  storyId: ObjectId;
+}): Promise<{ scenes: SceneDocument[] }> => {
+  // step 1: collect necessary resources
+  const plotsIds = await listPlotIdsByStoryId(storyId);
+
+  // step 2: shift resources
+  const scenes: SceneDocument[] = [];
+  for (const plotId of plotsIds) {
+    const shiftedScenes = await shiftScenesUpwardFromIndex(
+      plotId,
+      verticalIndex,
+    );
+    scenes.push(...shiftedScenes);
+  }
+
+  // 3: return shifted resources. Currently only scenes.
+  return {
+    scenes,
+  };
 };

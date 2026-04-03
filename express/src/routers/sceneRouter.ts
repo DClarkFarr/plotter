@@ -285,10 +285,14 @@ const applySceneRoutes = () => {
         toIndex: requireNumber(req.body?.toIndex, "toIndex"),
       };
 
-      const changedScenes = await moveSingleCardWithinPlot(payload);
+      const changedResources = await moveSingleCardWithinPlot(payload);
 
+      /**
+       * Currently only have scenes implemented.
+       * Will return more resources similarly here.
+       */
       res.status(200).json({
-        scenes: changedScenes.map(toSceneResponse),
+        scenes: changedResources.scenes.map(toSceneResponse),
       });
     }),
   );

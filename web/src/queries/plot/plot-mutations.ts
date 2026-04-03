@@ -17,11 +17,9 @@ export function useCreatePlotMutation(storyId: string) {
       await queryClient.cancelQueries({
         queryKey: useStoryPlotsQuery.queryKey(storyId),
       });
-      const previous = queryClient.getQueryData<Plot[]>([
-        "story",
-        storyId,
-        "plots",
-      ]);
+      const previous = queryClient.getQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(storyId),
+      );
 
       const tempId = `temp-${Date.now()}`;
       if (previous) {

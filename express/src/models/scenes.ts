@@ -56,6 +56,9 @@ const activeSceneFilter = (filter: Record<string, unknown> = {}) => ({
   deletedAt: null,
 });
 
+/**
+ * @deprecated An example that shouldn't be in use
+ */
 export const shiftScenesByIds = async (
   plotId: ObjectId,
   sceneIds: ObjectId[],
@@ -74,6 +77,9 @@ export const shiftScenesByIds = async (
     .toArray();
 };
 
+/**
+ * @deprecated An example that shouldn't be in use
+ */
 export const shiftScenesByRange = async (
   plotId: ObjectId,
   minIndex: number | undefined,
@@ -105,6 +111,30 @@ export const shiftScenesByRange = async (
   await collection.updateMany(filter, { $inc: { verticalIndex: shift } });
 
   return collection.find(filter).toArray();
+};
+
+export const shiftScenesUpwardFromIndex = async (
+  plotId: ObjectId,
+  fromIndex: number,
+) => {
+  const collection = getScenesCollection();
+
+  await collection.updateMany(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: { $gte: fromIndex },
+    }),
+    { $inc: { verticalIndex: 1 } },
+  );
+
+  return collection
+    .find(
+      activeSceneFilter({
+        plotId,
+        verticalIndex: { $gte: fromIndex },
+      }),
+    )
+    .toArray();
 };
 
 export interface CreateSceneInput {
@@ -387,6 +417,14 @@ export const deleteSceneById = async (
   return Boolean(result);
 };
 
+export const sceneMoveRequiresShift = (
+  targetPlotId: string,
+  targetVerticalIndex: number,
+) => {};
+
+/**
+ * @deprecated An example that shouldn't be in use
+ */
 export const getScenesByPlotIdAndVerticalIndexRange = async (
   plotId: ObjectId,
   sceneId: ObjectId,

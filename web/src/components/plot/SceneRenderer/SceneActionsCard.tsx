@@ -36,29 +36,14 @@ export const SceneActionsCard = memo(
     const { isDropTarget, ref } = useDroppable({
       id: `actions-${plot?.id}-${sceneIndex}`,
       accept: "scene",
-      type: "droppable-action",
+      type: "droppable",
       disabled: !isDroppable,
       data: {
         plot,
         verticalIndex: sceneIndex,
-        horizontalIndex: plotIndex,
       },
       collisionPriority: CollisionPriority.High,
     });
-
-    if (sceneIndex === 2 && plotIndex === 0) {
-      console.log(
-        "actions",
-        plotIndex,
-        sceneIndex,
-        { isDroppable, isDropTarget },
-        "from",
-        {
-          nextScene: nextScene,
-          prevScene: prevScene,
-        },
-      );
-    }
 
     const themeStyles = {
       "--plot-color": theme.baseColor,

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import type { Plot, Scene } from "../../api/types";
 
 import type {
@@ -115,10 +115,9 @@ export const PlotGrid = ({
         onDragEnd={(event, manager) => {
           const { target, source } = event.operation;
 
-          console.log("source type", source?.type, "target type", target?.type);
           if (
             target &&
-            ["droppable", "scene"].includes(String(target.type)) &&
+            ["droppable"].includes(String(target.type)) &&
             source &&
             source.type === "scene"
           ) {
@@ -139,6 +138,14 @@ export const PlotGrid = ({
                 plot: Plot;
                 scene: Scene;
               }) || {};
+
+            if (
+              sourcePlot?.id === plot.id &&
+              sourceScene?.verticalIndex === verticalIndex
+            ) {
+              console.log("dropped in same place, ignoring");
+              return;
+            }
             handleDragEnd(plot, verticalIndex, sourcePlot, sourceScene);
           }
         }}
@@ -234,7 +241,7 @@ const PlotGridBody = ({
         >
           {grid.map((row, r) => {
             return (
-              <>
+              <React.Fragment key={`row-${r}`}>
                 {row.map((cell, c) => {
                   if (
                     cell.type === "col-header" ||
@@ -352,7 +359,7 @@ const PlotGridBody = ({
 
                   return null;
                 })}
-              </>
+              </React.Fragment>
             );
           })}
         </div>
