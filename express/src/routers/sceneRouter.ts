@@ -1,5 +1,5 @@
-import express, { Request, Response } from "express";
-import { AuthError, ValidationError } from "../services/authService";
+import express from "express";
+import { ValidationError } from "../services/authService";
 import {
   createSceneForStory,
   deleteSceneForStory,
@@ -16,20 +16,9 @@ import {
 } from "../utils/validators";
 import { assertparamIsString } from "../utils/routes";
 import type { SceneTodoItem, UpdateSceneInput } from "../models/scenes";
+import { handleAsync } from "../utils/asyncHandler";
 
 export const sceneRouter = express.Router({ mergeParams: true });
-
-type AsyncHandler = (req: Request, res: Response) => Promise<void>;
-
-const handleAsync =
-  (handler: AsyncHandler): AsyncHandler =>
-  async (req, res) => {
-    try {
-      await handler(req, res);
-    } catch (error) {
-      handleError(res, error);
-    }
-  };
 
 const toSceneResponse = (scene: {
   _id: { toHexString(): string };
@@ -167,37 +156,6 @@ const parseOptionalPov = (value: unknown): string | null | undefined => {
   }
 
   return value;
-};
-
-const handleError = (res: Response, error: unknown): void => {
-  if (error instanceof AuthError) {
-    res.status(error.status).json({ error: error.message });
-    return;
-  }
-
-  if (error instanceof ValidationError) {
-    res.status(error.status).json({ error: error.message, field: error.field });
-    return;
-  }
-
-  if (error instanceof Error) {
-    if (error.message === "Scene not found") {
-      res.status(404).json({ error: error.message });
-      return;
-    }
-
-    if (
-      error.message.includes("required") ||
-      error.message.startsWith("Invalid") ||
-      error.message.includes("must") ||
-      error.message.includes("unknown")
-    ) {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-  }
-
-  res.status(500).json({ error: "Unexpected error" });
 };
 
 const applySceneRoutes = () => {

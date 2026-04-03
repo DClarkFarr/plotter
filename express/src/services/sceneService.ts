@@ -310,6 +310,16 @@ export const moveSingleCardWithinPlot = async (
       rangeEnd,
     );
 
+  console.log("got stuff", {
+    plotId,
+    sceneId,
+    isMovingUp,
+    rangeStart,
+    rangeEnd,
+    affectedScenes,
+    sceneInSpot,
+  });
+
   const changedScenes = [];
   if (sceneInSpot) {
     // step 4. shift affected scenes
