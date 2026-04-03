@@ -12,10 +12,12 @@ import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { DragDropProvider } from "@dnd-kit/react";
-import { Feedback } from "@dnd-kit/dom";
+import { DragDropManager, Feedback } from "@dnd-kit/dom";
+import { Modifier, type DragOperation } from "@dnd-kit/abstract";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
+import type { Coordinates } from "@dnd-kit/utilities";
 
 export type PlotGridProps = {
   storyId: string;
@@ -44,6 +46,30 @@ const getCellColIndex = (gridIndex: number) => {
 const getCellRowIndex = (gridIndex: number) => {
   return gridIndex - 1;
 };
+
+type SensitivityOptions = {
+  xModifier: number;
+  yModifier: number;
+};
+class CustomSensitivityModifier extends Modifier {
+  constructor(manager: DragDropManager, options?: SensitivityOptions) {
+    super(manager, options);
+  }
+
+  public apply(operation: DragOperation): Coordinates {
+    // console.log("got operation", operation);
+    if (this.disabled) return operation.transform;
+
+    const { xModifier = 1, yModifier = 1 } = this.options ?? {};
+    const { transform } = operation;
+
+    return {
+      ...transform,
+      x: transform.x * xModifier,
+      y: transform.y * yModifier,
+    };
+  }
+}
 
 export const PlotGrid = ({
   storyId,
@@ -99,6 +125,12 @@ export const PlotGrid = ({
   return (
     <div className="w-full h-full">
       <DragDropProvider
+        modifiers={[
+          CustomSensitivityModifier.configure({
+            xModifier: 1,
+            yModifier: 1,
+          }),
+        ]}
         onDragStart={(event, manager) => {
           const feedback = manager.plugins.find(
             (plugin) => plugin instanceof Feedback,
