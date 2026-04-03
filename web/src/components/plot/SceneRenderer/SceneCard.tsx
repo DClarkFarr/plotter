@@ -40,7 +40,7 @@ export const SceneCard = memo(
 
     const {
       ref: containerRef,
-      isDropTarget,
+      // isDropTarget,
       isDragSource,
       // isDragging,
       // isDropping,
@@ -56,6 +56,8 @@ export const SceneCard = memo(
         verticalIndex: sceneIndex,
       },
     });
+
+    const isDropTarget = false; // disabling dropping animation
 
     console.log("scene", plotIndex, sceneIndex);
 
@@ -84,6 +86,8 @@ export const SceneCard = memo(
       <div
         ref={containerRef}
         style={themeStyles}
+        data-r={sceneIndex}
+        data-c={plotIndex}
         className={`card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full ${isDropTarget && !isDragSource ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`}`}
       >
         <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">

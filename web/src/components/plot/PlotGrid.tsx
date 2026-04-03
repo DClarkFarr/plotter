@@ -15,6 +15,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
+import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
 
 export type PlotGridProps = {
   storyId: string;
@@ -235,10 +236,48 @@ const PlotGridBody = ({
             return (
               <>
                 {row.map((cell, c) => {
+                  if (
+                    cell.type === "col-header" ||
+                    cell.type === "corner" ||
+                    cell.type === "plot"
+                  ) {
+                    return (
+                      <div
+                        className="nbsp"
+                        key={`nbsp-${r}-${c}`}
+                        data-r={r}
+                        data-c={c}
+                      ></div>
+                    );
+                  } else {
+                    return (
+                      <SceneActionsCard
+                        key={`actions-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
+                        storyId={storyId}
+                        plot={plotsByRowIndex.get(getCellColIndex(c))}
+                        plotIndex={getCellColIndex(c)}
+                        sceneIndex={getCellRowIndex(r)}
+                        nextScene={scenesByColIndex
+                          .get(
+                            plotsByRowIndex.get(getCellColIndex(c))?.id || "",
+                          )
+                          ?.get(getCellRowIndex(r))}
+                        prevScene={scenesByColIndex
+                          .get(
+                            plotsByRowIndex.get(getCellColIndex(c))?.id || "",
+                          )
+                          ?.get(getCellRowIndex(r) - 1)}
+                        isDisabled={!plotsByRowIndex.get(getCellColIndex(c))}
+                      />
+                    );
+                  }
+                })}
+
+                {row.map((cell, c) => {
                   if (cell.type === "corner") {
                     return (
                       <div
-                        key={`${r}-${c}`}
+                        key={`corner-${r}-${c}`}
                         className="corner"
                         data-row={r}
                         data-col={c}
@@ -247,7 +286,7 @@ const PlotGridBody = ({
                   } else if (cell.type === "col-header") {
                     return (
                       <div
-                        key={`${r}-${c}`}
+                        key={`col-header-${r}-${c}`}
                         className="col-header flex items-center justify-center bg-gray-200"
                         data-row={r}
                         data-col={c}
@@ -260,20 +299,14 @@ const PlotGridBody = ({
                   } else if (cell.type === "empty") {
                     const plot = plotsByRowIndex.get(getCellColIndex(c));
                     return (
-                      <div
-                        key={`${r}-${c}`}
-                        className="scene-card empty"
-                        data-row={r}
-                        data-col={c}
-                      >
-                        <RenderEmptyCard
-                          storyId={storyId}
-                          sceneIndex={getCellRowIndex(r)}
-                          plotIndex={getCellColIndex(c)}
-                          plot={plot}
-                          isDisabled={!plot}
-                        />
-                      </div>
+                      <RenderEmptyCard
+                        key={`empty-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
+                        storyId={storyId}
+                        sceneIndex={getCellRowIndex(r)}
+                        plotIndex={getCellColIndex(c)}
+                        plot={plot}
+                        isDisabled={!plot}
+                      />
                     );
                   } else if (cell.type === "scene") {
                     const plot = plotsByRowIndex.get(getCellColIndex(c));
@@ -282,25 +315,19 @@ const PlotGridBody = ({
                       .get(plot?.id || "")
                       ?.get(getCellRowIndex(r));
                     return (
-                      <div
-                        key={`${r}-${c}`}
-                        className="scene-card"
-                        data-row={r}
-                        data-col={c}
-                      >
-                        <RenderSceneCard
-                          sceneIndex={getCellRowIndex(r)}
-                          plotIndex={getCellColIndex(c)}
-                          scene={scene!}
-                          plot={plot!}
-                        />
-                      </div>
+                      <RenderSceneCard
+                        key={`scene-${scene!.id}`}
+                        sceneIndex={getCellRowIndex(r)}
+                        plotIndex={getCellColIndex(c)}
+                        scene={scene!}
+                        plot={plot!}
+                      />
                     );
                   } else if (cell.type === "plot") {
                     const plot = plotsByRowIndex.get(getCellColIndex(c));
                     return (
                       <div
-                        key={`${r}-${c}`}
+                        key={`plot-header-${r}-${c}`}
                         className="plot-header row-header"
                         data-row={r}
                         data-col={c}
@@ -324,25 +351,6 @@ const PlotGridBody = ({
                   }
 
                   return null;
-                })}
-
-                {row.map((cell, c) => {
-                  if (
-                    cell.type === "col-header" ||
-                    cell.type === "corner" ||
-                    cell.type === "plot"
-                  ) {
-                    return <div className="nbsp" data-r={r} data-c={c}></div>;
-                  } else {
-                    return (
-                      <div
-                        className="scene-actions p-1 bg-gray-300 rounded"
-                        data-enabled="false"
-                        data-r={r}
-                        data-c={c}
-                      ></div>
-                    );
-                  }
                 })}
               </>
             );
