@@ -288,6 +288,8 @@ export const moveSingleCardWithinPlot = async (
   const plotId = ensureObjectId(input.plotId, "plotId");
   const sceneId = ensureObjectId(input.sceneId, "sceneId");
 
+  throw new Error("Scene moving is currently disabled");
+
   const plot = await assertPlotExists(plotId);
   const scene = await assertSceneExists(sceneId);
 

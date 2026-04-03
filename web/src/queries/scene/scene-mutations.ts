@@ -308,14 +308,14 @@ const useMoveSingleWithinPlot = () => {
 
       return { previous };
     },
-    // onError: (_error, input, context) => {
-    //   if (context?.previous) {
-    //     queryClient.setQueryData(
-    //       useStoryPlotsQuery.queryKey(input.storyId),
-    //       context.previous,
-    //     );
-    //   }
-    // },
+    onError: (_error, input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          useStoryPlotsQuery.queryKey(input.storyId),
+          context.previous,
+        );
+      }
+    },
     // onSuccess: ({ scenes }, input) => {
     //   queryClient.setQueryData<Plot[]>(
     //     useStoryPlotsQuery.queryKey(input.storyId),
