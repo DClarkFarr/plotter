@@ -5,6 +5,7 @@ import { useDroppable } from "@dnd-kit/react";
 import { CollisionPriority } from "@dnd-kit/abstract";
 import { memo } from "react";
 import type { Plot, Scene } from "../../../api/types";
+import { useSceneEditorStore } from "../../../store/sceneEditorStore";
 
 type SceneActionsCardProps = {
   storyId: string;
@@ -27,17 +28,24 @@ export const SceneActionsCard = memo(
     const theme = usePlotTheme(plot?.color);
 
     const cardSize = useStoryStore((s) => s.cardSize);
+    const draggingScene = useSceneEditorStore((s) => s.draggingScene);
 
     const { width } = useGridSizes({ cardSize });
 
+    const isCurrentPosition =
+      sceneIndex === draggingScene?.verticalIndex &&
+      plot?.id === draggingScene?.plotId;
+
     const isDroppable =
-      !isDisabled && (sceneIndex === 0 || (!!prevScene?.id && !!nextScene?.id));
+      !isDisabled &&
+      ((sceneIndex === 0 && !!nextScene?.id) ||
+        (!!prevScene?.id && !!nextScene?.id));
 
     const { isDropTarget, ref } = useDroppable({
       id: `actions-${plot?.id}-${sceneIndex}`,
       accept: "scene",
       type: "droppable",
-      disabled: !isDroppable,
+      disabled: !isDroppable || isCurrentPosition,
       data: {
         plot,
         verticalIndex: sceneIndex,
@@ -58,7 +66,7 @@ export const SceneActionsCard = memo(
         data-c={plotIndex}
         ref={ref}
         style={themeStyles}
-        className={`card card--actions py-1 px-2 radius-2 transition-all duration-250 ${isDropTarget && isDroppable ? `text-white shadow-lg h-[100px]` : `h-0 ${isDroppable ? "bg-[var(--plot-color)]" : "bg-gray-200"} border-[var(--plot-color)] text-[var(--plot-text)]`} ${
+        className={`card card--actions py-1 px-2 radius-2 transition-all duration-250 ${isDropTarget && isDroppable ? `text-white bg-purple-900 shadow-lg h-[100px]` : "bg-gray-200"} ${
           isDisabled ? "opacity-50" : ""
         }`}
       ></div>

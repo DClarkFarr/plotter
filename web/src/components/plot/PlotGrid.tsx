@@ -71,6 +71,27 @@ class CustomSensitivityModifier extends Modifier {
   }
 }
 
+type DraggableSceneData = {
+  plot: Plot;
+  scene: Scene;
+  verticalIndex: number;
+};
+
+function assertIsDraggableSceneData(data: object): data is DraggableSceneData {
+  const d = data as DraggableSceneData;
+  if (
+    typeof d !== "object" ||
+    d === null ||
+    typeof d.plot !== "object" ||
+    typeof d.scene !== "object" ||
+    typeof d.verticalIndex !== "number"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 export const PlotGrid = ({
   storyId,
   plots,
@@ -78,6 +99,12 @@ export const PlotGrid = ({
   renderEmptyCard,
 }: PlotGridProps) => {
   const dragMode = useSceneEditorStore((state) => state.dragMode);
+  const startDraggingScene = useSceneEditorStore(
+    (state) => state.startDraggingScene,
+  );
+  const stopDraggingScene = useSceneEditorStore(
+    (state) => state.stopDraggingScene,
+  );
 
   const { moveSingleCardWithinPlot } =
     MoveSceneMutations.useMoveSingleWithinPlot();
@@ -123,13 +150,21 @@ export const PlotGrid = ({
             feedback.dropAnimation = undefined;
           }
 
-          console.log("on drag start", event);
+          const data = event.operation.source?.data;
+          if (!data || !assertIsDraggableSceneData(data)) {
+            console.warn("Invalid drag data", { data });
+            return;
+          }
+          console.log("on drag start", data.scene);
+          startDraggingScene(data.scene || null);
         }}
-        onDragOver={(event, manager) => {
-          console.log("on drag over", { event, manager });
+        onDragOver={() => {
+          // console.log("on drag over", { event, manager });
         }}
         onDragEnd={(event, manager) => {
           const { target, source } = event.operation;
+
+          stopDraggingScene();
 
           if (
             target &&
