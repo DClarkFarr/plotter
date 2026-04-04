@@ -11,6 +11,7 @@ type CharacterDisplayProps = {
   avatarSize?: "sm" | "md";
   hideAvatar?: boolean;
   avatarOnly?: boolean;
+  withCharacteristicsSummary?: boolean;
   popoverProps?: Omit<CharacterCardPopoverProps, "character" | "trigger">;
 };
 export const CharacterDisplay = ({
@@ -20,6 +21,7 @@ export const CharacterDisplay = ({
   hideAvatar = false,
   avatarOnly = false,
   popoverProps,
+  withCharacteristicsSummary = false,
 }: CharacterDisplayProps) => {
   const contentInner = avatarOnly ? (
     <Tooltip content={character.title} placement="top">
@@ -43,7 +45,7 @@ export const CharacterDisplay = ({
         )}
         <span className="font-semibold">{character.title}</span>
       </div>
-      {character.characteristics ? (
+      {withCharacteristicsSummary && character.characteristics ? (
         <div className="text-xs text-slate-500">
           {["age", "height", "weight"]
             .map((key) => {

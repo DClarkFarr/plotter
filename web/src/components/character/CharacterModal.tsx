@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Modal, ModalBody, ModalHeader, Button } from "flowbite-react";
 import { useParams } from "@tanstack/react-router";
 
@@ -105,7 +105,6 @@ export const CharacterModal = () => {
   const createCharacter = useCreateCharacterMutation(storyId);
   const updateCharacter = useUpdateCharacterMutation(storyId);
   const lastSavedRef = useRef<string>("");
-  const skipAutoSaveRef = useRef(true);
 
   const payloadState = useMemo(() => {
     try {
@@ -141,49 +140,59 @@ export const CharacterModal = () => {
     }
   }, [characteristics, customAttributes, description, lists, title]);
 
+  const validatePayload = () => {
+    const trimmedTitle = title.trim();
+    const errors: string[] = [];
+    if (!trimmedTitle) {
+      errors.push("Character name is required.");
+    }
+
+    if (payloadState.error) {
+      errors.push(payloadState.error.message);
+    }
+
+    const payload = payloadState.payload;
+    if (!payload) {
+      errors.push("Invalid character data.");
+    }
+
+    return errors;
+  };
+
   const debouncedSave = useDebounce(
     async (payload: UpdateCharacterInput, targetId: string) => {
       const serialized = JSON.stringify(payload);
       if (serialized === lastSavedRef.current) {
         return;
       }
+
+      const errors = validatePayload();
+      if (errors.length > 0) {
+        console.warn("Auto-save skipped due to validation errors:", errors);
+        return;
+      }
+
       await updateCharacter.mutateAsync({ characterId: targetId, ...payload });
       lastSavedRef.current = serialized;
+
+      alert.success("Changes saved", {
+        hideProgressBar: true,
+        autoClose: 1500,
+      });
     },
     500,
   );
 
-  useEffect(() => {
-    if (!isOpen || mode !== "edit" || !character) {
-      return;
-    }
+  const onChangeWrapper = (updateFn: () => void) => {
+    updateFn();
 
-    if (payloadState.payload) {
-      lastSavedRef.current = JSON.stringify(payloadState.payload);
+    if (mode === "edit" && character) {
+      const payload = payloadState.payload;
+      if (payload) {
+        debouncedSave(payload, character.id);
+      }
     }
-    skipAutoSaveRef.current = true;
-  }, [character, isOpen, mode, payloadState.payload]);
-
-  useEffect(() => {
-    if (!isOpen || mode !== "edit" || !character) {
-      return;
-    }
-
-    if (skipAutoSaveRef.current) {
-      skipAutoSaveRef.current = false;
-      return;
-    }
-
-    if (!payloadState.payload?.title?.trim()) {
-      return;
-    }
-
-    if (!payloadState.payload) {
-      return;
-    }
-
-    debouncedSave(payloadState.payload, character.id);
-  }, [character, debouncedSave, isOpen, mode, payloadState.payload]);
+  };
 
   const handleSave = async () => {
     const trimmedTitle = title.trim();
@@ -242,7 +251,9 @@ export const CharacterModal = () => {
               </label>
               <input
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
+                onChange={(event) =>
+                  onChangeWrapper(() => setTitle(event.target.value))
+                }
                 placeholder="Character name"
                 className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
               />
@@ -253,7 +264,9 @@ export const CharacterModal = () => {
               </label>
               <textarea
                 value={description}
-                onChange={(event) => setDescription(event.target.value)}
+                onChange={(event) =>
+                  onChangeWrapper(() => setDescription(event.target.value))
+                }
                 placeholder="Short summary for cards"
                 className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                 rows={3}
@@ -279,7 +292,9 @@ export const CharacterModal = () => {
                       <textarea
                         value={characteristics[key] ?? ""}
                         onChange={(event) =>
-                          setCharacteristic(key, event.target.value)
+                          onChangeWrapper(() =>
+                            setCharacteristic(key, event.target.value),
+                          )
                         }
                         rows={3}
                         className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
@@ -296,7 +311,9 @@ export const CharacterModal = () => {
                     <input
                       value={characteristics[key] ?? ""}
                       onChange={(event) =>
-                        setCharacteristic(key, event.target.value)
+                        onChangeWrapper(() =>
+                          setCharacteristic(key, event.target.value),
+                        )
                       }
                       type="text"
                       className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
@@ -314,7 +331,9 @@ export const CharacterModal = () => {
             <div className="mt-4">
               <CharacterCustomAttributes
                 items={customAttributes}
-                onChange={setCustomAttributes}
+                onChange={(items) =>
+                  onChangeWrapper(() => setCustomAttributes(items))
+                }
               />
             </div>
           </div>
@@ -324,7 +343,10 @@ export const CharacterModal = () => {
               Lists
             </h3>
             <div className="mt-4">
-              <CharacterListsAccordion lists={lists} onChange={setLists} />
+              <CharacterListsAccordion
+                lists={lists}
+                onChange={(lists) => onChangeWrapper(() => setLists(lists))}
+              />
             </div>
           </div>
 
