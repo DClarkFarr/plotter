@@ -277,7 +277,8 @@ export const deleteSceneForStory = async (
 };
 
 export type MoveSingleSceneWithinPlotInput = {
-  plotId: string | ObjectId;
+  fromPlotId: string | ObjectId;
+  toPlotId: string | ObjectId;
   sceneId: string | ObjectId;
   fromIndex: number;
   toIndex: number;
@@ -285,16 +286,17 @@ export type MoveSingleSceneWithinPlotInput = {
 export const moveSingleCardWithinPlot = async (
   input: MoveSingleSceneWithinPlotInput,
 ) => {
-  const plotId = ensureObjectId(input.plotId, "plotId");
+  const fromPlotId = ensureObjectId(input.fromPlotId, "fromPlotId");
+  const toPlotId = ensureObjectId(input.toPlotId, "toPlotId");
   const sceneId = ensureObjectId(input.sceneId, "sceneId");
 
-  const plot = await assertPlotExists(plotId);
+  const plot = await assertPlotExists(toPlotId);
   const scene = await assertSceneExists(sceneId);
 
   const { /* fromIndex, */ toIndex } = input;
 
   // step 1: check if a shift is required.
-  const shouldShiftOnIndex = await sceneMoveRequiresShift(plotId, toIndex);
+  const shouldShiftOnIndex = await sceneMoveRequiresShift(toPlotId, toIndex);
 
   // step 2: shift scenes and return resources
   const scenesToUpdate: SceneDocument[] = [];
@@ -307,10 +309,11 @@ export const moveSingleCardWithinPlot = async (
   }
 
   // step 3: move target scene to new index
-  await assertPlotScenePositionIsOpen(scene.plotId, toIndex);
+  await assertPlotScenePositionIsOpen(toPlotId, toIndex);
 
   const updatedScene = await updateSceneById(sceneId, {
     verticalIndex: toIndex,
+    plotId: toPlotId,
   });
   if (updatedScene) {
     scenesToUpdate.push(updatedScene);

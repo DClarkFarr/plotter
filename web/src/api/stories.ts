@@ -36,14 +36,11 @@ export interface UpdateStoryInput {
 
 export interface MoveSingleSceneWithinPlotInput {
   storyId: string;
-  plotId: string;
+  fromPlotId: string;
+  toPlotId: string;
   sceneId: string;
   fromIndex: number;
   toIndex: number;
-}
-
-export interface MoveSingleSceneBetweenPlotsInput extends MoveSingleSceneWithinPlotInput {
-  targetPlotId: string;
 }
 
 export async function listStories(): Promise<Story[]> {
@@ -309,20 +306,6 @@ export async function moveSingleSceneWithinPlot(
         input,
       )
       .then((res) => res.data);
-  } catch (err) {
-    throw toApiError(err);
-  }
-}
-
-export async function moveSingleSceneBetweenPlots(
-  storyId: string,
-  input: MoveSingleSceneBetweenPlotsInput,
-): Promise<void> {
-  try {
-    await apiClient.post<void>(
-      `/stories/${storyId}/scenes/${input.sceneId}/move-between-plots`,
-      input,
-    );
   } catch (err) {
     throw toApiError(err);
   }

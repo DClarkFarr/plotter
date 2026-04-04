@@ -81,8 +81,6 @@ export const PlotGrid = ({
 
   const { moveSingleCardWithinPlot } =
     MoveSceneMutations.useMoveSingleWithinPlot();
-  const { moveSingleCardBetweenPlots } =
-    MoveSceneMutations.useMoveSingleBetweenPlots();
 
   const handleDragEnd = (
     targetPlot: Plot,
@@ -94,31 +92,17 @@ export const PlotGrid = ({
       return;
     }
 
-    if (targetPlot.id === sourcePlot.id) {
-      if (dragMode === "singleCard") {
-        moveSingleCardWithinPlot({
-          storyId: sourcePlot.storyId,
-          plotId: targetPlot.id,
-          sceneId: sourceScene.id,
-          fromIndex: sourceScene.verticalIndex,
-          toIndex: targetVerticalIndex,
-        });
-      } else {
-        console.warn("Unknown drag mode", { dragMode });
-      }
+    if (dragMode === "singleCard") {
+      moveSingleCardWithinPlot({
+        storyId: sourcePlot.storyId,
+        fromPlotId: sourcePlot.id,
+        toPlotId: targetPlot.id,
+        sceneId: sourceScene.id,
+        fromIndex: sourceScene.verticalIndex,
+        toIndex: targetVerticalIndex,
+      });
     } else {
-      if (dragMode === "singleCard") {
-        moveSingleCardBetweenPlots({
-          storyId: sourcePlot.storyId,
-          plotId: sourcePlot.id,
-          targetPlotId: targetPlot.id,
-          sceneId: sourceScene.id,
-          fromIndex: sourceScene.verticalIndex,
-          toIndex: targetVerticalIndex,
-        });
-      } else {
-        console.warn("Unknown drag mode", { dragMode });
-      }
+      console.warn("Unknown drag mode", { dragMode });
     }
   };
 

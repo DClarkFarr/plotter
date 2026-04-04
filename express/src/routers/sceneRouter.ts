@@ -279,7 +279,8 @@ const applySceneRoutes = () => {
       await getStoryForUser(storyId, userId);
 
       const payload = {
-        plotId: requireString(req.body?.plotId, "plotId"),
+        fromPlotId: requireString(req.body?.fromPlotId, "fromPlotId"),
+        toPlotId: requireString(req.body?.toPlotId, "toPlotId"),
         sceneId,
         fromIndex: requireNumber(req.body?.fromIndex, "fromIndex"),
         toIndex: requireNumber(req.body?.toIndex, "toIndex"),
@@ -294,29 +295,6 @@ const applySceneRoutes = () => {
       res.status(200).json({
         scenes: changedResources.scenes.map(toSceneResponse),
       });
-    }),
-  );
-
-  sceneRouter.post(
-    "/:storyId/scenes/:sceneId/move-between-plots",
-    handleAsync(async (req, res) => {
-      const userId = requireUserId(req);
-      const storyId = assertparamIsString(req.params.storyId, "storyId");
-      const sceneId = assertparamIsString(req.params.sceneId, "sceneId");
-
-      await getStoryForUser(storyId, userId);
-
-      const payload = {
-        plotId: requireString(req.body?.plotId, "plotId"),
-        targetPlotId: requireString(req.body?.targetPlotId, "targetPlotId"),
-        sceneId,
-        fromIndex: requireNumber(req.body?.fromIndex, "fromIndex"),
-        toIndex: requireNumber(req.body?.toIndex, "toIndex"),
-      };
-
-      // TODO: Complete this endpoint.
-      void payload;
-      res.status(501).json({ error: "Not implemented" });
     }),
   );
 

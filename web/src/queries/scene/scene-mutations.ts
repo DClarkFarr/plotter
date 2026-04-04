@@ -260,18 +260,6 @@ export function useDeleteSceneMutation(storyId: string) {
   });
 }
 
-export type MoveSingleCardWithinPlotProps = {
-  storyId: string;
-  plotId: string;
-  sceneId: string;
-  fromIndex: number;
-  toIndex: number;
-};
-
-export type MoveSingleCardBetweenPlotsProps = MoveSingleCardWithinPlotProps & {
-  targetPlotId: string;
-};
-
 const useMoveSingleWithinPlot = () => {
   const queryClient = useQueryClient();
 
@@ -291,7 +279,7 @@ const useMoveSingleWithinPlot = () => {
       const shouldShift = moveRequiresShift(
         queryClient,
         input.storyId,
-        input.plotId,
+        input.toPlotId,
         input.toIndex,
       );
 
@@ -303,14 +291,55 @@ const useMoveSingleWithinPlot = () => {
         previousPlots = shiftedResources.plots;
       }
 
+      const foundScene = previousPlots
+        .find((plot) => plot.id === input.fromPlotId)
+        ?.scenes.find((scene) => scene.id === input.sceneId);
+
       // update scene vertical index
       previousPlots = previousPlots.map((plot) => {
-        if (plot.id === input.plotId) {
+        if (
+          plot.id === input.fromPlotId &&
+          input.fromPlotId !== input.toPlotId
+        ) {
+          /**
+           * If moving to new plot, remove scene from old plot
+           */
+          return {
+            ...plot,
+            scenes: plot.scenes.filter((scene) => scene.id !== input.sceneId),
+          };
+        }
+
+        if (plot.id === input.toPlotId && input.fromPlotId !== input.toPlotId) {
+          /**
+           * If moving to new plot, insert found scene into new plot.
+           */
+          if (foundScene) {
+            return {
+              ...plot,
+              scenes: sortScenes([...plot.scenes, { ...foundScene }]),
+            };
+          }
+
+          console.warn(
+            `Scene with id ${input.sceneId} not found in plot ${input.fromPlotId}`,
+          );
+          return plot;
+        }
+
+        if (plot.id === input.toPlotId) {
+          /**
+           * Same plot move, just update vertical index of scene
+           */
           return {
             ...plot,
             scenes: plot.scenes.map((scene) => {
               if (scene.id === input.sceneId) {
-                return { ...scene, verticalIndex: input.toIndex };
+                return {
+                  ...scene,
+                  verticalIndex: input.toIndex,
+                  plotId: input.toPlotId,
+                };
               }
               return scene;
             }),
@@ -431,27 +460,6 @@ export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {
   });
 };
 
-const useMoveSingleBetweenPlots = () => {
-  const moveSingleCardBetweenPlots = ({
-    plotId,
-    sceneId,
-    fromIndex,
-    toIndex,
-    targetPlotId,
-  }: MoveSingleCardBetweenPlotsProps) => {
-    console.log("moveSingleCardBetweenPlots", {
-      plotId,
-      sceneId,
-      fromIndex,
-      toIndex,
-      targetPlotId,
-    });
-  };
-
-  return { moveSingleCardBetweenPlots };
-};
-
 export const MoveSceneMutations = {
   useMoveSingleWithinPlot,
-  useMoveSingleBetweenPlots,
 };
