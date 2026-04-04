@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { Modal, ModalBody, ModalHeader } from "flowbite-react";
+import { resolveCharacterImageUrl } from "../../utils/characterImage";
+import { deriveAvatarColor } from "../../utils/avatarColor";
+import { deriveAvatarInitials } from "../layout/avatarInitials";
+import type { CharacterCardProps } from "./character-card.types";
+
+export const CharacterCard = ({
+  character,
+  widthPx = 350,
+  descriptionFallback = "No description yet.",
+  imageFallbackLabel = "No image",
+  onImageClick,
+  onEditImage,
+  showEdit = false,
+  className = "",
+}: CharacterCardProps) => {
+  const description = character.description?.trim() || descriptionFallback;
+  const resolvedImageUrl = resolveCharacterImageUrl(character.imageUrl);
+  const fallbackColor = deriveAvatarColor(character.title);
+  const initials = deriveAvatarInitials(character.title);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const handleImageClick = () => {
+    if (onImageClick) {
+      onImageClick();
+      return;
+    }
+    if (resolvedImageUrl) {
+      setIsLightboxOpen(true);
+    }
+  };
+
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}
+      style={{ width: `${widthPx}px` }}
+    >
+      <button
+        type="button"
+        onClick={handleImageClick}
+        className="block w-full"
+        aria-label={`Open ${character.title} image`}
+      >
+        {resolvedImageUrl ? (
+          <img
+            src={resolvedImageUrl}
+            alt={character.title}
+            className="h-56 w-full object-cover"
+          />
+        ) : (
+          <div
+            className="flex h-56 w-full flex-col items-center justify-center gap-2 text-white"
+            style={{ backgroundColor: fallbackColor }}
+          >
+            <div className="text-2xl font-semibold uppercase tracking-[0.2em]">
+              {initials}
+            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">
+              {imageFallbackLabel}
+            </div>
+          </div>
+        )}
+      </button>
+
+      {showEdit && onEditImage ? (
+        <button
+          type="button"
+          onClick={onEditImage}
+          className="absolute right-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 opacity-0 transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
+        >
+          Edit
+        </button>
+      ) : null}
+
+      <div className="flex flex-col gap-2 p-4">
+        <div className="text-lg font-semibold text-slate-900">
+          {character.title}
+        </div>
+        <div className="text-sm text-slate-600">{description}</div>
+      </div>
+
+      {resolvedImageUrl ? (
+        <Modal
+          dismissible
+          show={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+          size="5xl"
+          className="z-999"
+        >
+          <ModalHeader>{character.title}</ModalHeader>
+          <ModalBody>
+            <img
+              src={resolvedImageUrl}
+              alt={character.title}
+              className="max-h-[75vh] w-full object-contain"
+            />
+          </ModalBody>
+        </Modal>
+      ) : null}
+    </div>
+  );
+};

@@ -5,10 +5,10 @@ import { useStoryCharactersQuery } from "../../queries/story/story-queries";
 import {
   useDeleteCharacterMutation,
   useUpdateCharacterMutation,
-  useUploadCharacterImageMutation,
 } from "../../queries/character/character-mutations";
 import type { Character } from "../../api/types";
 import { CharacterAvatar } from "./CharacterAvatar";
+import { CharacterCardPopover } from "../character/CharacterCardPopover";
 import { alert } from "../../utils/alert";
 
 export function ManageCharactersPanel() {
@@ -17,7 +17,6 @@ export function ManageCharactersPanel() {
   const characters = charactersQuery.data ?? [];
   const updateCharacter = useUpdateCharacterMutation(storyId);
   const deleteCharacter = useDeleteCharacterMutation();
-  const uploadImage = useUploadCharacterImageMutation();
   const [query, setQuery] = useState("");
   const [drafts, setDrafts] = useState<
     Record<string, { title: string; description: string }>
@@ -100,20 +99,6 @@ export function ManageCharactersPanel() {
     }
   };
 
-  const handleImageUpload = async (character: Character, file: File) => {
-    try {
-      const upload = await uploadImage.mutateAsync(file);
-      await updateCharacter.mutateAsync({
-        characterId: character.id,
-        imageUrl: upload.url,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        alert.error(error.message);
-      }
-    }
-  };
-
   const handleDelete = async (character: Character) => {
     try {
       await deleteCharacter.mutateAsync({ storyId, characterId: character.id });
@@ -176,28 +161,19 @@ export function ManageCharactersPanel() {
                 className="rounded-lg border border-slate-200 bg-white p-3"
               >
                 <div className="flex items-center gap-3">
-                  <label
-                    htmlFor={`character-image-${character.id}`}
-                    className="cursor-pointer"
-                  >
-                    <CharacterAvatar
-                      name={character.title}
-                      imageUrl={character.imageUrl}
-                      withBorder
-                      size="md"
-                    />
-                  </label>
-                  <input
-                    id={`character-image-${character.id}`}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        void handleImageUpload(character, file);
-                      }
-                    }}
+                  <CharacterCardPopover
+                    character={character}
+                    trigger={
+                      <CharacterAvatar
+                        name={character.title}
+                        imageUrl={character.imageUrl}
+                        withBorder
+                        size="md"
+                      />
+                    }
+                    className="shrink-0"
+                    popoverClassName="z-50"
+                    enableImageUpload
                   />
 
                   <input

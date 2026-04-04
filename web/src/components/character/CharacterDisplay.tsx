@@ -1,6 +1,8 @@
 import { Tooltip } from "flowbite-react";
 import type { Character } from "../../api/types";
 import { CharacterAvatar } from "../story/CharacterAvatar";
+import { CharacterCardPopover } from "./CharacterCardPopover";
+import type { CharacterCardPopoverProps } from "./character-card.types";
 
 type CharacterDisplayProps = {
   character: Character;
@@ -8,6 +10,7 @@ type CharacterDisplayProps = {
   avatarSize?: "sm" | "md";
   hideAvatar?: boolean;
   avatarOnly?: boolean;
+  popoverProps?: Omit<CharacterCardPopoverProps, "character" | "trigger">;
 };
 export const CharacterDisplay = ({
   character,
@@ -15,20 +18,18 @@ export const CharacterDisplay = ({
   avatarSize = "md",
   hideAvatar = false,
   avatarOnly = false,
+  popoverProps,
 }: CharacterDisplayProps) => {
-  if (avatarOnly) {
-    return (
-      <Tooltip content={character.title} placement="top">
-        <CharacterAvatar
-          name={character.title}
-          imageUrl={character.imageUrl}
-          showColorDot={showColorDot}
-          size={avatarSize}
-        />
-      </Tooltip>
-    );
-  }
-  return (
+  const content = avatarOnly ? (
+    <Tooltip content={character.title} placement="top">
+      <CharacterAvatar
+        name={character.title}
+        imageUrl={character.imageUrl}
+        showColorDot={showColorDot}
+        size={avatarSize}
+      />
+    </Tooltip>
+  ) : (
     <div className="flex gap-1 items-center">
       {!hideAvatar && (
         <CharacterAvatar
@@ -40,5 +41,17 @@ export const CharacterDisplay = ({
       )}
       <span className="font-semibold">{character.title}</span>
     </div>
+  );
+
+  if (!popoverProps) {
+    return content;
+  }
+
+  return (
+    <CharacterCardPopover
+      character={character}
+      trigger={content}
+      {...popoverProps}
+    />
   );
 };

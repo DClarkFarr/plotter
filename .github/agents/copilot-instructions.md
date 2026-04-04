@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-02
+Auto-generated from all feature plans. Last updated: 2026-04-03
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -25,6 +25,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-02
 - MongoDB (scene documents) (015-soft-delete-scene)
 - TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons (016-storycard-badges)
 - TypeScript (Node.js for Express API) + Express, MongoDB, helmet, cors, express-session (017-server-error-logging)
+- TypeScript (React in web/, Node.js in express/) + React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons (018-character-card)
+- MongoDB (existing character assets) (018-character-card)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -44,9 +46,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 018-character-card: Added TypeScript (React in web/, Node.js in express/) + React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons
 - 017-server-error-logging: Added TypeScript (Node.js for Express API) + Express, MongoDB, helmet, cors, express-session
 - 016-storycard-badges: Added TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons
-- 015-soft-delete-scene: Added TypeScript (Node.js + React) + Express, MongoDB, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-kit, TipTap
 
 
 <!-- MANUAL ADDITIONS START -->

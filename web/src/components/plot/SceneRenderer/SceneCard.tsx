@@ -86,7 +86,7 @@ export const SceneCard = memo(
         style={themeStyles}
         data-r={sceneIndex}
         data-c={plotIndex}
-        className={`card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full ${isDragging ? `scale-80` : `scale-100`} ${isDropTarget && !isDragSource ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`}`}
+        className={`card card--scene group relative z-0 p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full ${isDragging ? `scale-80` : `scale-100`} ${isDropTarget && !isDragSource ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`}`}
       >
         <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
           <Button
@@ -120,9 +120,17 @@ export const SceneCard = memo(
             {povCharacter ? (
               <div>
                 {cardSize !== "sm" ? (
-                  <CharacterDisplay character={povCharacter} showColorDot />
+                  <CharacterDisplay
+                    character={povCharacter}
+                    showColorDot
+                    popoverProps={{ popoverClassName: "z-1000" }}
+                  />
                 ) : (
-                  <CharacterDisplay character={povCharacter} avatarOnly />
+                  <CharacterDisplay
+                    character={povCharacter}
+                    avatarOnly
+                    popoverProps={{ popoverClassName: "z-1000" }}
+                  />
                 )}
               </div>
             ) : null}
