@@ -13,7 +13,7 @@ import {
   useStoryTagsQuery,
 } from "../../../queries/story/story-queries";
 import { SceneTags } from "../../story/SceneTags";
-import IconDragHorizontal from "~icons/mdi/drag-horizontal";
+import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { memo } from "react";
@@ -96,7 +96,7 @@ export const SceneCard = memo(
             type="button"
             aria-label="Move scene"
           >
-            <IconDragHorizontal />
+            <IconArrowAll />
           </Button>
           <Button
             color="cyan"

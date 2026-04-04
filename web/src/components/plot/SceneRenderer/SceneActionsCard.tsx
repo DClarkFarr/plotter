@@ -58,7 +58,7 @@ export const SceneActionsCard = memo(
         data-c={plotIndex}
         ref={ref}
         style={themeStyles}
-        className={`card card--actions py-1 px-2 border radius-2 transition-all duration-250 ${isDropTarget && isDroppable ? `text-white border-purple-300 bg-purple-900 shadow-lg h-[100px]` : `h-0 ${isDroppable ? "bg-[var(--plot-color)]" : "bg-gray-300"} border-[var(--plot-color)] text-[var(--plot-text)]`} ${
+        className={`card card--actions py-1 px-2 radius-2 transition-all duration-250 ${isDropTarget && isDroppable ? `text-white shadow-lg h-[100px]` : `h-0 ${isDroppable ? "bg-[var(--plot-color)]" : "bg-gray-200"} border-[var(--plot-color)] text-[var(--plot-text)]`} ${
           isDisabled ? "opacity-50" : ""
         }`}
       ></div>
