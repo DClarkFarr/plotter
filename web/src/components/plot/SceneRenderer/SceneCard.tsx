@@ -149,7 +149,7 @@ export const SceneCard = memo(
           )}
           {cardSize === "lg" && (
             <div
-              className="text-sm text-[var(--plot-text)]/80 line-clamp-3 tiptap overflow-y-auto grow-1"
+              className="text-sm text-[var(--plot-text)]/80 tiptap overflow-y-auto grow-1 max-h-[350px]"
               dangerouslySetInnerHTML={{ __html: descriptionText }}
             ></div>
           )}

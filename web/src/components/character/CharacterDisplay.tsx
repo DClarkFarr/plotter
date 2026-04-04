@@ -70,7 +70,9 @@ export const CharacterDisplay = ({
   }
 
   const content = (
-    <div className="cursor-pointer bg-black/10 rounded px-1">
+    <div
+      className={`cursor-pointer ${!avatarOnly && `bg-black/10 rounded px-1`}`}
+    >
       {contentInner}
     </div>
   );
