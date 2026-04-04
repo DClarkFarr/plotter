@@ -229,6 +229,7 @@ const PlotGridBody = ({
   );
 
   const grid = useMemo(() => {
+    console.log("change the grid!");
     const rows: GridCellTypes[][] = [];
     const topRow: GridCellTypes[] = [{ type: "corner" }];
     for (let c = 1; c < gridCols + 1; c++) {

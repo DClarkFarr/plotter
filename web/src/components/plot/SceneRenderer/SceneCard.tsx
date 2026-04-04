@@ -15,8 +15,8 @@ import {
 import { SceneTags } from "../../story/SceneTags";
 import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
-import { useSortable } from "@dnd-kit/react/sortable";
 import { memo } from "react";
+import { useDraggable } from "@dnd-kit/react";
 
 export const SceneCard = memo(
   ({ plot, scene, plotIndex, sceneIndex }: SceneRendererProps) => {
@@ -45,10 +45,8 @@ export const SceneCard = memo(
       isDragging,
       // isDropping,
       handleRef,
-    } = useSortable({
+    } = useDraggable({
       id: scene.id,
-      index: sceneIndex,
-      group: plotIndex,
       type: "scene",
       data: {
         plot,
