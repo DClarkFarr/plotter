@@ -8,7 +8,6 @@ import { SceneForm } from "../story/SceneForm";
 import { SceneFormLoading } from "../story/SceneFormLoading";
 import { ManageCharactersPanel } from "../story/ManageCharactersPanel";
 import { ManageTagsPanel } from "../story/ManageTagsPanel";
-import { CharacterModal } from "../character/CharacterModal";
 
 export function DashboardLayout() {
   useAuthRedirect();
@@ -47,7 +46,6 @@ export function DashboardLayout() {
 
         {currentView === "tag" && <ManageTagsPanel />}
       </DashboardSidebar>
-      <CharacterModal />
     </div>
   );
 }

@@ -43,7 +43,6 @@ export function DashboardPage() {
 
   const onViewStory = useCallback(
     (story: Story) => {
-      console.log("navigating", story);
       navigate({
         to: `/dashboard/story/$storyId`,
         params: { storyId: story.id },

@@ -18,6 +18,7 @@ import {
   useStoryTagsQuery,
 } from "../queries/story/story-queries";
 import { useSidebarStore } from "../store/sidebarStore";
+import { CharacterModal } from "../components/character/CharacterModal";
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -180,6 +181,7 @@ export function StoryPage() {
       <div className="plots-wrapper bg-gray-100">
         <PlotGrid storyId={storyId} plots={plots} />
       </div>
+      <CharacterModal />
     </main>
   );
 }

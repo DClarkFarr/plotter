@@ -47,8 +47,8 @@ export function CreateStoryModal({
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="md" popup>
-      <ModalHeader className="bg-gray-900 p-6 ">Create a story</ModalHeader>
-      <ModalBody className="bg-gray-900">
+      <ModalHeader className="p-6 ">Create a story</ModalHeader>
+      <ModalBody className="">
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-white"></h2>
