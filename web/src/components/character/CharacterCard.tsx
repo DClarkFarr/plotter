@@ -45,11 +45,17 @@ export const CharacterCard = ({
         aria-label={`Open ${character.title} image`}
       >
         {resolvedImageUrl ? (
-          <img
-            src={resolvedImageUrl}
-            alt={character.title}
-            className="h-56 w-full object-cover"
-          />
+          <div className="h-56 relative w-full overflow-hidden">
+            <div
+              className="absolute blur-[2px] absolute -inset-1 bg-cover bg-center"
+              style={{ backgroundImage: `url(${resolvedImageUrl})` }}
+            ></div>
+            <img
+              src={resolvedImageUrl}
+              alt={character.title}
+              className="h-56 object-contain w-full relative"
+            />
+          </div>
         ) : (
           <div
             className="flex h-56 w-full flex-col items-center justify-center gap-2 text-white"

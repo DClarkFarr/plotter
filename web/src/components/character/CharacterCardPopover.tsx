@@ -101,28 +101,26 @@ export const CharacterCardPopover = ({
         {trigger}
       </span>
 
-      {isOpen ? (
-        <div
-          className={`absolute left-0 top-full z-40 mt-2 ${popoverClassName}`}
-        >
-          <CharacterCard
-            character={character}
-            onImageClick={onImageClick}
-            onEditImage={shouldShowEdit ? handleEditImage : onEditImage}
-            showEdit={shouldShowEdit}
-            {...cardProps}
+      <div
+        className={`absolute left-0 top-full z-40 mt-2 ${popoverClassName} ${!isOpen ? "hidden" : ""}`}
+      >
+        <CharacterCard
+          character={character}
+          onImageClick={onImageClick}
+          onEditImage={shouldShowEdit ? handleEditImage : onEditImage}
+          showEdit={shouldShowEdit}
+          {...cardProps}
+        />
+        {enableImageUpload ? (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
           />
-          {enableImageUpload ? (
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          ) : null}
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 };
