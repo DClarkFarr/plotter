@@ -14,6 +14,7 @@ import {
 } from "../../queries/character/character-mutations";
 import { alert } from "../../utils/alert";
 import { useClickOutside } from "../../hooks/useClickOutside";
+import IconPencil from "~icons/mdi/pencil";
 
 export const CharacterCardPopover = ({
   character,
@@ -22,7 +23,9 @@ export const CharacterCardPopover = ({
   onOpenChange,
   onImageClick,
   onEditImage,
+  onEditCharacter,
   showEdit,
+  showEditCharacter,
   enableImageUpload = false,
   cardProps,
   className = "",
@@ -111,6 +114,21 @@ export const CharacterCardPopover = ({
           showEdit={shouldShowEdit}
           {...cardProps}
         />
+        {showEditCharacter && onEditCharacter ? (
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onEditCharacter();
+              }}
+              className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 hover:text-slate-800"
+            >
+              <IconPencil className="h-4 w-4" />
+              Edit Character
+            </button>
+          </div>
+        ) : null}
         {enableImageUpload ? (
           <input
             ref={fileInputRef}

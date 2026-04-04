@@ -8,7 +8,6 @@ import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
 import { ScenePovSelect } from "./ScenePovSelect";
-import { ScenePovCreateRow } from "./ScenePovCreateRow";
 import { useDebounce } from "../../utils/useDebounce";
 import type { SceneTodoItem } from "../../api/types";
 
@@ -24,7 +23,7 @@ import {
   useUpdateSceneMutation,
 } from "../../queries/scene/scene-mutations";
 import { useCreateTagMutation } from "../../queries/tag/tag-mutation";
-import { useCreateCharacterMutation } from "../../queries/character/character-mutations";
+import { useCharacterModalStore } from "../../store/characterModalStore";
 import { alert } from "../../utils/alert";
 
 export const SceneForm = () => {
@@ -36,13 +35,14 @@ export const SceneForm = () => {
   const updateSceneMutation = useUpdateSceneMutation(storyId);
   const deleteSceneMutation = useDeleteSceneMutation(storyId);
   const createTagMutation = useCreateTagMutation(storyId);
-  const createCharacterMutation = useCreateCharacterMutation(storyId);
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
   const selectedPlotId = useSceneEditorStore((state) => state.selectedPlotId);
   const clearSelection = useSceneEditorStore((state) => state.clearSelection);
   const closeSidebar = useSidebarStore((state) => state.closeSidebar);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
-  const [isPovCreateOpen, setIsPovCreateOpen] = useState(false);
+  const openCreateCharacter = useCharacterModalStore(
+    (state) => state.openCreate,
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const selectedPlot = useMemo(() => {
@@ -188,25 +188,6 @@ export const SceneForm = () => {
     updateSceneMutation.mutate({ sceneId: selectedScene.id, pov: characterId });
   };
 
-  const handleCreateCharacter = (name: string) => {
-    if (!selectedScene) {
-      return;
-    }
-
-    createCharacterMutation.mutate(
-      { title: name },
-      {
-        onSuccess: (character) => {
-          updateSceneMutation.mutate({
-            sceneId: selectedScene.id,
-            pov: character.id,
-          });
-          setIsPovCreateOpen(false);
-        },
-      },
-    );
-  };
-
   const handleToggleTodo = (index: number) => {
     if (!selectedScene) {
       return;
@@ -285,22 +266,8 @@ export const SceneForm = () => {
             onChange={(character) =>
               handlePovChange(character ? character.id : null)
             }
-            onAddCharacter={() => setIsPovCreateOpen(true)}
+            onAddCharacter={openCreateCharacter}
           />
-          {isPovCreateOpen ? (
-            <ScenePovCreateRow
-              isSaving={createCharacterMutation.isPending}
-              onSave={handleCreateCharacter}
-              onCancel={() => setIsPovCreateOpen(false)}
-            />
-          ) : null}
-          {createCharacterMutation.error ? (
-            <div className="mt-2 text-xs text-rose-600">
-              {createCharacterMutation.error instanceof Error
-                ? createCharacterMutation.error.message
-                : "Unable to create character"}
-            </div>
-          ) : null}
         </div>
       </div>
       <div className="mb-4">

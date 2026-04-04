@@ -19,7 +19,9 @@ export type CharacterCardPopoverProps = {
   onOpenChange?: (open: boolean) => void;
   onImageClick?: () => void;
   onEditImage?: () => void;
+  onEditCharacter?: () => void;
   showEdit?: boolean;
+  showEditCharacter?: boolean;
   enableImageUpload?: boolean;
   cardProps?: Omit<CharacterCardProps, "character">;
   className?: string;

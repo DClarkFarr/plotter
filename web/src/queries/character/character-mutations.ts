@@ -37,6 +37,9 @@ export function useCreateCharacterMutation(storyId: string) {
           title: input.title,
           description: input.description ?? null,
           imageUrl: input.imageUrl ?? null,
+          characteristics: input.characteristics ?? null,
+          customCharacteristics: input.customCharacteristics ?? [],
+          lists: input.lists ?? [],
         };
 
         queryClient.setQueryData<Character[]>(

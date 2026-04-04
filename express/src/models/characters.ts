@@ -15,6 +15,32 @@ export interface CharacterDefinition extends BaseModelBlueprint {
   title: string;
   description?: string;
   imageUrl?: string;
+  characteristics?: CharacteristicFields;
+  customCharacteristics?: CustomCharacteristic[];
+  lists?: CharacterList[];
+}
+
+export interface CharacteristicFields {
+  description?: string;
+  history?: string;
+  height?: string;
+  weight?: string;
+  age?: string;
+  hair?: string;
+  eyeColor?: string;
+  mantra?: string;
+  skinColor?: string;
+  build?: string;
+}
+
+export interface CustomCharacteristic {
+  label: string;
+  value: string;
+}
+
+export interface CharacterList {
+  label: string;
+  items: string[];
 }
 
 export type CharacterBlueprint = ModelBlueprint<CharacterDefinition>;
@@ -34,6 +60,9 @@ export interface CreateCharacterInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  characteristics?: CharacteristicFields;
+  customCharacteristics?: CustomCharacteristic[];
+  lists?: CharacterList[];
 }
 
 export const createCharacter = async (
@@ -54,6 +83,18 @@ export const createCharacter = async (
 
   if (input.imageUrl !== undefined) {
     payload.imageUrl = input.imageUrl;
+  }
+
+  if (input.characteristics !== undefined) {
+    payload.characteristics = input.characteristics;
+  }
+
+  if (input.customCharacteristics !== undefined) {
+    payload.customCharacteristics = input.customCharacteristics;
+  }
+
+  if (input.lists !== undefined) {
+    payload.lists = input.lists;
   }
 
   const result = await collection.insertOne(
@@ -114,6 +155,9 @@ export interface UpdateCharacterInput {
   title?: string;
   description?: string;
   imageUrl?: string;
+  characteristics?: CharacteristicFields;
+  customCharacteristics?: CustomCharacteristic[];
+  lists?: CharacterList[];
 }
 
 export const updateCharacterById = async (
@@ -134,6 +178,18 @@ export const updateCharacterById = async (
 
   if (updates.imageUrl !== undefined) {
     updatePayload.imageUrl = updates.imageUrl;
+  }
+
+  if (updates.characteristics !== undefined) {
+    updatePayload.characteristics = updates.characteristics;
+  }
+
+  if (updates.customCharacteristics !== undefined) {
+    updatePayload.customCharacteristics = updates.customCharacteristics;
+  }
+
+  if (updates.lists !== undefined) {
+    updatePayload.lists = updates.lists;
   }
 
   const result = await collection.findOneAndUpdate(

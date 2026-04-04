@@ -1,26 +1,24 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import IconDelete from "~icons/mdi/delete";
+import IconPencil from "~icons/mdi/pencil";
 import { useStoryCharactersQuery } from "../../queries/story/story-queries";
-import {
-  useDeleteCharacterMutation,
-  useUpdateCharacterMutation,
-} from "../../queries/character/character-mutations";
+import { useDeleteCharacterMutation } from "../../queries/character/character-mutations";
 import type { Character } from "../../api/types";
 import { CharacterAvatar } from "./CharacterAvatar";
 import { CharacterCardPopover } from "../character/CharacterCardPopover";
 import { alert } from "../../utils/alert";
+import { useCharacterModalStore } from "../../store/characterModalStore";
+import { CHARACTERISTIC_LABELS } from "../../utils/characterCharacteristics";
 
 export function ManageCharactersPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const charactersQuery = useStoryCharactersQuery(storyId);
   const characters = charactersQuery.data ?? [];
-  const updateCharacter = useUpdateCharacterMutation(storyId);
   const deleteCharacter = useDeleteCharacterMutation();
   const [query, setQuery] = useState("");
-  const [drafts, setDrafts] = useState<
-    Record<string, { title: string; description: string }>
-  >({});
+  const openCreate = useCharacterModalStore((state) => state.openCreate);
+  const openEdit = useCharacterModalStore((state) => state.openEdit);
 
   const sortedCharacters = useMemo(
     () =>
@@ -41,62 +39,30 @@ export function ManageCharactersPanel() {
     );
   }, [query, sortedCharacters]);
 
-  const handleDraftChange = (
-    character: Character,
-    field: "title" | "description",
-    value: string,
-  ) => {
-    setDrafts((prev) => ({
-      ...prev,
-      [character.id]: {
-        title: prev[character.id]?.title ?? character.title,
-        description:
-          prev[character.id]?.description ?? character.description ?? "",
-        [field]: value,
-      },
-    }));
-  };
-
-  const commitCharacterUpdate = async (character: Character) => {
-    const draft = drafts[character.id];
-    if (!draft) {
-      return;
+  const buildSummary = (character: Character) => {
+    const characteristics = character.characteristics;
+    if (!characteristics) {
+      return [];
     }
 
-    const nextTitle = draft.title.trim();
-    const nextDescription = draft.description;
-    if (!nextTitle) {
-      setDrafts((prev) => ({
-        ...prev,
-        [character.id]: {
-          title: character.title,
-          description: character.description ?? "",
-        },
-      }));
-      return;
-    }
+    const keys = [
+      "age",
+      "height",
+      "weight",
+      "build",
+      "eyeColor",
+      "hair",
+    ] as const;
 
-    const payload = {
-      ...(nextTitle !== character.title && { title: nextTitle }),
-      ...(nextDescription !== (character.description ?? "") && {
-        description: nextDescription,
-      }),
-    };
-
-    if (Object.keys(payload).length === 0) {
-      return;
-    }
-
-    try {
-      await updateCharacter.mutateAsync({
-        characterId: character.id,
-        ...payload,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        alert.error(error.message);
-      }
-    }
+    return keys
+      .map((key) => {
+        const value = characteristics[key];
+        if (value === undefined || value === null || value === "") {
+          return null;
+        }
+        return `${CHARACTERISTIC_LABELS[key]}: ${value}`;
+      })
+      .filter((entry): entry is string => Boolean(entry));
   };
 
   const handleDelete = async (character: Character) => {
@@ -128,7 +94,7 @@ export function ManageCharactersPanel() {
           Manage Characters
         </p>
         <p className="text-sm text-slate-600">
-          Update images, names, and descriptions in place.
+          Create and edit character details from a dedicated modal.
         </p>
       </div>
 
@@ -141,20 +107,28 @@ export function ManageCharactersPanel() {
         />
       </div>
 
+      <div className="flex items-center justify-between">
+        <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          {characters.length} characters
+        </div>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 hover:text-slate-700"
+        >
+          Add Character
+        </button>
+      </div>
+
       {characters.length === 0 ? (
         <div className="text-sm text-slate-500">
-          No characters yet. Add characters from scenes to get started.
+          No characters yet. Add a character to get started.
         </div>
       ) : filteredCharacters.length === 0 ? (
         <div className="text-sm text-slate-500">No characters found.</div>
       ) : (
         <div className="flex flex-col gap-3">
           {filteredCharacters.map((character) => {
-            const draft = drafts[character.id];
-            const titleValue = draft?.title ?? character.title;
-            const descriptionValue =
-              draft?.description ?? character.description ?? "";
-
             return (
               <div
                 key={character.id}
@@ -174,39 +148,46 @@ export function ManageCharactersPanel() {
                     className="shrink-0"
                     popoverClassName="z-50"
                     enableImageUpload
+                    showEditCharacter
+                    onEditCharacter={() => openEdit(character)}
                   />
 
-                  <input
-                    value={titleValue}
-                    onChange={(event) =>
-                      handleDraftChange(character, "title", event.target.value)
-                    }
-                    onBlur={() => commitCharacterUpdate(character)}
-                    className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    className="ml-auto rounded-md border border-rose-200 bg-rose-50 p-2 text-rose-600 hover:bg-rose-100"
-                    onClick={() => handleDelete(character)}
-                  >
-                    <IconDelete />
-                  </button>
-                </div>
-                <div className="mt-3">
-                  <textarea
-                    value={descriptionValue}
-                    onChange={(event) =>
-                      handleDraftChange(
-                        character,
-                        "description",
-                        event.target.value,
-                      )
-                    }
-                    onBlur={() => commitCharacterUpdate(character)}
-                    placeholder="Character description"
-                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                    rows={3}
-                  />
+                  <div className="flex-1">
+                    <div className="text-lg font-semibold text-slate-900">
+                      {character.title}
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      {character.description || "No card description yet."}
+                    </div>
+                    {buildSummary(character).length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {buildSummary(character).map((item) => (
+                          <span
+                            key={item}
+                            className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="ml-auto flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="rounded-md border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50"
+                      onClick={() => openEdit(character)}
+                    >
+                      <IconPencil />
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-md border border-rose-200 bg-rose-50 p-2 text-rose-600 hover:bg-rose-100"
+                      onClick={() => handleDelete(character)}
+                    >
+                      <IconDelete />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

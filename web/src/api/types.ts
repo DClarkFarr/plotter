@@ -42,18 +42,50 @@ export interface Character {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  characteristics: CharacteristicFields | null;
+  customCharacteristics: CharacterCustomAttribute[];
+  lists: CharacterList[];
+}
+
+export interface CharacteristicFields {
+  description?: string;
+  history?: string;
+  height?: string;
+  weight?: string;
+  age?: string;
+  hair?: string;
+  eyeColor?: string;
+  mantra?: string;
+  skinColor?: string;
+  build?: string;
+}
+
+export interface CharacterCustomAttribute {
+  label: string;
+  value: string;
+}
+
+export interface CharacterList {
+  label: string;
+  items: string[];
 }
 
 export interface CreateCharacterInput {
   title: string;
   description?: string | null;
   imageUrl?: string | null;
+  characteristics?: CharacteristicFields;
+  customCharacteristics?: CharacterCustomAttribute[];
+  lists?: CharacterList[];
 }
 
 export interface UpdateCharacterInput {
   title?: string;
   description?: string | null;
   imageUrl?: string | null;
+  characteristics?: CharacteristicFields;
+  customCharacteristics?: CharacterCustomAttribute[];
+  lists?: CharacterList[];
 }
 
 export interface DeleteCharacterInput {

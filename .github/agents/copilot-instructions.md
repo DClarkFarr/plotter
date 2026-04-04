@@ -27,6 +27,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-03
 - TypeScript (Node.js for Express API) + Express, MongoDB, helmet, cors, express-session (017-server-error-logging)
 - TypeScript (React in web/, Node.js in express/) + React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons (018-character-card)
 - MongoDB (existing character assets) (018-character-card)
+- TypeScript (React in web/, Node.js in express/) + Express, MongoDB driver, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons, dnd-ki (019-enhance-character-management)
+- MongoDB (characters collection) (019-enhance-character-management)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -46,9 +48,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 019-enhance-character-management: Added TypeScript (React in web/, Node.js in express/) + Express, MongoDB driver, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons, dnd-ki
 - 018-character-card: Added TypeScript (React in web/, Node.js in express/) + React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons
 - 017-server-error-logging: Added TypeScript (Node.js for Express API) + Express, MongoDB, helmet, cors, express-session
-- 016-storycard-badges: Added TypeScript (Node.js for Express API, React for web UI) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons
 
 
 <!-- MANUAL ADDITIONS START -->

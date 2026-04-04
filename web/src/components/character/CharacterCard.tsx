@@ -4,6 +4,7 @@ import { resolveCharacterImageUrl } from "../../utils/characterImage";
 import { deriveAvatarColor } from "../../utils/avatarColor";
 import { deriveAvatarInitials } from "../layout/avatarInitials";
 import type { CharacterCardProps } from "./character-card.types";
+import { CHARACTERISTIC_LABELS } from "../../utils/characterCharacteristics";
 
 import IconAccountBoxEditOutline from "~icons/mdi/account-box-edit-outline";
 
@@ -18,6 +19,16 @@ export const CharacterCard = ({
   className = "",
 }: CharacterCardProps) => {
   const description = character.description?.trim() || descriptionFallback;
+  const summaryItems = ["age", "height", "weight", "build", "eyeColor", "hair"]
+    .map((key) => {
+      const value =
+        character.characteristics?.[key as keyof typeof CHARACTERISTIC_LABELS];
+      if (value === undefined || value === null || value === "") {
+        return null;
+      }
+      return `${CHARACTERISTIC_LABELS[key as keyof typeof CHARACTERISTIC_LABELS]}: ${value}`;
+    })
+    .filter((entry): entry is string => Boolean(entry));
   const resolvedImageUrl = resolveCharacterImageUrl(character.imageUrl);
   const fallbackColor = deriveAvatarColor(character.title);
   const initials = deriveAvatarInitials(character.title);
@@ -90,6 +101,18 @@ export const CharacterCard = ({
           {character.title}
         </div>
         <div className="text-sm text-slate-600">{description}</div>
+        {summaryItems.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {summaryItems.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-600"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {resolvedImageUrl ? (

@@ -118,6 +118,27 @@ export const optionalNumber = (
   return parsed;
 };
 
+export const requireStringArray = (value: unknown, label: string): string[] => {
+  if (!Array.isArray(value)) {
+    throw new ValidationError(label, `${label} must be an array`);
+  }
+
+  return value.map((entry, index) =>
+    requireString(entry, `${label}[${index}]`),
+  );
+};
+
+export const optionalStringArray = (
+  value: unknown,
+  label: string,
+): string[] | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  return requireStringArray(value, label);
+};
+
 export const resolveOwnerId = (
   users: Array<{ userId: { toHexString(): string }; role: string }>,
 ): string => {
