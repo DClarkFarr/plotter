@@ -86,7 +86,10 @@ export const CharacterCardPopover = ({
   const shouldShowEdit = showEdit ?? enableImageUpload;
 
   return (
-    <div ref={containerRef} className={`relative inline-flex ${className}`}>
+    <div
+      ref={containerRef}
+      className={`character-card-popover relative inline-flex ${className}`}
+    >
       <span
         role="button"
         tabIndex={0}

@@ -8,10 +8,6 @@
     height: 100%;
   }
 
-  .row-header {
-    width: 100%;
-  }
-
   .col-header {
     position: sticky;
     left: 0;
@@ -21,7 +17,6 @@
   .row-header {
     position: sticky;
     top: 0;
-    z-index: 1;
   }
 
   .corner {

@@ -348,28 +348,21 @@ const PlotGridBody = ({
                     );
                   } else if (cell.type === "plot") {
                     const plot = plotsByRowIndex.get(getCellColIndex(c));
-                    return (
-                      <div
+                    return plot ? (
+                      <PlotHeader
                         key={`plot-header-${r}-${c}`}
-                        className="plot-header row-header"
-                        data-row={r}
-                        data-col={c}
-                      >
-                        {plot ? (
-                          <PlotHeader
-                            storyId={storyId}
-                            plot={plot}
-                            plotIndex={getCellColIndex(c)}
-                            maxHorizontalIndex={maxHorizontalIndex}
-                          />
-                        ) : (
-                          <PlotHeaderCreate
-                            storyId={storyId}
-                            plot={plot}
-                            plotIndex={getCellColIndex(c)}
-                          />
-                        )}
-                      </div>
+                        storyId={storyId}
+                        plot={plot}
+                        plotIndex={getCellColIndex(c)}
+                        maxHorizontalIndex={maxHorizontalIndex}
+                      />
+                    ) : (
+                      <PlotHeaderCreate
+                        key={`plot-header-${r}-${c}`}
+                        storyId={storyId}
+                        plot={plot}
+                        plotIndex={getCellColIndex(c)}
+                      />
                     );
                   }
 

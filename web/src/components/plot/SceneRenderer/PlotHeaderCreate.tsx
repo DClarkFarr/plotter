@@ -64,7 +64,7 @@ export const PlotHeaderCreate = ({
   return (
     <div
       style={themeStyles}
-      className="rounded-lg border border-[var(--plot-color-soft)] bg-[var(--plot-color)] p-6 flex flex-col h-full relative group text-[var(--plot-text)] transition-colors duration-300"
+      className="rounded-lg row-header z-150 border border-[var(--plot-color-soft)] bg-[var(--plot-color)] p-6 flex flex-col h-full relative group text-[var(--plot-text)] transition-colors duration-300"
     >
       <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <Button
