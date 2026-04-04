@@ -20,7 +20,7 @@ export const CharacterDisplay = ({
   avatarOnly = false,
   popoverProps,
 }: CharacterDisplayProps) => {
-  const content = avatarOnly ? (
+  const contentInner = avatarOnly ? (
     <Tooltip content={character.title} placement="top">
       <CharacterAvatar
         name={character.title}
@@ -44,8 +44,14 @@ export const CharacterDisplay = ({
   );
 
   if (!popoverProps) {
-    return content;
+    return contentInner;
   }
+
+  const content = (
+    <div className="cursor-pointer bg-black/10 rounded px-1">
+      {contentInner}
+    </div>
+  );
 
   return (
     <CharacterCardPopover

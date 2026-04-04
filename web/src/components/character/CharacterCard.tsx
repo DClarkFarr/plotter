@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Modal, ModalBody, ModalHeader } from "flowbite-react";
+import { Modal, ModalBody, ModalHeader, Tooltip } from "flowbite-react";
 import { resolveCharacterImageUrl } from "../../utils/characterImage";
 import { deriveAvatarColor } from "../../utils/avatarColor";
 import { deriveAvatarInitials } from "../layout/avatarInitials";
 import type { CharacterCardProps } from "./character-card.types";
+
+import IconAccountBoxEditOutline from "~icons/mdi/account-box-edit-outline";
 
 export const CharacterCard = ({
   character,
@@ -64,13 +66,17 @@ export const CharacterCard = ({
       </button>
 
       {showEdit && onEditImage ? (
-        <button
-          type="button"
-          onClick={onEditImage}
-          className="absolute right-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 opacity-0 transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
-        >
-          Edit
-        </button>
+        <div className="absolute right-3 top-3">
+          <Tooltip content="Edit image" className="whitespace-nowrap">
+            <button
+              type="button"
+              onClick={onEditImage}
+              className="rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 opacity-0 transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
+            >
+              <IconAccountBoxEditOutline className="" />
+            </button>
+          </Tooltip>
+        </div>
       ) : null}
 
       <div className="flex flex-col gap-2 p-4">
