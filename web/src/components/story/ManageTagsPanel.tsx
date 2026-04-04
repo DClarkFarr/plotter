@@ -132,17 +132,9 @@ export function ManageTagsPanel() {
     );
   }
 
-  if (sortedTags.length === 0) {
-    return (
-      <div className="text-sm text-slate-500">
-        No tags yet. Create tags from scenes to get started.
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      <div>
+      <div className="mb-6">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
           Manage Tags
         </p>
