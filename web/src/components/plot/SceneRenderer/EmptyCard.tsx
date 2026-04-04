@@ -9,6 +9,7 @@ import { useCreateSceneMutation } from "../../../queries/scene/scene-mutations";
 import { useDroppable } from "@dnd-kit/react";
 import { CollisionPriority } from "@dnd-kit/abstract";
 import { memo } from "react";
+import { Button, ButtonGroup, Tooltip } from "flowbite-react";
 
 export const EmptyCard = memo(
   ({
@@ -84,30 +85,28 @@ export const EmptyCard = memo(
       <div
         ref={ref}
         style={themeStyles}
-        className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border radius-2 transition-colors duration-250 ${isDropTarget ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`} ${
+        className={`card card--empty group relative p-[var(--card-padding)] w-[var(--column-width)] h-full border radius-2 transition-colors duration-250 ${isDropTarget ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-gray-200 border-gray-300 text-gray-800`} ${
           isDisabled ? "opacity-50" : ""
         }`}
       >
-        <div
-          className={`flex ${cardSize !== "sm" && "flex-col"} gap-4 items-center justify-center h-full`}
-        >
-          <div className="text-lg">Create scene</div>
-          <div>
-            <button
-              className={`text-2xl ${cardSize === "lg" ? "p-4" : "p-2"} text-[var(--plot-text)] ${
-                isBusy
-                  ? "cursor-not-allowed bg-gray-200"
-                  : "cursor-pointer bg-[var(--plot-color-soft)]"
-              }`}
-              type="button"
-              aria-disabled={isBusy}
-              disabled={isBusy}
-              onClick={handleCreate}
-            >
-              <IconPlus />
-            </button>
+        {!isDropTarget && (
+          <div className="h-full w-full flex justify-center items-center">
+            <ButtonGroup className="button-group opacity-0 transition-opacity duration-250 -z-1 group-hover:opacity-100 group-hover:z-1">
+              <Tooltip content="Create a new scene">
+                <Button
+                  type="button"
+                  className="px-2 py-2 leading-none h-auto cursor-pointer"
+                  color="dark"
+                  aria-disabled={isBusy}
+                  disabled={isBusy}
+                  onClick={handleCreate}
+                >
+                  <IconPlus />
+                </Button>
+              </Tooltip>
+            </ButtonGroup>
           </div>
-        </div>
+        )}
       </div>
     );
   },
