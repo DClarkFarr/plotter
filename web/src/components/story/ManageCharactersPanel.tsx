@@ -8,7 +8,6 @@ import {
   useUploadCharacterImageMutation,
 } from "../../queries/character/character-mutations";
 import type { Character } from "../../api/types";
-import { deriveAvatarColor } from "../../utils/avatarColor";
 import { CharacterAvatar } from "./CharacterAvatar";
 import { alert } from "../../utils/alert";
 
@@ -170,7 +169,6 @@ export function ManageCharactersPanel() {
             const titleValue = draft?.title ?? character.title;
             const descriptionValue =
               draft?.description ?? character.description ?? "";
-            const color = deriveAvatarColor(character.title);
 
             return (
               <div
@@ -185,6 +183,7 @@ export function ManageCharactersPanel() {
                     <CharacterAvatar
                       name={character.title}
                       imageUrl={character.imageUrl}
+                      withBorder
                       size="md"
                     />
                   </label>
@@ -200,10 +199,7 @@ export function ManageCharactersPanel() {
                       }
                     }}
                   />
-                  <div
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: color }}
-                  ></div>
+
                   <input
                     value={titleValue}
                     onChange={(event) =>

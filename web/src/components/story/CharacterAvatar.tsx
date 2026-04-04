@@ -7,6 +7,7 @@ interface CharacterAvatarProps {
   imageUrl?: string | null;
   size?: "sm" | "md";
   showColorDot?: boolean;
+  withBorder?: boolean;
 }
 
 export const CharacterAvatar = ({
@@ -14,6 +15,7 @@ export const CharacterAvatar = ({
   imageUrl,
   size,
   showColorDot,
+  withBorder,
 }: CharacterAvatarProps) => {
   const initials = deriveAvatarInitials(name);
   const fallbackColor = deriveAvatarColor(name);
@@ -21,7 +23,7 @@ export const CharacterAvatar = ({
 
   const sizeMap = {
     sm: "h-5 w-5",
-    md: "h-6 w-6",
+    md: "h-7 w-7",
     dot: "h-3 w-3",
   };
   const textMap = {
@@ -40,8 +42,11 @@ export const CharacterAvatar = ({
 
   return (
     <div
-      className={`rounded-full overflow-hidden flex items-center justify-center font-semibold text-white ${size ? sizeMap[size] : sizeMap.md} ${size ? textMap[size] : textMap.md}`}
-      style={resolvedImageUrl ? undefined : { backgroundColor: fallbackColor }}
+      className={`rounded-full overflow-hidden flex items-center justify-center font-semibold text-white leading-1 ${size ? sizeMap[size] : sizeMap.md} ${size ? textMap[size] : textMap.md} ${withBorder ? "border-2 border-[var(--avatar-color)]" : ""}`}
+      style={{
+        ...(!resolvedImageUrl ? { backgroundColor: fallbackColor } : {}),
+        "--avatar-color": fallbackColor,
+      }}
     >
       {resolvedImageUrl ? (
         <img
