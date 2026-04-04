@@ -40,10 +40,8 @@ export const SceneCard = memo(
 
     const {
       ref: containerRef,
-      // isDropTarget,
       isDragSource,
       isDragging,
-      // isDropping,
       handleRef,
     } = useDraggable({
       id: scene.id,
@@ -54,6 +52,8 @@ export const SceneCard = memo(
         verticalIndex: sceneIndex,
       },
     });
+
+    // console.log("render SceneCard", plotIndex, sceneIndex);
 
     const isDropTarget = false; // disabling dropping animation
 

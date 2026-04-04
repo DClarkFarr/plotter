@@ -1,5 +1,6 @@
 .story-grid {
   display: grid;
+  width: fit-content;
 
   /* First column = row headers */
   grid-template-columns: 100px repeat(var(--grid-cols), 1fr);

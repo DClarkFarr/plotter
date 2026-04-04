@@ -78,11 +78,13 @@ export const EmptyCard = memo(
       }
     };
 
+    // console.log("render EmptyCard", plotIndex, sceneIndex);
+
     return (
       <div
         ref={ref}
         style={themeStyles}
-        className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border radius-2 transition-all duration-250 ${isDropTarget ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`} ${
+        className={`card card--empty p-[var(--card-padding)] w-[var(--column-width)] h-full border radius-2 transition-colors duration-250 ${isDropTarget ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`} ${
           isDisabled ? "opacity-50" : ""
         }`}
       >
