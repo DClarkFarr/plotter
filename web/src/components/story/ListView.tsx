@@ -27,7 +27,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
       {orderedScenes.map(({ scene, plot }) => (
         <ListViewScene
           key={scene.id}

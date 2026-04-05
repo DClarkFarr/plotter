@@ -39,20 +39,8 @@ export const ListViewScene = ({
   const showFull = displayMode === "normal";
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      {povCharacter ? (
-        <div className="flex justify-end">
-          <CharacterDisplay
-            character={povCharacter}
-            avatarOnly
-            showColorDot
-            avatarSize="md"
-            popoverProps={{ popoverClassName: "z-1000" }}
-          />
-        </div>
-      ) : null}
-
-      <div className="mt-2 flex items-center gap-2">
+    <article className="p-5 border-b border-slate-200 pb-10 mb-5 last:border-0 last:mb-0">
+      <div className="flex items-center gap-2">
         <h3 className="text-2xl font-semibold text-slate-900 flex-1">
           {title}
         </h3>
@@ -66,7 +54,17 @@ export const ListViewScene = ({
         </button>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap gap-4 items-center">
+        {povCharacter ? (
+          <div className="flex justify-start">
+            <CharacterDisplay
+              character={povCharacter}
+              avatarSize="sm"
+              popoverProps={{ popoverClassName: "z-1000" }}
+            />
+          </div>
+        ) : null}
+
         <SceneTags
           tags={tags}
           selectedTags={scene.tags ?? []}
