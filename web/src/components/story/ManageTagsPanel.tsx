@@ -3,18 +3,21 @@ import { useParams } from "@tanstack/react-router";
 import { useStoryTagsQuery } from "../../queries/story/story-queries";
 import {
   useAddTagVariantMutation,
+  useCreateTagMutation,
   useDeleteTagMutation,
   useDeleteTagVariantMutation,
   useUpdateTagMutation,
 } from "../../queries/tag/tag-mutation";
 import type { Tag } from "../../api/types";
 import { alert } from "../../utils/alert";
+import { CreateTagForm } from "./CreateTagForm";
 import { ManageTagRow } from "./ManageTagRow";
 
 export function ManageTagsPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const tagsQuery = useStoryTagsQuery(storyId);
   const tags = tagsQuery.data ?? [];
+  const createTagMutation = useCreateTagMutation(storyId);
   const { mutateAsync: updateTag } = useUpdateTagMutation(storyId);
   const { mutateAsync: deleteTag } = useDeleteTagMutation();
   const { mutateAsync: addVariant } = useAddTagVariantMutation(storyId);
@@ -61,6 +64,9 @@ export function ManageTagsPanel() {
       return false;
     }
   };
+
+  const handleCreateTag = (name: string, color: string) =>
+    createTagMutation.mutateAsync({ name, color });
 
   const handleDelete = async (tag: Tag) => {
     if (isDeleting === tag.id) {
@@ -134,13 +140,20 @@ export function ManageTagsPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="mb-6">
+      <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
           Manage Tags
         </p>
         <p className="text-sm text-slate-600">
           Rename tags and keep your story organized.
         </p>
+      </div>
+
+      <div className="mb-4">
+        <CreateTagForm
+          onCreateTag={handleCreateTag}
+          isCreating={createTagMutation.isPending}
+        />
       </div>
       <div>
         <input

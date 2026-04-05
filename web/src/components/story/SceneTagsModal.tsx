@@ -1,12 +1,6 @@
-import {
-  Modal,
-  ModalBody,
-  ModalHeader,
-  TextInput,
-  Button,
-} from "flowbite-react";
+import { Modal, ModalBody, ModalHeader } from "flowbite-react";
 import type { Tag } from "../../api/types";
-import { useMemo, useState, type KeyboardEvent } from "react";
+import { useMemo, useState } from "react";
 
 import {
   useAddTagVariantMutation,
@@ -15,6 +9,7 @@ import {
   useUpdateTagMutation,
 } from "../../queries/tag/tag-mutation";
 import { alert } from "../../utils/alert";
+import { CreateTagForm } from "./CreateTagForm";
 import { SceneTagRow } from "./SceneTagRow";
 
 export type SceneTagsModalProps = {
@@ -24,7 +19,7 @@ export type SceneTagsModalProps = {
   onClose: () => void;
   onToggleTag: (tagId: string) => void;
   onSelectVariant: (tagId: string, variant: string) => void;
-  onCreateTag: (name: string, color: string) => void;
+  onCreateTag: (name: string, color: string) => Promise<Tag>;
   isCreating?: boolean;
 };
 
@@ -43,8 +38,6 @@ export const SceneTagsModal = ({
   onCreateTag,
   isCreating,
 }: SceneTagsModalProps) => {
-  const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState("#64748b");
   const [isDeleting, setIsDeleting] = useState("");
   const [isUpdatingVariant, setIsUpdatingVariant] = useState("");
   const [isAddingVariant, setIsAddingVariant] = useState("");
@@ -52,22 +45,6 @@ export const SceneTagsModal = ({
     tagId: string;
     variant: string;
   } | null>(null);
-
-  const handleSubmit = () => {
-    const trimmed = newTagName.trim();
-    if (!trimmed) {
-      return;
-    }
-    onCreateTag(trimmed, newTagColor);
-    setNewTagName("");
-  };
-
-  const onTypeEnter = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      handleSubmit();
-    }
-  };
 
   const { mutateAsync } = useDeleteTagMutation();
   const storyId = tags[0]?.storyId ?? "";
@@ -182,39 +159,17 @@ export const SceneTagsModal = ({
       <ModalHeader>Scene Tags</ModalHeader>
       <ModalBody>
         <div className="flex flex-col gap-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Add Tag
-            </p>
-            <div className="mt-2 flex items-center">
-              <input
-                type="color"
-                value={newTagColor}
-                onChange={(event) => setNewTagColor(event.target.value)}
-                className="h-10 w-12 rounded-lg border border-slate-200 bg-white"
-                aria-label="Tag color"
-              />
-              <TextInput
-                value={newTagName}
-                onChange={(event) => setNewTagName(event.target.value)}
-                onKeyDown={onTypeEnter}
-                placeholder="New tag name"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isCreating}
-              >
-                Add
-              </Button>
-            </div>
-          </div>
+          <CreateTagForm onCreateTag={onCreateTag} isCreating={isCreating} />
 
           <div className="flex flex-col gap-3">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               All Tags
             </p>
+            {sortedTags.length === 0 ? (
+              <div className="text-sm text-slate-500">
+                No tags yet. Create tags from scenes to get started.
+              </div>
+            ) : null}
             {sortedTags.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
               const selectedVariant = selectedTagVariants.get(tag.id)?.variant;

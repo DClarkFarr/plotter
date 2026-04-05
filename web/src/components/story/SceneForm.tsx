@@ -176,8 +176,8 @@ export const SceneForm = () => {
     });
   };
 
-  const handleCreateTag = (name: string, color: string) => {
-    createTagMutation.mutate({ name, color });
+  const handleCreateTag = async (name: string, color: string) => {
+    return await createTagMutation.mutateAsync({ name, color });
   };
 
   const handlePovChange = (characterId: string | null) => {
