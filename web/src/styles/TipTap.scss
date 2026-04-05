@@ -60,6 +60,10 @@
     font-size: 1rem;
   }
 
+  p {
+    margin-bottom: 1rem;
+  }
+
   /* Code and preformatted text styles */
   code {
     @apply bg-purple-200 text-black;

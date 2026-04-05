@@ -61,6 +61,7 @@ const toSceneResponse = (scene: {
   tags: Array<{ toHexString(): string }>;
   tagVariants?: Array<{ tagId: { toHexString(): string }; variant: string }>;
   todo: Array<{ text: string; isDone: boolean }>;
+  snippets?: Array<{ label: string; text: string }>;
   scene?: string;
   verticalIndex: number;
   pov?: { toHexString(): string } | null;
@@ -76,6 +77,7 @@ const toSceneResponse = (scene: {
       variant: entry.variant,
     })) ?? [],
   todo: scene.todo,
+  snippets: scene.snippets ?? [],
   verticalIndex: scene.verticalIndex,
   pov: scene.pov ? scene.pov.toHexString() : null,
 });
@@ -94,6 +96,7 @@ const toPlotResponse = (plot: {
     plotId: { toHexString(): string };
     tags: Array<{ toHexString(): string }>;
     todo: Array<{ text: string; isDone: boolean }>;
+    snippets?: Array<{ label: string; text: string }>;
     scene?: string;
     verticalIndex: number;
   }>;

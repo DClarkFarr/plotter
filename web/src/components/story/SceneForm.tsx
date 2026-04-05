@@ -25,6 +25,7 @@ import {
 import { useCreateTagMutation } from "../../queries/tag/tag-mutation";
 import { useCharacterModalStore } from "../../store/characterModalStore";
 import { alert } from "../../utils/alert";
+import IconChevronDown from "~icons/mdi/chevron-down";
 
 export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
@@ -408,17 +409,22 @@ export const SceneForm = () => {
               return (
                 <div
                   key={`snippet-${index}`}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                  className="rounded-lg border border-slate-200 bg-white"
                 >
                   <button
                     type="button"
                     onClick={() => handleToggleSnippet(index)}
-                    className="w-full text-left text-sm font-semibold text-slate-700"
+                    className="block w-full flex items-center justify-between text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 rounded-md transition-colors px-3 py-2"
                   >
-                    {label}
+                    <span>{label}</span>
+                    <span>
+                      <IconChevronDown
+                        className={`transition-transform ${!isExpanded ? "-rotate-90" : ""}`}
+                      />
+                    </span>
                   </button>
                   {isExpanded && (
-                    <div className="mt-3 flex flex-col gap-3">
+                    <div className="px-3 py-2 flex flex-col gap-3">
                       <input
                         value={snippet.label ?? ""}
                         onChange={(event) =>
