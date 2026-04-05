@@ -244,7 +244,7 @@ export const SceneForm = () => {
   }
 
   return (
-    <div className="p-2 flex flex-col gap-4">
+    <div className="p-2 flex flex-col gap-4 min-h-full">
       <div className="mb-4">
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
           {selectedPlot?.title} - Row {selectedScene.verticalIndex + 1}
@@ -337,7 +337,7 @@ export const SceneForm = () => {
             : "Unable to save scene changes"}
         </div>
       ) : null}
-      <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 mt-8">
+      <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 mt-8 mt-auto">
         <div className="flex items-center justify-between">
           <div className="text-xs uppercase tracking-[0.2em] text-rose-500">
             Danger Zone
