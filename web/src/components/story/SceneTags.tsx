@@ -1,5 +1,6 @@
 import type { SceneTagVariant, Tag } from "../../api/types";
 import { TagBadge } from "./TagBadge";
+import type { TagBadgeSize } from "./TagBadge";
 import IconPlusThick from "~icons/mdi/plus-thick";
 
 export type SceneTagsProps = {
@@ -7,6 +8,7 @@ export type SceneTagsProps = {
   selectedTags: string[];
   tagVariants: SceneTagVariant[];
   onOpen?: () => void;
+  badgeSize?: TagBadgeSize;
 };
 
 export const SceneTags = ({
@@ -14,6 +16,7 @@ export const SceneTags = ({
   selectedTags,
   tagVariants,
   onOpen,
+  badgeSize = "sm",
 }: SceneTagsProps) => {
   const selected = tags.filter((tag) => selectedTags.includes(tag.id));
   const variantMap = new Map(
@@ -39,6 +42,7 @@ export const SceneTags = ({
           key={tag.id}
           tag={tag}
           variant={variantMap.get(tag.id)}
+          size={badgeSize}
           onClick={onOpen ? () => onOpen() : () => {}}
         />
       ))}

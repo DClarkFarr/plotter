@@ -32,6 +32,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-04
 - TypeScript (React) + React, TanStack Query, TanStack Router, Flowbite React, Tailwind CSS (020-tag-create-form)
 - N/A (frontend only) (020-tag-create-form)
 - TypeScript 5.9 (Node.js + React 19) + Express 5, MongoDB 6, React, TanStack Router, TanStack Query, Flowbite React, Zustand (021-import-tags-modal)
+- TypeScript (frontend), React 18 (Vite) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons (022-list-view)
+- MongoDB via Express API (no schema changes) (022-list-view)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -51,9 +53,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 022-list-view: Added TypeScript (frontend), React 18 (Vite) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 - 021-import-tags-modal: Added TypeScript 5.9 (Node.js + React 19) + Express 5, MongoDB 6, React, TanStack Router, TanStack Query, Flowbite React, Zustand
 - 020-tag-create-form: Added TypeScript (React) + React, TanStack Query, TanStack Router, Flowbite React, Tailwind CSS
-- 019-enhance-character-management: Added TypeScript (React in web/, Node.js in express/) + Express, MongoDB driver, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, Vite, unplugin-icons, dnd-ki
 
 
 <!-- MANUAL ADDITIONS START -->

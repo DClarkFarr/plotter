@@ -5,6 +5,7 @@ import { StoryLoading } from "../components/story/StoryLoading";
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import { PlotGrid } from "../components/plot/PlotGrid";
+import { ListView } from "../components/story/ListView";
 
 import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
@@ -179,7 +180,11 @@ export function StoryPage() {
       </h2>
 
       <div className="plots-wrapper bg-gray-100">
-        <PlotGrid storyId={storyId} plots={plots} />
+        {cardDisplay === "grid" ? (
+          <PlotGrid storyId={storyId} plots={plots} />
+        ) : (
+          <ListView storyId={storyId} plots={plots} />
+        )}
       </div>
       <CharacterModal />
     </main>

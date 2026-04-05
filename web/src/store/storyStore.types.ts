@@ -4,6 +4,8 @@ export type StoryCardSize = "sm" | "md" | "lg";
 
 export type StoryCardDisplay = "grid" | "list";
 
+export type ListViewDisplayMode = "normal" | "filterExcluded";
+
 export interface StoryFilters {
   tagIds: string[];
 }
