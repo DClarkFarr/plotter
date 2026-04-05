@@ -44,6 +44,7 @@ export function useCreateSceneMutation(storyId: string) {
           tags: input.tags ?? [],
           tagVariants: input.tagVariants ?? [],
           todo: input.todo ?? [],
+          snippets: input.snippets ?? [],
           scene: input.scene ?? null,
           verticalIndex: input.verticalIndex,
           pov: input.pov ?? null,

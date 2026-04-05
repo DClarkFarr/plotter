@@ -122,6 +122,11 @@ export interface SceneTodoItem {
   isDone: boolean;
 }
 
+export interface SceneSnippet {
+  label: string;
+  text: string;
+}
+
 export interface DeleteTagInput {
   storyId: string;
   tagId: string;
@@ -135,6 +140,7 @@ export interface Scene {
   tags: string[];
   tagVariants?: SceneTagVariant[];
   todo: SceneTodoItem[];
+  snippets: SceneSnippet[];
   scene: string | null;
   verticalIndex: number;
   pov: string | null;
@@ -177,6 +183,7 @@ export interface CreateSceneInput {
   tags?: string[];
   tagVariants?: SceneTagVariant[];
   todo?: SceneTodoItem[];
+  snippets?: SceneSnippet[];
   verticalIndex: number;
   pov?: string | null;
 }
@@ -188,6 +195,7 @@ export interface UpdateSceneInput {
   tags?: string[];
   tagVariants?: SceneTagVariant[];
   todo?: SceneTodoItem[];
+  snippets?: SceneSnippet[];
   verticalIndex?: number;
   pov?: string | null;
 }

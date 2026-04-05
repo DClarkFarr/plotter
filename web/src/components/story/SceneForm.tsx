@@ -9,7 +9,7 @@ import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
 import { ScenePovSelect } from "./ScenePovSelect";
 import { useDebounce } from "../../utils/useDebounce";
-import type { SceneTodoItem } from "../../api/types";
+import type { SceneSnippet, SceneTodoItem } from "../../api/types";
 
 import IconLabelMultiple from "~icons/mdi/label-multiple";
 import { RichTextEditor } from "../forms/RichTextEditor";
@@ -44,6 +44,12 @@ export const SceneForm = () => {
     (state) => state.openCreate,
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
+  const [newSnippetLabel, setNewSnippetLabel] = useState("");
+  const [newSnippetText, setNewSnippetText] = useState("");
+  const [expandedSnippetIndex, setExpandedSnippetIndex] = useState<
+    number | null
+  >(null);
 
   const selectedPlot = useMemo(() => {
     if (!selectedPlotId) {
@@ -98,6 +104,7 @@ export const SceneForm = () => {
   const [descriptionHtml, setDescriptionHtml] = useState(
     selectedScene?.description ?? "",
   );
+  const snippets = selectedScene?.snippets ?? [];
 
   const debouncedTitleUpdate = useDebounce((value: string) => {
     if (!selectedScene) {
@@ -121,6 +128,14 @@ export const SceneForm = () => {
       sceneId: selectedScene.id,
       description: value,
     });
+  }, 300);
+
+  const debouncedSnippetsUpdate = useDebounce((next: SceneSnippet[]) => {
+    if (!selectedScene) {
+      return;
+    }
+
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, snippets: next });
   }, 300);
 
   const handleTitleChange = (value: string) => {
@@ -214,6 +229,22 @@ export const SceneForm = () => {
     updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
+  const handleToggleSnippet = (index: number) => {
+    setExpandedSnippetIndex((current) => (current === index ? null : index));
+  };
+
+  const updateSnippet = (index: number, patch: Partial<SceneSnippet>) => {
+    if (!selectedScene) {
+      return;
+    }
+
+    const next = snippets.map((snippet, idx) =>
+      idx === index ? { ...snippet, ...patch } : snippet,
+    );
+
+    debouncedSnippetsUpdate(next);
+  };
+
   const handleConfirmDelete = async () => {
     if (!selectedScene) {
       return;
@@ -229,6 +260,26 @@ export const SceneForm = () => {
         alert.error(error.message);
       }
     }
+  };
+
+  const handleOpenAddSnippet = () => {
+    setNewSnippetLabel("");
+    setNewSnippetText("");
+    setIsAddSnippetModalOpen(true);
+  };
+
+  const handleCreateSnippet = () => {
+    if (!selectedScene) {
+      return;
+    }
+
+    const label = newSnippetLabel.trim() || "Untitled snippet";
+    const text = newSnippetText.trim();
+
+    const next = [...snippets, { label, text }];
+    updateSceneMutation.mutate({ sceneId: selectedScene.id, snippets: next });
+    setExpandedSnippetIndex(next.length - 1);
+    setIsAddSnippetModalOpen(false);
   };
 
   if (isLoading) {
@@ -330,6 +381,67 @@ export const SceneForm = () => {
           onAdd={handleAddTodo}
         />
       </div>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Snippets
+          </p>
+          <Button
+            type="button"
+            color="dark"
+            size="xs"
+            onClick={handleOpenAddSnippet}
+          >
+            Add snippet
+          </Button>
+        </div>
+        {snippets.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+            Capture ideas or draft text as snippets for this scene.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {snippets.map((snippet, index) => {
+              const isExpanded = expandedSnippetIndex === index;
+              const label = snippet.label?.trim() || "Untitled snippet";
+
+              return (
+                <div
+                  key={`snippet-${index}`}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSnippet(index)}
+                    className="w-full text-left text-sm font-semibold text-slate-700"
+                  >
+                    {label}
+                  </button>
+                  {isExpanded && (
+                    <div className="mt-3 flex flex-col gap-3">
+                      <input
+                        value={snippet.label ?? ""}
+                        onChange={(event) =>
+                          updateSnippet(index, { label: event.target.value })
+                        }
+                        placeholder="Snippet title"
+                        className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900"
+                      />
+                      <RichTextEditor
+                        key={`snippet-editor-${index}`}
+                        value={snippet.text ?? ""}
+                        onChange={(value) =>
+                          updateSnippet(index, { text: value })
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
       {updateSceneMutation.error ? (
         <div className="text-sm text-rose-600">
           {updateSceneMutation.error instanceof Error
@@ -386,6 +498,58 @@ export const SceneForm = () => {
                 disabled={deleteSceneMutation.isPending}
               >
                 Yes, delete scene
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
+
+      <Modal
+        dismissible
+        show={isAddSnippetModalOpen}
+        onClose={() => setIsAddSnippetModalOpen(false)}
+        size="lg"
+        className="z-999"
+      >
+        <ModalHeader>Add snippet</ModalHeader>
+        <ModalBody>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-slate-600">
+              Snippets are a place to capture ideas or draft text for this
+              scene.
+            </p>
+            <div>
+              <label className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Title
+              </label>
+              <input
+                value={newSnippetLabel}
+                onChange={(event) => setNewSnippetLabel(event.target.value)}
+                placeholder="Snippet title"
+                className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Snippet text
+              </label>
+              <div className="mt-2">
+                <RichTextEditor
+                  value={newSnippetText}
+                  onChange={setNewSnippetText}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                color="gray"
+                onClick={() => setIsAddSnippetModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" color="dark" onClick={handleCreateSnippet}>
+                Add snippet
               </Button>
             </div>
           </div>

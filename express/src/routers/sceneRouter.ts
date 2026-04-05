@@ -15,7 +15,11 @@ import {
   requireUserId,
 } from "../utils/validators";
 import { assertparamIsString } from "../utils/routes";
-import type { SceneTodoItem, UpdateSceneInput } from "../models/scenes";
+import type {
+  SceneSnippet,
+  SceneTodoItem,
+  UpdateSceneInput,
+} from "../models/scenes";
 import { handleAsync } from "../utils/asyncHandler";
 
 export const sceneRouter = express.Router({ mergeParams: true });
@@ -28,6 +32,7 @@ const toSceneResponse = (scene: {
   tags: Array<{ toHexString(): string }>;
   tagVariants?: Array<{ tagId: { toHexString(): string }; variant: string }>;
   todo: SceneTodoItem[];
+  snippets?: SceneSnippet[];
   scene?: string;
   verticalIndex: number;
   pov?: { toHexString(): string } | null;
@@ -43,6 +48,7 @@ const toSceneResponse = (scene: {
       variant: entry.variant,
     })) ?? [],
   todo: scene.todo,
+  snippets: scene.snippets ?? [],
   verticalIndex: scene.verticalIndex,
   pov: scene.pov ? scene.pov.toHexString() : null,
 });
@@ -141,6 +147,40 @@ const parseTodoItems = (value: unknown): SceneTodoItem[] | undefined => {
   });
 };
 
+const parseSnippets = (value: unknown): SceneSnippet[] | undefined => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new ValidationError("snippets", "snippets must be an array");
+  }
+
+  return value.map((item) => {
+    if (!item || typeof item !== "object") {
+      throw new ValidationError("snippets", "snippets must be objects");
+    }
+
+    const label = (item as { label?: unknown }).label;
+    const text = (item as { text?: unknown }).text;
+
+    if (typeof label !== "string") {
+      throw new ValidationError("snippets", "snippet label must be a string");
+    }
+
+    if (typeof text !== "string") {
+      throw new ValidationError("snippets", "snippet text must be a string");
+    }
+
+    const trimmedLabel = label.trim();
+    if (!trimmedLabel) {
+      throw new ValidationError("snippets", "snippet label must not be empty");
+    }
+
+    return { label: trimmedLabel, text };
+  });
+};
+
 const parseOptionalPov = (value: unknown): string | null | undefined => {
   if (value === undefined) {
     return undefined;
@@ -174,6 +214,7 @@ const applySceneRoutes = () => {
       const tags = parseTagIds(req.body?.tags);
       const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
+      const snippets = parseSnippets(req.body?.snippets);
       const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = requireNumber(
         req.body?.verticalIndex,
@@ -186,6 +227,7 @@ const applySceneRoutes = () => {
         tags: tags ?? [],
         ...(tagVariants !== undefined && { tagVariants }),
         todo: todo ?? [],
+        snippets: snippets ?? [],
         pov: pov ?? null,
         plotId,
         verticalIndex,
@@ -209,6 +251,7 @@ const applySceneRoutes = () => {
       const tags = parseTagIds(req.body?.tags);
       const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
+      const snippets = parseSnippets(req.body?.snippets);
       const pov = parseOptionalPov(req.body?.pov);
       const verticalIndex = optionalNumber(
         req.body?.verticalIndex,
@@ -221,6 +264,7 @@ const applySceneRoutes = () => {
         tags === undefined &&
         tagVariants === undefined &&
         todo === undefined &&
+        snippets === undefined &&
         verticalIndex === undefined &&
         pov === undefined
       ) {
@@ -243,6 +287,9 @@ const applySceneRoutes = () => {
       }
       if (todo !== undefined) {
         toSet.todo = todo;
+      }
+      if (snippets !== undefined) {
+        toSet.snippets = snippets;
       }
       if (verticalIndex !== undefined) {
         toSet.verticalIndex = verticalIndex;

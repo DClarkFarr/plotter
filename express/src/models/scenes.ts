@@ -15,6 +15,11 @@ export interface SceneTodoItem {
   isDone: boolean;
 }
 
+export interface SceneSnippet {
+  label: string;
+  text: string;
+}
+
 export interface SceneDefinition extends BaseModelBlueprint {
   title: string;
   description: string;
@@ -22,6 +27,7 @@ export interface SceneDefinition extends BaseModelBlueprint {
   tags: ObjectId[];
   tagVariants?: SceneTagVariant[];
   todo: SceneTodoItem[];
+  snippets: SceneSnippet[];
   verticalIndex: number;
   pov?: ObjectId | null;
   deletedAt?: Date | null;
@@ -143,6 +149,7 @@ export interface CreateSceneInput {
   tags?: Array<string | ObjectId>;
   tagVariants?: Array<SceneTagVariantInput>;
   todo?: SceneTodoItem[];
+  snippets?: SceneSnippet[];
   scene?: string;
   verticalIndex: number;
   pov?: string | ObjectId | null;
@@ -177,6 +184,7 @@ export const createScene = async (
     tags: tagIds,
     ...(tagVariants && { tagVariants }),
     todo: input.todo ?? [],
+    snippets: input.snippets ?? [],
     verticalIndex: input.verticalIndex,
     deletedAt: null,
     ...createTimestamps(),
@@ -330,6 +338,7 @@ export interface UpdateSceneInput {
   tags?: Array<string | ObjectId>;
   tagVariants?: Array<SceneTagVariantInput>;
   todo?: SceneTodoItem[];
+  snippets?: SceneSnippet[];
   scene?: string;
   verticalIndex?: number;
   pov?: string | ObjectId | null;
@@ -353,6 +362,10 @@ export const updateSceneById = async (
 
   if (updates.todo !== undefined) {
     updatePayload.todo = updates.todo;
+  }
+
+  if (updates.snippets !== undefined) {
+    updatePayload.snippets = updates.snippets;
   }
 
   if (updates.pov !== undefined) {

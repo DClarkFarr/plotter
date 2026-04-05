@@ -37,6 +37,7 @@ export const ListViewScene = ({
   const title = scene.title?.trim() || "Untitled scene";
   const description = scene.description?.trim() || "";
   const showFull = displayMode === "normal";
+  const snippets = scene.snippets ?? [];
 
   return (
     <article className="p-5 border-b border-slate-200 pb-10 mb-5 last:border-0 last:mb-0">
@@ -84,6 +85,30 @@ export const ListViewScene = ({
             <p className="text-sm italic text-slate-500">No description yet.</p>
           )}
           <ListViewTodoList items={scene.todo ?? []} />
+          {snippets.length > 0 && (
+            <div className="mt-4 flex flex-col gap-3 mx-6">
+              {snippets.map((snippet, index) => (
+                <div
+                  key={`snippet-${index}`}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400 font-mono">
+                    {snippet.label?.trim() || "Snippet"}
+                  </div>
+                  {snippet.text?.trim() ? (
+                    <div
+                      className="tiptap text-sm text-slate-700 leading-6 font-mono mt-2"
+                      dangerouslySetInnerHTML={{ __html: snippet.text }}
+                    />
+                  ) : (
+                    <p className="text-sm italic text-slate-500 font-mono mt-2">
+                      No snippet text yet.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : null}
     </article>
