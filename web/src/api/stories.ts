@@ -7,6 +7,8 @@ import {
   type CreateCharacterInput,
   type CreateSceneInput,
   type CreateTagInput,
+  type ImportTagsInput,
+  type ImportTagsResponse,
   type UpdateTagInput,
   type CreatePlotInput,
   type Plot,
@@ -76,6 +78,20 @@ export async function listStoryTags(storyId: string): Promise<Tag[]> {
       `/stories/${storyId}/tags`,
     );
     return data.tags;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function importStoryTags(
+  input: ImportTagsInput,
+): Promise<ImportTagsResponse> {
+  try {
+    const { data } = await apiClient.post<ImportTagsResponse>(
+      `/stories/${input.toStoryId}/tags/import`,
+      input,
+    );
+    return data;
   } catch (err) {
     throw toApiError(err);
   }

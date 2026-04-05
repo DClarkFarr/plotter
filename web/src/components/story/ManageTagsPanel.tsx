@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button, Tooltip } from "flowbite-react";
 import { useParams } from "@tanstack/react-router";
 import { useStoryTagsQuery } from "../../queries/story/story-queries";
 import {
@@ -12,6 +13,9 @@ import type { Tag } from "../../api/types";
 import { alert } from "../../utils/alert";
 import { CreateTagForm } from "./CreateTagForm";
 import { ManageTagRow } from "./ManageTagRow";
+import { ImportTagsModal } from "./ImportTagsModal";
+
+import IconImport from "~icons/mdi/import";
 
 export function ManageTagsPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
@@ -26,6 +30,7 @@ export function ManageTagsPanel() {
   const [isDeleting, setIsDeleting] = useState("");
   const [isUpdatingVariant, setIsUpdatingVariant] = useState("");
   const [isAddingVariant, setIsAddingVariant] = useState("");
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [deletingVariant, setDeletingVariant] = useState<{
     tagId: string;
     variant: string;
@@ -140,13 +145,27 @@ export function ManageTagsPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="mb-4">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Manage Tags
-        </p>
-        <p className="text-sm text-slate-600">
-          Rename tags and keep your story organized.
-        </p>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Manage Tags
+          </p>
+          <p className="text-sm text-slate-600">
+            Rename tags and keep your story organized.
+          </p>
+        </div>
+        <Tooltip
+          content="import tags from another story"
+          className="whitespace-nowrap"
+        >
+          <Button
+            type="button"
+            color="gray"
+            onClick={() => setIsImportOpen(true)}
+          >
+            <IconImport className="" /> Tags
+          </Button>
+        </Tooltip>
       </div>
 
       <div className="mb-4">
@@ -188,6 +207,11 @@ export function ManageTagsPanel() {
           ))}
         </div>
       )}
+      <ImportTagsModal
+        isOpen={isImportOpen}
+        currentStoryId={storyId}
+        onClose={() => setIsImportOpen(false)}
+      />
     </div>
   );
 }

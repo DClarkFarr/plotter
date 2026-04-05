@@ -98,6 +98,12 @@ export interface CreateTagInput {
   color: string;
 }
 
+export interface ImportTagsInput {
+  fromStoryId: string;
+  toStoryId: string;
+  tagIds: string[];
+}
+
 export interface UpdateTagInput {
   name?: string;
   color?: string;
@@ -196,6 +202,11 @@ export interface StoriesResponse {
 
 export interface TagsResponse {
   tags: Tag[];
+}
+
+export interface ImportTagsResponse {
+  createdTags: Tag[];
+  skippedTagIds: string[];
 }
 
 export interface CharactersResponse {

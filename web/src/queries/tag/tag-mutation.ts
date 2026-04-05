@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   CreateTagInput,
   DeleteTagInput,
+  ImportTagsInput,
   Tag,
   UpdateTagInput,
 } from "../../api/types";
@@ -10,6 +11,7 @@ import {
   createTag,
   deleteTag,
   deleteTagVariant,
+  importStoryTags,
   updateTag,
 } from "../../api/stories";
 import { useStoryTagsQuery } from "../story/story-queries";
@@ -208,6 +210,19 @@ export function useDeleteTagVariantMutation(storyId: string) {
           return hasTag ? next : [...next, tag];
         },
       );
+    },
+  });
+}
+
+export function useImportTagsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ImportTagsInput) => importStoryTags(input),
+    onSuccess: (_data, input) => {
+      queryClient.invalidateQueries({
+        queryKey: useStoryTagsQuery.queryKey(input.toStoryId),
+      });
     },
   });
 }

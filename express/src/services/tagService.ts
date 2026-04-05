@@ -4,6 +4,8 @@ import {
   CreateTagInput,
   deleteTagById as deleteTagByIdModel,
   getTagById,
+  listTags,
+  listTagsByStoryAndIds,
   TagDocument,
   updateTagById as updateTagByIdModel,
   UpdateTagInput,
@@ -100,6 +102,70 @@ export const deleteTagById = async (
   }
 
   return deleteTagByIdModel(existingTag._id);
+};
+
+export interface ImportTagsInput {
+  fromStoryId: string | ObjectId;
+  toStoryId: string | ObjectId;
+  tagIds: Array<string | ObjectId>;
+}
+
+export interface ImportTagsResult {
+  createdTags: TagDocument[];
+  skippedTagIds: string[];
+}
+
+export const importTagsBetweenStories = async (
+  input: ImportTagsInput,
+): Promise<ImportTagsResult> => {
+  await assertStoryExists(input.fromStoryId);
+  await assertStoryExists(input.toStoryId);
+
+  const uniqueTagIds = Array.from(
+    new Set(
+      input.tagIds.map((id) => ensureObjectId(id, "tagId").toHexString()),
+    ),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueTagIds.length === 0) {
+    return { createdTags: [], skippedTagIds: [] };
+  }
+
+  const sourceTags = await listTagsByStoryAndIds(
+    input.fromStoryId,
+    uniqueTagIds,
+  );
+
+  if (sourceTags.length !== uniqueTagIds.length) {
+    throw new ValidationError(
+      "tagIds",
+      "One or more tags were not found in the source story",
+    );
+  }
+
+  const destinationTags = await listTags({ storyId: input.toStoryId });
+  const existingNames = new Set(destinationTags.map((tag) => tag.name));
+  const skippedTagIds: string[] = [];
+  const createdTags: TagDocument[] = [];
+
+  for (const tag of sourceTags) {
+    if (existingNames.has(tag.name)) {
+      skippedTagIds.push(tag._id.toHexString());
+      continue;
+    }
+
+    const created = await createTagModel({
+      name: tag.name,
+      color: tag.color,
+      variant: tag.variant,
+      variants: tag.variants,
+      storyId: input.toStoryId,
+    });
+    existingNames.add(tag.name);
+    createdTags.push(created);
+  }
+
+  return { createdTags, skippedTagIds };
 };
 
 const normalizeVariantName = (value: string): string => {

@@ -98,6 +98,27 @@ export const listTagsByIds = async (
   return collection.find({ _id: { $in: uniqueIds } }).toArray();
 };
 
+export const listTagsByStoryAndIds = async (
+  storyId: string | ObjectId,
+  ids: Array<string | ObjectId>,
+): Promise<TagDocument[]> => {
+  const collection = getTagsCollection();
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "tagId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection
+    .find({
+      storyId: ensureObjectId(storyId, "storyId"),
+      _id: { $in: uniqueIds },
+    })
+    .toArray();
+};
+
 export const getTagById = async (
   id: string | ObjectId,
 ): Promise<TagDocument | null> => {
