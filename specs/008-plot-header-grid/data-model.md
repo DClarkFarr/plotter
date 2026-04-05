@@ -18,7 +18,6 @@
 - **plotId**: string
 - **tags**: string[]
 - **todo**: { text: string; isDone: boolean }[]
-- **scene**: string | null
 - **verticalIndex**: number
 
 ## Plot Header UI State (Client)

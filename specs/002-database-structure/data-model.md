@@ -112,7 +112,6 @@
 - `todo`: array of objects
   - `text`: string
   - `isDone`: boolean
-- `scene`: string? (rich text content)
 - `verticalIndex`: number (0-based)
 - `createdAt`: Date
 - `updatedAt`: Date?

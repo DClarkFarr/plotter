@@ -16,7 +16,6 @@ This contract defines the endpoints needed to create and update scenes from the 
 {
   "title": "Scene 1 in Plot A",
   "description": "",
-  "scene": "<p>Draft scene text</p>",
   "tags": ["tag_123"],
   "todo": [{ "text": "Draft beat", "isDone": false }],
   "verticalIndex": 0
@@ -34,7 +33,6 @@ This contract defines the endpoints needed to create and update scenes from the 
     "plotId": "plot_123",
     "tags": ["tag_123"],
     "todo": [{ "text": "Draft beat", "isDone": false }],
-    "scene": "<p>Draft scene text</p>",
     "verticalIndex": 0
   }
 }
@@ -50,7 +48,6 @@ This contract defines the endpoints needed to create and update scenes from the 
 {
   "title": "Updated Scene Title",
   "description": "Updated description",
-  "scene": "<p>Updated scene text</p>",
   "tags": ["tag_123", "tag_789"],
   "todo": [{ "text": "Beat 1", "isDone": true }],
   "verticalIndex": 1
@@ -68,7 +65,6 @@ This contract defines the endpoints needed to create and update scenes from the 
     "plotId": "plot_123",
     "tags": ["tag_123", "tag_789"],
     "todo": [{ "text": "Beat 1", "isDone": true }],
-    "scene": "<p>Updated scene text</p>",
     "verticalIndex": 1
   }
 }

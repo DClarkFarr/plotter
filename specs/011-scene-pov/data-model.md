@@ -29,7 +29,6 @@
 - **description**: scene summary
 - **tags**: tag references
 - **todo**: list of todo items
-- **scene**: rich text content
 - **verticalIndex**: ordering index
 - **pov**: optional reference to Character
 - **createdAt / updatedAt**: timestamps
