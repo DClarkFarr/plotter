@@ -144,6 +144,27 @@ export const listCharactersByIds = async (
   return collection.find({ _id: { $in: uniqueIds } }).toArray();
 };
 
+export const listCharactersByStoryAndIds = async (
+  storyId: string | ObjectId,
+  ids: Array<string | ObjectId>,
+): Promise<CharacterDocument[]> => {
+  const collection = getCharactersCollection();
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => ensureObjectId(id, "characterId").toHexString())),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  return collection
+    .find({
+      storyId: ensureObjectId(storyId, "storyId"),
+      _id: { $in: uniqueIds },
+    })
+    .toArray();
+};
+
 export const getCharacterById = async (
   id: string | ObjectId,
 ): Promise<CharacterDocument | null> => {

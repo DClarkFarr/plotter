@@ -93,6 +93,12 @@ export interface DeleteCharacterInput {
   characterId: string;
 }
 
+export interface ImportCharactersInput {
+  fromStoryId: string;
+  toStoryId: string;
+  characterIds: string[];
+}
+
 export interface CreateTagInput {
   name: string;
   color: string;
@@ -207,6 +213,11 @@ export interface TagsResponse {
 export interface ImportTagsResponse {
   createdTags: Tag[];
   skippedTagIds: string[];
+}
+
+export interface ImportCharactersResponse {
+  createdCharacters: Character[];
+  skippedCharacterIds: string[];
 }
 
 export interface CharactersResponse {

@@ -3,6 +3,7 @@ import { ValidationError } from "../services/authService";
 import {
   createCharacterForStory,
   deleteCharacterForStory,
+  importCharactersBetweenStories,
   listCharactersForStory,
   updateCharacterForStory,
 } from "../services/characterService";
@@ -163,6 +164,25 @@ const parseCharacterLists = (value: unknown): CharacterList[] | undefined => {
   });
 };
 
+const parseRequiredStringArray = (value: unknown, label: string): string[] => {
+  if (!Array.isArray(value)) {
+    throw new ValidationError(label, `${label} must be an array`);
+  }
+
+  return value.map((entry) => {
+    if (typeof entry !== "string") {
+      throw new ValidationError(label, `${label} must be an array of strings`);
+    }
+
+    const trimmed = entry.trim();
+    if (!trimmed) {
+      throw new ValidationError(label, `${label} entries must be non-empty`);
+    }
+
+    return trimmed;
+  });
+};
+
 const applyCharacterRoutes = () => {
   characterRouter.get(
     "/:storyId/characters",
@@ -227,6 +247,35 @@ const applyCharacterRoutes = () => {
       const created = await createCharacterForStory(toSet);
 
       res.status(201).json({ character: toCharacterResponse(created) });
+    }),
+  );
+
+  characterRouter.post(
+    "/:storyId/characters/import",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const toStoryId = assertparamIsString(req.params.storyId, "storyId");
+      const fromStoryId = requireString(req.body?.fromStoryId, "fromStoryId");
+      const characterIds = parseRequiredStringArray(
+        req.body?.characterIds,
+        "characterIds",
+      );
+
+      await getStoryForUser(fromStoryId, userId);
+      await getStoryForUser(toStoryId, userId);
+
+      const result = await importCharactersBetweenStories({
+        fromStoryId,
+        toStoryId,
+        characterIds,
+      });
+
+      res.status(201).json({
+        createdCharacters: result.createdCharacters.map((character) =>
+          toCharacterResponse(character),
+        ),
+        skippedCharacterIds: result.skippedCharacterIds,
+      });
     }),
   );
 

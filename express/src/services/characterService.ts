@@ -5,6 +5,7 @@ import {
   deleteCharacterById as deleteCharacterByIdModel,
   getCharacterById,
   listCharacters,
+  listCharactersByStoryAndIds,
   updateCharacterById as updateCharacterByIdModel,
   UpdateCharacterInput,
   CharacterDocument,
@@ -12,6 +13,7 @@ import {
 import { countScenesByPovCharacter } from "../models/scenes";
 import { getStoryById } from "../models/stories";
 import { ensureObjectId } from "../models/types";
+import { ValidationError } from "./authService";
 
 const assertStoryExists = async (storyId: string | ObjectId): Promise<void> => {
   const story = await getStoryById(storyId);
@@ -92,4 +94,76 @@ export const deleteCharacterForStory = async (
   }
 
   return deleteCharacterByIdModel(existing._id);
+};
+
+export interface ImportCharactersInput {
+  fromStoryId: string | ObjectId;
+  toStoryId: string | ObjectId;
+  characterIds: Array<string | ObjectId>;
+}
+
+export interface ImportCharactersResult {
+  createdCharacters: CharacterDocument[];
+  skippedCharacterIds: string[];
+}
+
+export const importCharactersBetweenStories = async (
+  input: ImportCharactersInput,
+): Promise<ImportCharactersResult> => {
+  await assertStoryExists(input.fromStoryId);
+  await assertStoryExists(input.toStoryId);
+
+  const uniqueCharacterIds = Array.from(
+    new Set(
+      input.characterIds.map((id) =>
+        ensureObjectId(id, "characterId").toHexString(),
+      ),
+    ),
+  ).map((value) => new ObjectId(value));
+
+  if (uniqueCharacterIds.length === 0) {
+    return { createdCharacters: [], skippedCharacterIds: [] };
+  }
+
+  const sourceCharacters = await listCharactersByStoryAndIds(
+    input.fromStoryId,
+    uniqueCharacterIds,
+  );
+
+  if (sourceCharacters.length !== uniqueCharacterIds.length) {
+    throw new ValidationError(
+      "characterIds",
+      "One or more characters were not found in the source story",
+    );
+  }
+
+  const destinationCharacters = await listCharacters({
+    storyId: input.toStoryId,
+  });
+  const existingTitles = new Set(
+    destinationCharacters.map((character) => character.title),
+  );
+  const skippedCharacterIds: string[] = [];
+  const createdCharacters: CharacterDocument[] = [];
+
+  for (const character of sourceCharacters) {
+    if (existingTitles.has(character.title)) {
+      skippedCharacterIds.push(character._id.toHexString());
+      continue;
+    }
+
+    const created = await createCharacterModel({
+      title: character.title,
+      description: character.description,
+      imageUrl: character.imageUrl,
+      characteristics: character.characteristics,
+      customCharacteristics: character.customCharacteristics,
+      lists: character.lists,
+      storyId: input.toStoryId,
+    } as CreateCharacterInput);
+    existingTitles.add(character.title);
+    createdCharacters.push(created);
+  }
+
+  return { createdCharacters, skippedCharacterIds };
 };

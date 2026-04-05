@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
+import { Button, Tooltip } from "flowbite-react";
 import { useParams } from "@tanstack/react-router";
 import IconDelete from "~icons/mdi/delete";
 import IconPencil from "~icons/mdi/pencil";
+import IconImport from "~icons/mdi/import";
 import { useStoryCharactersQuery } from "../../queries/story/story-queries";
 import { useDeleteCharacterMutation } from "../../queries/character/character-mutations";
 import type { Character } from "../../api/types";
@@ -10,6 +12,7 @@ import { CharacterCardPopover } from "../character/CharacterCardPopover";
 import { alert } from "../../utils/alert";
 import { useCharacterModalStore } from "../../store/characterModalStore";
 import { CHARACTERISTIC_LABELS } from "../../utils/characterCharacteristics";
+import { ImportCharactersModal } from "./ImportCharactersModal";
 
 export function ManageCharactersPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
@@ -17,6 +20,7 @@ export function ManageCharactersPanel() {
   const characters = charactersQuery.data ?? [];
   const deleteCharacter = useDeleteCharacterMutation();
   const [query, setQuery] = useState("");
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const openCreate = useCharacterModalStore((state) => state.openCreate);
   const openEdit = useCharacterModalStore((state) => state.openEdit);
 
@@ -89,13 +93,27 @@ export function ManageCharactersPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Manage Characters
-        </p>
-        <p className="text-sm text-slate-600">
-          Create and edit character details from a dedicated modal.
-        </p>
+      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Manage Characters
+          </p>
+          <p className="text-sm text-slate-600">
+            Create and edit character details from a dedicated modal.
+          </p>
+        </div>
+        <Tooltip
+          content="import characters from another story"
+          className="whitespace-nowrap"
+        >
+          <Button
+            type="button"
+            color="gray"
+            onClick={() => setIsImportOpen(true)}
+          >
+            <IconImport className="" /> Characters
+          </Button>
+        </Tooltip>
       </div>
 
       <div>
@@ -194,6 +212,11 @@ export function ManageCharactersPanel() {
           })}
         </div>
       )}
+      <ImportCharactersModal
+        isOpen={isImportOpen}
+        currentStoryId={storyId}
+        onClose={() => setIsImportOpen(false)}
+      />
     </div>
   );
 }

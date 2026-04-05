@@ -3,11 +3,13 @@ import type {
   Character,
   CreateCharacterInput,
   DeleteCharacterInput,
+  ImportCharactersInput,
   UpdateCharacterInput,
 } from "../../api/types";
 import {
   createCharacter,
   deleteCharacter,
+  importStoryCharacters,
   updateCharacter,
 } from "../../api/stories";
 import { uploadCharacterImage } from "../../api/uploads";
@@ -134,5 +136,18 @@ export function useDeleteCharacterMutation() {
 export function useUploadCharacterImageMutation() {
   return useMutation({
     mutationFn: (file: File) => uploadCharacterImage(file),
+  });
+}
+
+export function useImportCharactersMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ImportCharactersInput) => importStoryCharacters(input),
+    onSuccess: (_data, input) => {
+      queryClient.invalidateQueries({
+        queryKey: useStoryCharactersQuery.queryKey(input.toStoryId),
+      });
+    },
   });
 }
