@@ -76,7 +76,6 @@ const toSceneResponse = (scene: {
       variant: entry.variant,
     })) ?? [],
   todo: scene.todo,
-  scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
   pov: scene.pov ? scene.pov.toHexString() : null,
 });

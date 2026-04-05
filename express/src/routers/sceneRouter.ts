@@ -43,7 +43,6 @@ const toSceneResponse = (scene: {
       variant: entry.variant,
     })) ?? [],
   todo: scene.todo,
-  scene: scene.scene ?? null,
   verticalIndex: scene.verticalIndex,
   pov: scene.pov ? scene.pov.toHexString() : null,
 });
@@ -172,7 +171,6 @@ const applySceneRoutes = () => {
       const description = req.body?.description
         ? optionalString(req.body?.description, "description")
         : undefined;
-      const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
       const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
@@ -185,7 +183,6 @@ const applySceneRoutes = () => {
       const created = await createSceneForStory(storyId, {
         title,
         description: description ?? "",
-        scene: scene ?? "",
         tags: tags ?? [],
         ...(tagVariants !== undefined && { tagVariants }),
         todo: todo ?? [],
@@ -209,7 +206,6 @@ const applySceneRoutes = () => {
 
       const title = optionalString(req.body?.title, "title");
       const description = optionalString(req.body?.description, "description");
-      const scene = parseOptionalString(req.body?.scene);
       const tags = parseTagIds(req.body?.tags);
       const tagVariants = parseTagVariants(req.body?.tagVariants);
       const todo = parseTodoItems(req.body?.todo);
@@ -222,7 +218,6 @@ const applySceneRoutes = () => {
       if (
         title === undefined &&
         description === undefined &&
-        scene === undefined &&
         tags === undefined &&
         tagVariants === undefined &&
         todo === undefined &&
@@ -239,9 +234,6 @@ const applySceneRoutes = () => {
       }
       if (description !== undefined) {
         toSet.description = description;
-      }
-      if (scene !== undefined) {
-        toSet.scene = scene;
       }
       if (tags !== undefined) {
         toSet.tags = tags;

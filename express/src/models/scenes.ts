@@ -22,7 +22,6 @@ export interface SceneDefinition extends BaseModelBlueprint {
   tags: ObjectId[];
   tagVariants?: SceneTagVariant[];
   todo: SceneTodoItem[];
-  scene?: string;
   verticalIndex: number;
   pov?: ObjectId | null;
   deletedAt?: Date | null;
@@ -182,10 +181,6 @@ export const createScene = async (
     deletedAt: null,
     ...createTimestamps(),
   };
-
-  if (input.scene !== undefined) {
-    payload.scene = input.scene;
-  }
 
   if (input.pov !== undefined) {
     payload.pov = input.pov === null ? null : ensureObjectId(input.pov, "pov");
@@ -354,10 +349,6 @@ export const updateSceneById = async (
 
   if (updates.description !== undefined) {
     updatePayload.description = updates.description;
-  }
-
-  if (updates.scene !== undefined) {
-    updatePayload.scene = updates.scene;
   }
 
   if (updates.todo !== undefined) {
