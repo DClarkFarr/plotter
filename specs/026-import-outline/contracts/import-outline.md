@@ -17,6 +17,7 @@
 
 - `mode`: string, required. Allowed values: `preview`, `create`.
 - `file`: .docx file, required.
+- `storyName`: string, optional. Used as the created story title when `mode` is `create`.
 
 ## Response
 

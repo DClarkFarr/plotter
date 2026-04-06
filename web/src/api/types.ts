@@ -104,6 +104,7 @@ export type ImportOutlineMode = "preview" | "create";
 export interface ImportOutlineInput {
   mode: ImportOutlineMode;
   file: File;
+  storyName?: string;
 }
 
 export interface CreateTagInput {
@@ -237,6 +238,7 @@ export interface ImportCharactersResponse {
 
 export interface ImportOutlineResponse {
   mode: ImportOutlineMode;
+  storyName: string;
   summary: string;
   message?: string | null;
   storyId?: string | null;

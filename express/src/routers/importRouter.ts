@@ -4,7 +4,11 @@ import { ValidationError } from "../services/authService";
 import { importOutlineForStory } from "../services/importOutlineService";
 import { handleAsync } from "../utils/asyncHandler";
 import { handleError } from "../utils/errorHandler";
-import { requireString, requireUserId } from "../utils/validators";
+import {
+  optionalString,
+  requireString,
+  requireUserId,
+} from "../utils/validators";
 
 export const importRouter = express.Router({ mergeParams: true });
 
@@ -63,10 +67,14 @@ importRouter.post(
       throw new ValidationError("file", "file is required");
     }
 
+    const storyName =
+      optionalString(req.body?.storyName, "storyName") ?? req.file.originalname;
+
     const result = await importOutlineForStory({
       userId,
       mode: modeRaw,
       file: req.file,
+      storyName,
     });
 
     const status = result.mode === "preview" ? 200 : 201;

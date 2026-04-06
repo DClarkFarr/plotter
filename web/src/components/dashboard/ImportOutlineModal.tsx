@@ -1,4 +1,11 @@
-import { Button, Label, Modal, ModalBody, ModalHeader } from "flowbite-react";
+import {
+  Button,
+  Label,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  TextInput,
+} from "flowbite-react";
 import { useCallback, useMemo, useState } from "react";
 import type { ApiError } from "../../api/types";
 import { useImportOutlineMutation } from "../../queries/story/story-mutations";
@@ -21,6 +28,7 @@ export const ImportOutlineModal = ({
   const [step, setStep] = useState<"form" | "preview" | "complete">("form");
   const [previewSummary, setPreviewSummary] = useState<string | null>(null);
   const [createdStoryId, setCreatedStoryId] = useState<string | null>(null);
+  const [storyName, setStoryName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   const resolvedError = useMemo(() => {
@@ -38,6 +46,7 @@ export const ImportOutlineModal = ({
     setSelectedFile(null);
     setPreviewSummary(null);
     setCreatedStoryId(null);
+    setStoryName("");
     setStep("form");
     setLocalError(null);
     importMutation.reset();
@@ -89,6 +98,7 @@ export const ImportOutlineModal = ({
         mode: "preview",
         file: selectedFile,
       });
+      setStoryName(result.storyName);
       setPreviewSummary(result.summary);
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
@@ -102,64 +112,72 @@ export const ImportOutlineModal = ({
     }
 
     setLocalError(null);
+    const trimmedName = storyName.trim();
     const result = await importMutation.mutateAsync({
       mode: "create",
       file: selectedFile,
+      ...(trimmedName ? { storyName: trimmedName } : {}),
     });
     setPreviewSummary(result.summary);
     setCreatedStoryId(result.storyId ?? null);
     setStep("complete");
-  }, [importMutation, selectedFile]);
+  }, [importMutation, selectedFile, storyName]);
 
   return (
-    <Modal show={isOpen} onClose={handleClose} size="xl" popup>
+    <Modal show={isOpen} onClose={handleClose} size="6xl" popup>
       <ModalHeader className="p-6">Import outline</ModalHeader>
       <ModalBody className="flex flex-col gap-6">
-        <div className="space-y-2">
-          <p className="text-sm text-slate-600">
-            Upload a .docx outline to preview what will be created.
-          </p>
-        </div>
-        <div className="space-y-4 text-sm text-slate-600">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Heading map
-            </p>
-            <ul className="list-disc space-y-1 pl-5">
-              <li>H1 headings become act separators.</li>
-              <li>H2 headings become chapter breaks.</li>
-              <li>H4 headings become scenes.</li>
-            </ul>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Sections
-            </p>
-            <p>
-              Indent a paragraph block to group it into a section under the
-              nearest heading.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              POV syntax
-            </p>
-            <p>
-              Use <span className="font-semibold">POV: Character Name</span> to
-              mark a scene POV.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Tag syntax
-            </p>
-            <p>
-              Use{" "}
-              <span className="font-semibold">Tags: #tag-one, #tag-two</span>
-              to attach scene tags.
-            </p>
-          </div>
-        </div>
+        {step === "form" ? (
+          <>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600">
+                Upload a .docx outline to preview what will be created.
+              </p>
+            </div>
+            <div className="space-y-4 text-sm text-slate-600">
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Heading map
+                </p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>H1 headings become act separators.</li>
+                  <li>H2 headings become chapter breaks.</li>
+                  <li>H4 headings become scenes.</li>
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Sections
+                </p>
+                <p>
+                  Indent a paragraph block to group it into a section under the
+                  nearest heading.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  POV syntax
+                </p>
+                <p>
+                  Use <span className="font-semibold">POV: Character Name</span>
+                  to mark a scene POV.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Tag syntax
+                </p>
+                <p>
+                  Use{" "}
+                  <span className="font-semibold">
+                    Tags: #tag-one, #tag-two
+                  </span>
+                  to attach scene tags.
+                </p>
+              </div>
+            </div>
+          </>
+        ) : null}
         {resolvedError ? (
           <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {resolvedError}
@@ -194,6 +212,16 @@ export const ImportOutlineModal = ({
         ) : null}
         {step === "preview" ? (
           <div className="flex flex-col gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="import-outline-story">Story name</Label>
+              <TextInput
+                id="import-outline-story"
+                placeholder="Imported story"
+                value={storyName}
+                onChange={(event) => setStoryName(event.target.value)}
+                disabled={importMutation.isPending}
+              />
+            </div>
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
               Preview summary: {previewSummary ?? "TODO"}
             </div>

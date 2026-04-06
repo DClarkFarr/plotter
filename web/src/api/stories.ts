@@ -122,6 +122,9 @@ export async function importStoryOutline(
     const formData = new FormData();
     formData.append("file", input.file);
     formData.append("mode", input.mode);
+    if (input.storyName) {
+      formData.append("storyName", input.storyName);
+    }
 
     const { data } = await apiClient.post<ImportOutlineResponse>(
       "/imports/outline",

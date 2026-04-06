@@ -4,6 +4,7 @@
 
 - **mode**: "preview" | "create"
 - **file**: .docx document (multipart form data field)
+- **storyName**: string | null (optional, used for create)
 
 ## ImportOutlineSummary
 
