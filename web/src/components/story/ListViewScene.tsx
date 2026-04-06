@@ -7,18 +7,16 @@ import { findCharacterById } from "../../utils/characterLookup";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { ListViewTodoList } from "./ListViewTodoList";
-import type {
-  FilterVisibilityMode,
-  ListViewDisplayMode,
-} from "../../store/storyStore.types";
+import type { FilterVisibilityMode } from "../../store/storyStore.types";
 import { usePlotTheme } from "../../hooks/usePlotTheme";
+import { useStoryStore } from "../../store/storyStore";
+import { useMemo } from "react";
 
 export type ListViewSceneProps = {
   scene: Scene;
   plot: Plot;
   tags: Tag[];
   characters: Character[];
-  displayMode: ListViewDisplayMode;
   filterVisibilityMode: FilterVisibilityMode;
   isFilterExcluded: boolean;
 };
@@ -28,16 +26,18 @@ export const ListViewScene = ({
   plot,
   tags,
   characters,
-  displayMode,
   filterVisibilityMode,
   isFilterExcluded,
 }: ListViewSceneProps) => {
   const selectScene = useSceneEditorStore((state) => state.selectScene);
   const openSidebar = useSidebarStore((state) => state.openSidebar);
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);
-  const povCharacter = findCharacterById(characters, scene.pov);
 
+  const cardSize = useStoryStore((s) => s.cardSize);
   const theme = usePlotTheme(plot.color);
+  const povCharacter = useMemo(() => {
+    return findCharacterById(characters, scene.pov);
+  }, [characters, scene.pov]);
 
   const handleEdit = () => {
     selectScene(scene.id, scene.plotId);
@@ -47,7 +47,6 @@ export const ListViewScene = ({
 
   const title = scene.title?.trim() || "Untitled scene";
   const description = scene.description?.trim() || "";
-  const showFull = displayMode === "normal";
   const snippets = scene.snippets ?? [];
 
   if (isFilterExcluded) {
@@ -121,48 +120,43 @@ export const ListViewScene = ({
             badgeSize="lg"
           />
         </div>
-        {showFull ? (
-          <div className="mt-4">
-            {description ? (
-              <div
-                className="tiptap text-sm text-slate-700 leading-6"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            ) : (
-              <p className="text-sm italic text-slate-500">
-                No description yet.
-              </p>
-            )}
-            <ListViewTodoList items={scene.todo ?? []} />
-            {snippets.length > 0 && (
-              <div className="mt-4 flex flex-col gap-3 mx-6">
-                {snippets.map((snippet, index) => (
-                  <div
-                    key={`snippet-${index}`}
-                    className="rounded-lg px-4 py-3"
-                  >
-                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Snippet:{" "}
-                      <b className="text-slate-600">
-                        {snippet.label?.trim() || "Unnamed"}
-                      </b>
-                    </div>
-                    {snippet.text?.trim() ? (
-                      <div
-                        className="tiptap text-sm text-slate-700 leading-6 font-mono mt-2"
-                        dangerouslySetInnerHTML={{ __html: snippet.text }}
-                      />
-                    ) : (
-                      <p className="text-sm italic text-slate-500 font-mono mt-2">
-                        No snippet text yet.
-                      </p>
-                    )}
+        <div className="mt-4">
+          {description ? (
+            <div
+              className="tiptap text-sm text-slate-700 leading-6"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          ) : (
+            <p className="text-sm italic text-slate-500">No description yet.</p>
+          )}
+
+          {cardSize === "lg" && <ListViewTodoList items={scene.todo ?? []} />}
+
+          {cardSize !== "sm" && snippets.length > 0 && (
+            <div className="mt-4 flex flex-col gap-3 mx-6">
+              {snippets.map((snippet, index) => (
+                <div key={`snippet-${index}`} className="rounded-lg px-4 py-3">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Snippet:{" "}
+                    <b className="text-slate-600">
+                      {snippet.label?.trim() || "Unnamed"}
+                    </b>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : null}
+                  {snippet.text?.trim() ? (
+                    <div
+                      className="tiptap text-sm text-slate-700 leading-6 font-mono mt-2"
+                      dangerouslySetInnerHTML={{ __html: snippet.text }}
+                    />
+                  ) : (
+                    <p className="text-sm italic text-slate-500 font-mono mt-2">
+                      No snippet text yet.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );

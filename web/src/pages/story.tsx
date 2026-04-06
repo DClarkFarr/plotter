@@ -119,29 +119,27 @@ export function StoryPage() {
               </Tooltip>
             </div>
           </div>
-          {cardDisplay === "grid" && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                Card Size
-              </span>
-              <div className="button-group">
-                {(["sm", "md", "lg"] as const).map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => setCardSize(size)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      cardSize === size
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {size.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Card Size
+            </span>
+            <div className="button-group">
+              {(["sm", "md", "lg"] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setCardSize(size)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    cardSize === size
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {size.toUpperCase()}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">

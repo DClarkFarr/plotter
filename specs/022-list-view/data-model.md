@@ -39,10 +39,6 @@
 - **color**: string
 - **variants**: string[]
 
-## List View UI State
-
-- **displayMode**: "normal" | "filterExcluded"
-
 ## Derived View Models
 
 ### OrderedSceneEntry

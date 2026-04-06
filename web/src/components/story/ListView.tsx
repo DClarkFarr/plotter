@@ -3,7 +3,6 @@ import type { Plot } from "../../api/types";
 import { orderScenesForListView } from "../../utils/listViewOrdering";
 import { ListViewScene } from "./ListViewScene";
 import { useStoryStore } from "../../store/storyStore";
-import type { ListViewDisplayMode } from "../../store/storyStore.types";
 import {
   useStoryCharactersQuery,
   useStoryTagsQuery,
@@ -34,7 +33,6 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     [includedSceneIds],
   );
   const orderedScenes = useMemo(() => orderScenesForListView(plots), [plots]);
-  const displayMode: ListViewDisplayMode = "normal";
 
   if (orderedScenes.length === 0) {
     return (
@@ -61,7 +59,6 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
             plot={plot}
             tags={tags}
             characters={characters}
-            displayMode={displayMode}
             filterVisibilityMode={filterVisibilityMode}
             isFilterExcluded={hasFilters && !includedSceneIdSet.has(scene.id)}
           />
