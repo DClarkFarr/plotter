@@ -18,6 +18,8 @@ import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
 import type { Coordinates } from "@dnd-kit/utilities";
+import { StoryFiltersBar } from "../story/StoryFiltersBar";
+import { useStoryStore } from "../../store/storyStore";
 
 export type PlotGridProps = {
   storyId: string;
@@ -99,6 +101,7 @@ export const PlotGrid = ({
   renderEmptyCard,
 }: PlotGridProps) => {
   const dragMode = useSceneEditorStore((state) => state.dragMode);
+
   const startDraggingScene = useSceneEditorStore(
     (state) => state.startDraggingScene,
   );
@@ -218,6 +221,8 @@ const PlotGridBody = ({
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
+  const hasFilters = useStoryStore((state) => state.hasFilters());
+
   const gridCols = getGridCols(plots);
   const gridRows = getGridRows(plots);
 
@@ -285,9 +290,14 @@ const PlotGridBody = ({
       className="y-scroller overflow-y-auto h-[var(--grid-height)]"
       style={{ "--grid-height": `calc(100vh - 61px)` }}
     >
+      {hasFilters && (
+        <div className="sticky top-0 z-155 pl-[140px] pr-6 py-2">
+          <StoryFiltersBar />
+        </div>
+      )}
       <div className="x-scroller h-full overflow-x-auto">
         <div
-          className="grid story-grid p-6 plot-grid gap-x-4 gap-y-2 bg-gray-100"
+          className={`grid story-grid p-6 ${hasFilters && "pt-0"}  plot-grid gap-x-4 gap-y-2 bg-gray-100`}
           style={{ "--grid-cols": gridCols }}
         >
           {grid.map((row, r) => {

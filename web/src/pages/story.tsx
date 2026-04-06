@@ -1,19 +1,22 @@
 import { Portal } from "../components/helpers/Portal";
 import { StoryHeading } from "../components/story/StoryHeading";
 import { StoryLoading } from "../components/story/StoryLoading";
+import { StoryFiltersMenu } from "../components/story/StoryFiltersMenu";
+import { StoryFilterTextModal } from "../components/story/StoryFilterTextModal";
 
 import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import { PlotGrid } from "../components/plot/PlotGrid";
 import { ListView } from "../components/story/ListView";
+import { useState } from "react";
 
 import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
-import IconFilter from "~icons/mdi/filter";
 import IconAccountGroup from "~icons/mdi/account-group";
 import IconTag from "~icons/mdi/tag";
 import { Tooltip } from "flowbite-react";
 import {
+  useStoryCharactersQuery,
   useStoryPlotsQuery,
   useStoryQuery,
   useStoryTagsQuery,
@@ -28,17 +31,29 @@ export function StoryPage() {
   const storyQuery = useStoryQuery(storyId);
   const tagsQuery = useStoryTagsQuery(storyId);
   const plotsQuery = useStoryPlotsQuery(storyId);
+  const charactersQuery = useStoryCharactersQuery(storyId);
   const { cardDisplay, cardSize, setCardDisplay, setCardSize } =
     useStoryStore();
+  const addFilter = useStoryStore((state) => state.addFilter);
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);
   const openSidebar = useSidebarStore((state) => state.openSidebar);
+  const [isCustomTextOpen, setIsCustomTextOpen] = useState(false);
 
   const story = storyQuery.data;
   const plots = plotsQuery.data ?? [];
+  const tags = tagsQuery.data ?? [];
+  const characters = charactersQuery.data ?? [];
 
   const isLoading =
-    storyQuery.isLoading || tagsQuery.isLoading || plotsQuery.isLoading;
-  const error = storyQuery.error || tagsQuery.error || plotsQuery.error;
+    storyQuery.isLoading ||
+    tagsQuery.isLoading ||
+    plotsQuery.isLoading ||
+    charactersQuery.isLoading;
+  const error =
+    storyQuery.error ||
+    tagsQuery.error ||
+    plotsQuery.error ||
+    charactersQuery.error;
 
   if (isLoading) {
     return (
@@ -124,12 +139,12 @@ export function StoryPage() {
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Filters
             </span>
-            <button
-              type="button"
-              className={`rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600`}
-            >
-              <IconFilter className="text-base text-slate-600" />
-            </button>
+            <StoryFiltersMenu
+              tags={tags}
+              plots={plots}
+              characters={characters}
+              onOpenCustomText={() => setIsCustomTextOpen(true)}
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -179,17 +194,20 @@ export function StoryPage() {
 
       <div className="plots-wrapper bg-gray-100">
         {cardDisplay === "grid" ? (
-          <>
-            <h2 className="text-sm mb-3 px-6 font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Plots
-            </h2>
-            <PlotGrid storyId={storyId} plots={plots} />
-          </>
+          <PlotGrid storyId={storyId} plots={plots} />
         ) : (
           <ListView storyId={storyId} plots={plots} />
         )}
       </div>
       <CharacterModal />
+      <StoryFilterTextModal
+        isOpen={isCustomTextOpen}
+        onClose={() => setIsCustomTextOpen(false)}
+        onSubmit={(value) => {
+          addFilter({ type: "search", value1: value });
+          setIsCustomTextOpen(false);
+        }}
+      />
     </main>
   );
 }

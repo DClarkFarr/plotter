@@ -6,9 +6,15 @@ export type StoryCardDisplay = "grid" | "list";
 
 export type ListViewDisplayMode = "normal" | "filterExcluded";
 
-export interface StoryFilters {
-  tagIds: string[];
+export type StoryFilterType = "tag" | "plot" | "character" | "search";
+
+export interface StoryFilter {
+  type: StoryFilterType;
+  value1: string;
+  value2?: string;
 }
+
+export type StoryFilters = StoryFilter[];
 
 export interface StoryState {
   filters: StoryFilters;
@@ -17,6 +23,11 @@ export interface StoryState {
   story: Story | null;
   setStory: (story: Story | null) => void;
   setFilters: (filters: StoryFilters) => void;
+  addFilter: (filter: StoryFilter) => void;
+  removeFilter: (filter: StoryFilter) => void;
+  clearFilters: () => void;
+  hasFilters: () => boolean;
+  filtersByType: (type: StoryFilterType) => StoryFilter[];
   setCardSize: (size: StoryCardSize) => void;
   setCardDisplay: (display: StoryCardDisplay) => void;
   resetStoryView: () => void;

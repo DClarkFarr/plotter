@@ -6,6 +6,7 @@ import {
   useStoryCharactersQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
+import { StoryFiltersBar } from "./StoryFiltersBar";
 
 export type ListViewProps = {
   storyId: string;
@@ -27,17 +28,25 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
   }
 
   return (
-    <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
-      {orderedScenes.map(({ scene, plot }) => (
-        <ListViewScene
-          key={scene.id}
-          scene={scene}
-          plot={plot}
-          tags={tags}
-          characters={characters}
-          displayMode={displayMode}
-        />
-      ))}
+    <div
+      className="y-scroller overflow-y-auto h-[var(--grid-height)]"
+      style={{ "--grid-height": `calc(100vh - 61px)` }}
+    >
+      <div className="sticky top-0 z-155 mx-auto max-w-[1000px]">
+        <StoryFiltersBar />
+      </div>
+      <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
+        {orderedScenes.map(({ scene, plot }) => (
+          <ListViewScene
+            key={scene.id}
+            scene={scene}
+            plot={plot}
+            tags={tags}
+            characters={characters}
+            displayMode={displayMode}
+          />
+        ))}
+      </div>
     </div>
   );
 };
