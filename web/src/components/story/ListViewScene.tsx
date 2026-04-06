@@ -1,12 +1,16 @@
 import type { Character, Plot, Scene, Tag } from "../../api/types";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
+import IconEyeMinus from "~icons/mdi/eye-minus";
 import { SceneTags } from "./SceneTags";
 import { CharacterDisplay } from "../character/CharacterDisplay";
 import { findCharacterById } from "../../utils/characterLookup";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { ListViewTodoList } from "./ListViewTodoList";
-import type { ListViewDisplayMode } from "../../store/storyStore.types";
+import type {
+  FilterVisibilityMode,
+  ListViewDisplayMode,
+} from "../../store/storyStore.types";
 
 export type ListViewSceneProps = {
   scene: Scene;
@@ -14,6 +18,8 @@ export type ListViewSceneProps = {
   tags: Tag[];
   characters: Character[];
   displayMode: ListViewDisplayMode;
+  filterVisibilityMode: FilterVisibilityMode;
+  isFilterExcluded: boolean;
 };
 
 export const ListViewScene = ({
@@ -22,6 +28,8 @@ export const ListViewScene = ({
   tags,
   characters,
   displayMode,
+  filterVisibilityMode,
+  isFilterExcluded,
 }: ListViewSceneProps) => {
   const selectScene = useSceneEditorStore((state) => state.selectScene);
   const openSidebar = useSidebarStore((state) => state.openSidebar);
@@ -38,6 +46,34 @@ export const ListViewScene = ({
   const description = scene.description?.trim() || "";
   const showFull = displayMode === "normal";
   const snippets = scene.snippets ?? [];
+
+  if (isFilterExcluded) {
+    if (filterVisibilityMode === "hide") {
+      return (
+        <div className="py-4 border-b border-slate-200 last:border-0">
+          <div className="flex items-center gap-3 text-slate-400">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs uppercase tracking-[0.2em]">
+              Filter hidden
+            </span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="py-4 border-b border-slate-200 last:border-0">
+        <div className="flex items-center gap-2 text-slate-600">
+          <IconEyeMinus className="text-sm" />
+          <p className="text-sm font-semibold truncate">{title}</p>
+          <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Filtered out
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <article className="p-5 border-b border-slate-200 pb-10 mb-5 last:border-0 last:mb-0">

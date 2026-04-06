@@ -12,6 +12,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   filters: defaultFilters,
   cardSize: "md",
   cardDisplay: "grid",
+  filterVisibilityMode: "hide",
   story: null,
   setStory: (story) => set({ story }),
   setFilters: (filters) => set({ filters }),
@@ -61,6 +62,13 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     get().filters.filter((filter) => filter.type === type),
   setCardSize: (cardSize) => set({ cardSize }),
   setCardDisplay: (cardDisplay) => set({ cardDisplay }),
+  setFilterVisibilityMode: (filterVisibilityMode) =>
+    set({ filterVisibilityMode }),
   resetStoryView: () =>
-    set({ filters: defaultFilters, cardSize: "md", cardDisplay: "grid" }),
+    set({
+      filters: defaultFilters,
+      cardSize: "md",
+      cardDisplay: "grid",
+      filterVisibilityMode: "hide",
+    }),
 }));

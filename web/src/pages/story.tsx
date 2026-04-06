@@ -14,6 +14,8 @@ import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
 import IconAccountGroup from "~icons/mdi/account-group";
 import IconTag from "~icons/mdi/tag";
+import IconEyeRemove from "~icons/mdi/eye-remove";
+import IconEyeMinus from "~icons/mdi/eye-minus";
 import { Tooltip } from "flowbite-react";
 import {
   useStoryCharactersQuery,
@@ -32,8 +34,14 @@ export function StoryPage() {
   const tagsQuery = useStoryTagsQuery(storyId);
   const plotsQuery = useStoryPlotsQuery(storyId);
   const charactersQuery = useStoryCharactersQuery(storyId);
-  const { cardDisplay, cardSize, setCardDisplay, setCardSize } =
-    useStoryStore();
+  const {
+    cardDisplay,
+    cardSize,
+    filterVisibilityMode,
+    setCardDisplay,
+    setCardSize,
+    setFilterVisibilityMode,
+  } = useStoryStore();
   const addFilter = useStoryStore((state) => state.addFilter);
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);
   const openSidebar = useSidebarStore((state) => state.openSidebar);
@@ -139,12 +147,38 @@ export function StoryPage() {
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Filters
             </span>
-            <StoryFiltersMenu
-              tags={tags}
-              plots={plots}
-              characters={characters}
-              onOpenCustomText={() => setIsCustomTextOpen(true)}
-            />
+            <div className="button-group">
+              <StoryFiltersMenu
+                tags={tags}
+                plots={plots}
+                characters={characters}
+                onOpenCustomText={() => setIsCustomTextOpen(true)}
+              />
+              <Tooltip
+                content={
+                  filterVisibilityMode === "hide"
+                    ? "Hide filtered scenes"
+                    : "Minify filtered scenes"
+                }
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFilterVisibilityMode(
+                      filterVisibilityMode === "hide" ? "minify" : "hide",
+                    )
+                  }
+                  className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
+                  aria-label="Toggle filtered scene visibility"
+                >
+                  {filterVisibilityMode === "hide" ? (
+                    <IconEyeRemove className="text-base text-slate-600" />
+                  ) : (
+                    <IconEyeMinus className="text-base text-slate-600" />
+                  )}
+                </button>
+              </Tooltip>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

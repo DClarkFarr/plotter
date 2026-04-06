@@ -8,6 +8,8 @@ export type ListViewDisplayMode = "normal" | "filterExcluded";
 
 export type StoryFilterType = "tag" | "plot" | "character" | "search";
 
+export type FilterVisibilityMode = "hide" | "minify";
+
 export interface StoryFilter {
   type: StoryFilterType;
   value1: string;
@@ -20,6 +22,7 @@ export interface StoryState {
   filters: StoryFilters;
   cardSize: StoryCardSize;
   cardDisplay: StoryCardDisplay;
+  filterVisibilityMode: FilterVisibilityMode;
   story: Story | null;
   setStory: (story: Story | null) => void;
   setFilters: (filters: StoryFilters) => void;
@@ -30,5 +33,6 @@ export interface StoryState {
   filtersByType: (type: StoryFilterType) => StoryFilter[];
   setCardSize: (size: StoryCardSize) => void;
   setCardDisplay: (display: StoryCardDisplay) => void;
+  setFilterVisibilityMode: (mode: FilterVisibilityMode) => void;
   resetStoryView: () => void;
 }

@@ -1,4 +1,4 @@
-import { TextInput } from "flowbite-react";
+import { TextInput, Tooltip } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Character, Plot, Tag } from "../../api/types";
 import { useStoryStore } from "../../store/storyStore";
@@ -131,13 +131,15 @@ export const StoryFiltersMenu = ({
 
   return (
     <div className="relative" ref={containerRef}>
-      <button
-        type="button"
-        className="rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600 flex items-center gap-2"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <IconFilter className="text-base text-slate-600" />
-      </button>
+      <Tooltip content="Filter Scenes" className="whitespace-nowrap">
+        <button
+          type="button"
+          className="rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600 flex items-center gap-2"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          <IconFilter className="text-base text-slate-600" />
+        </button>
+      </Tooltip>
 
       {isOpen ? (
         <div className="absolute z-200 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">

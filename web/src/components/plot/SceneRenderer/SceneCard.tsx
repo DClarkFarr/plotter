@@ -15,16 +15,25 @@ import {
 import { SceneTags } from "../../story/SceneTags";
 import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
+import IconEyeRemove from "~icons/mdi/eye-remove";
+import IconEyeMinus from "~icons/mdi/eye-minus";
 import { memo } from "react";
 import { useDraggable } from "@dnd-kit/react";
 
 export const SceneCard = memo(
-  ({ plot, scene, plotIndex, sceneIndex }: SceneRendererProps) => {
+  ({
+    plot,
+    scene,
+    plotIndex,
+    sceneIndex,
+    isFilterExcluded,
+  }: SceneRendererProps) => {
     const theme = usePlotTheme(plot.color);
     const selectScene = useSceneEditorStore((s) => s.selectScene);
     const openSidebar = useSidebarStore((s) => s.openSidebar);
     const addSidebarView = useSidebarStore((s) => s.addSidebarView);
     const cardSize = useStoryStore((s) => s.cardSize);
+    const filterVisibilityMode = useStoryStore((s) => s.filterVisibilityMode);
     const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
 
     const { data } = useStoryTagsQuery(plot.storyId);
@@ -77,6 +86,38 @@ export const SceneCard = memo(
     const handleEdit = () => {
       handleSelect();
     };
+
+    if (isFilterExcluded) {
+      if (filterVisibilityMode === "hide") {
+        return (
+          <div
+            ref={containerRef}
+            style={themeStyles}
+            data-r={sceneIndex}
+            data-c={plotIndex}
+            className="card card--scene flex items-center gap-2 w-[var(--column-width)] border border-[var(--plot-color-soft)] bg-white/70 text-slate-500 px-3 py-1 min-h-[36px]"
+          >
+            <IconEyeRemove className="text-sm" />
+            <span className="text-xs uppercase tracking-[0.2em]">Hidden</span>
+          </div>
+        );
+      }
+
+      return (
+        <div
+          ref={containerRef}
+          style={themeStyles}
+          data-r={sceneIndex}
+          data-c={plotIndex}
+          className="card card--scene flex items-center gap-2 w-[var(--column-width)] border border-[var(--plot-color-soft)] bg-white/70 text-slate-600 px-3 py-2 min-h-[48px]"
+        >
+          <IconEyeMinus className="text-sm" />
+          <span className="text-sm font-semibold truncate">
+            {scene.title?.trim() || "Untitled scene"}
+          </span>
+        </div>
+      );
+    }
 
     return (
       <div

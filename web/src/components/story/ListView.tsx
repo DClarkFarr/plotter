@@ -1,12 +1,15 @@
+import { useMemo } from "react";
 import type { Plot } from "../../api/types";
 import { orderScenesForListView } from "../../utils/listViewOrdering";
 import { ListViewScene } from "./ListViewScene";
+import { useStoryStore } from "../../store/storyStore";
 import type { ListViewDisplayMode } from "../../store/storyStore.types";
 import {
   useStoryCharactersQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
 import { StoryFiltersBar } from "./StoryFiltersBar";
+import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
 
 export type ListViewProps = {
   storyId: string;
@@ -16,6 +19,23 @@ export type ListViewProps = {
 export const ListView = ({ storyId, plots }: ListViewProps) => {
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
+  const filters = useStoryStore((state) => state.filters);
+  const hasFilters = useStoryStore((state) => state.hasFilters());
+  const filterVisibilityMode = useStoryStore(
+    (state) => state.filterVisibilityMode,
+  );
+  const { includedSceneIds } = useMemo(
+    () => applyFiltersToPlots(plots, filters, { tags, characters }),
+    [plots, filters, tags, characters],
+  );
+  const filteredSceneCount = useMemo(
+    () => plots.reduce((sum, plot) => sum + plot.scenes.length, 0),
+    [plots],
+  );
+  const includedSceneIdSet = useMemo(
+    () => new Set(includedSceneIds),
+    [includedSceneIds],
+  );
   const orderedScenes = orderScenesForListView(plots);
   const displayMode: ListViewDisplayMode = "normal";
 
@@ -33,8 +53,13 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
       style={{ "--grid-height": `calc(100vh - 61px)` }}
     >
       <div className="sticky top-0 z-155 mx-auto max-w-[1000px]">
-        <StoryFiltersBar />
+        <StoryFiltersBar plots={plots} tags={tags} characters={characters} />
       </div>
+      {hasFilters && filteredSceneCount === 0 ? (
+        <div className="mx-auto max-w-[1000px] px-6 py-3 text-sm text-slate-500">
+          No scenes found with current filters.
+        </div>
+      ) : null}
       <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
         {orderedScenes.map(({ scene, plot }) => (
           <ListViewScene
@@ -44,6 +69,8 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
             tags={tags}
             characters={characters}
             displayMode={displayMode}
+            filterVisibilityMode={filterVisibilityMode}
+            isFilterExcluded={hasFilters && !includedSceneIdSet.has(scene.id)}
           />
         ))}
       </div>

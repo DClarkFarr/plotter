@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { useStoryStore } from "../../store/storyStore";
 import type { StoryFilter } from "../../store/storyStore.types";
 import IconClose from "~icons/mdi/close";
+import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
+import type { Character, Plot, Tag } from "../../api/types";
 
 const formatFilterType = (type: StoryFilter["type"]) => {
   switch (type) {
@@ -27,11 +30,30 @@ const formatFilterValue = (filter: StoryFilter) => {
   return filter.value1;
 };
 
-export const StoryFiltersBar = () => {
+export type StoryFiltersBarProps = {
+  plots: Plot[];
+  tags: Tag[];
+  characters: Character[];
+};
+export const StoryFiltersBar = ({
+  plots,
+  tags,
+  characters,
+}: StoryFiltersBarProps) => {
   const filters = useStoryStore((state) => state.filters);
   const removeFilter = useStoryStore((state) => state.removeFilter);
   const clearFilters = useStoryStore((state) => state.clearFilters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
+
+  const { includedSceneIds } = useMemo(
+    () => applyFiltersToPlots(plots, filters, { tags, characters }),
+    [plots, filters, tags, characters],
+  );
+
+  const filteredSceneCount = useMemo(
+    () => plots.reduce((sum, plot) => sum + plot.scenes.length, 0),
+    [plots],
+  );
 
   if (!hasFilters) {
     return null;
@@ -64,6 +86,9 @@ export const StoryFiltersBar = () => {
               </button>
             </div>
           ))}
+        </div>
+        <div className="text-slate-500">
+          Showing {includedSceneIds.length} of {filteredSceneCount} scenes
         </div>
         <div className="ml-auto">
           <button

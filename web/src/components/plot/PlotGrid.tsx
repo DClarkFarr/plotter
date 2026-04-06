@@ -20,6 +20,11 @@ import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
 import type { Coordinates } from "@dnd-kit/utilities";
 import { StoryFiltersBar } from "../story/StoryFiltersBar";
 import { useStoryStore } from "../../store/storyStore";
+import {
+  useStoryCharactersQuery,
+  useStoryTagsQuery,
+} from "../../queries/story/story-queries";
+import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
 
 export type PlotGridProps = {
   storyId: string;
@@ -221,7 +226,23 @@ const PlotGridBody = ({
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
+  const filters = useStoryStore((state) => state.filters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
+  const { data: tags = [] } = useStoryTagsQuery(storyId);
+  const { data: characters = [] } = useStoryCharactersQuery(storyId);
+
+  const { /* plotsFiltered, */ includedSceneIds } = useMemo(
+    () => applyFiltersToPlots(plots, filters, { tags, characters }),
+    [plots, filters, tags, characters],
+  );
+  // const filteredSceneCount = useMemo(
+  //   () => plotsFiltered.reduce((sum, plot) => sum + plot.scenes.length, 0),
+  //   [plotsFiltered],
+  // );
+  const includedSceneIdSet = useMemo(
+    () => new Set(includedSceneIds),
+    [includedSceneIds],
+  );
 
   const gridCols = getGridCols(plots);
   const gridRows = getGridRows(plots);
@@ -292,9 +313,10 @@ const PlotGridBody = ({
     >
       {hasFilters && (
         <div className="sticky top-0 z-155 pl-[140px] pr-6 py-2">
-          <StoryFiltersBar />
+          <StoryFiltersBar plots={plots} tags={tags} characters={characters} />
         </div>
       )}
+
       <div className="x-scroller h-full overflow-x-auto">
         <div
           className={`grid story-grid p-6 ${hasFilters && "pt-0"}  plot-grid gap-x-4 gap-y-2 bg-gray-100`}
@@ -382,6 +404,10 @@ const PlotGridBody = ({
                     const scene = scenesByColIndex
                       .get(plot?.id || "")
                       ?.get(getCellRowIndex(r));
+                    const isFilterExcluded =
+                      hasFilters &&
+                      !!scene &&
+                      !includedSceneIdSet.has(scene.id);
                     return (
                       <RenderSceneCard
                         key={`scene-${scene!.id}`}
@@ -389,6 +415,7 @@ const PlotGridBody = ({
                         plotIndex={getCellColIndex(c)}
                         scene={scene!}
                         plot={plot!}
+                        isFilterExcluded={isFilterExcluded}
                       />
                     );
                   } else if (cell.type === "plot") {

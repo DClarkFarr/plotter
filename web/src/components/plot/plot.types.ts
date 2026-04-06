@@ -8,6 +8,7 @@ export type BaseSceneRendererProps = {
 export type SceneRendererProps = BaseSceneRendererProps & {
   scene: Scene;
   plot: Plot;
+  isFilterExcluded?: boolean;
 };
 export type EmptyRendererProps = Omit<BaseSceneRendererProps, "plot"> & {
   storyId: string;
