@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateStory, type UpdateStoryInput } from "../../api/stories";
+import {
+  importStoryOutline,
+  updateStory,
+  type UpdateStoryInput,
+} from "../../api/stories";
+import type { ImportOutlineInput } from "../../api/types";
 import type { Story } from "../../api/types";
 import { useStoryQuery } from "./story-queries";
 
@@ -38,5 +43,11 @@ export function useUpdateStoryMutation(storyId: string) {
       });
       queryClient.invalidateQueries({ queryKey: ["stories"] });
     },
+  });
+}
+
+export function useImportOutlineMutation() {
+  return useMutation({
+    mutationFn: (input: ImportOutlineInput) => importStoryOutline(input),
   });
 }

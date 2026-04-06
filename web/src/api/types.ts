@@ -99,6 +99,13 @@ export interface ImportCharactersInput {
   characterIds: string[];
 }
 
+export type ImportOutlineMode = "preview" | "create";
+
+export interface ImportOutlineInput {
+  mode: ImportOutlineMode;
+  file: File;
+}
+
 export interface CreateTagInput {
   name: string;
   color: string;
@@ -226,6 +233,13 @@ export interface ImportTagsResponse {
 export interface ImportCharactersResponse {
   createdCharacters: Character[];
   skippedCharacterIds: string[];
+}
+
+export interface ImportOutlineResponse {
+  mode: ImportOutlineMode;
+  summary: string;
+  message?: string | null;
+  storyId?: string | null;
 }
 
 export interface CharactersResponse {

@@ -2,18 +2,26 @@ import { Button } from "flowbite-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
+import { ImportOutlineModal } from "../components/dashboard/ImportOutlineModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
 import { useCreateStoryMutation, useStoriesQuery } from "../hooks/useStories";
 import { useDashboardStore } from "../store/dashboardStore";
 import IconPlus from "~icons/mdi/plus";
+import IconImport from "~icons/mdi/file-upload-outline";
 import type { Story } from "../api/types";
 
 export function DashboardPage() {
   const { data = [], isLoading, isError } = useStoriesQuery();
   const navigate = useNavigate();
   const createStoryMutation = useCreateStoryMutation();
-  const { isCreateStoryOpen, openCreateStory, closeCreateStory } =
-    useDashboardStore();
+  const {
+    isCreateStoryOpen,
+    isImportOutlineOpen,
+    openCreateStory,
+    closeCreateStory,
+    openImportOutline,
+    closeImportOutline,
+  } = useDashboardStore();
 
   const errorMessage = useMemo(() => {
     const error = createStoryMutation.error;
@@ -62,9 +70,14 @@ export function DashboardPage() {
             Dashboard
           </h1>
         </div>
-        <Button color="dark" type="button" onClick={openCreateStory}>
-          <IconPlus className="mr-2" /> Story
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button color="light" type="button" onClick={openImportOutline}>
+            <IconImport className="mr-2" /> Import
+          </Button>
+          <Button color="dark" type="button" onClick={openCreateStory}>
+            <IconPlus className="mr-2" /> Story
+          </Button>
+        </div>
       </header>
       <StoryGrid
         stories={data}
@@ -78,6 +91,10 @@ export function DashboardPage() {
         errorMessage={errorMessage}
         onClose={handleCloseModal}
         onCreate={handleCreateStory}
+      />
+      <ImportOutlineModal
+        isOpen={isImportOutlineOpen}
+        onClose={closeImportOutline}
       />
     </main>
   );

@@ -11,6 +11,8 @@ import {
   type ImportCharactersResponse,
   type ImportTagsInput,
   type ImportTagsResponse,
+  type ImportOutlineInput,
+  type ImportOutlineResponse,
   type UpdateTagInput,
   type CreatePlotInput,
   type Plot,
@@ -107,6 +109,28 @@ export async function importStoryCharacters(
       `/stories/${input.toStoryId}/characters/import`,
       input,
     );
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function importStoryOutline(
+  input: ImportOutlineInput,
+): Promise<ImportOutlineResponse> {
+  try {
+    const formData = new FormData();
+    formData.append("file", input.file);
+    formData.append("mode", input.mode);
+
+    const { data } = await apiClient.post<ImportOutlineResponse>(
+      "/imports/outline",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+
     return data;
   } catch (err) {
     throw toApiError(err);
