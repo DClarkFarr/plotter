@@ -10,7 +10,8 @@ import { ListViewTodoList } from "./ListViewTodoList";
 import type { FilterVisibilityMode } from "../../store/storyStore.types";
 import { usePlotTheme } from "../../hooks/usePlotTheme";
 import { useStoryStore } from "../../store/storyStore";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "flowbite-react";
 
 export type ListViewSceneProps = {
   scene: Scene;
@@ -48,6 +49,7 @@ export const ListViewScene = ({
   const title = scene.title?.trim() || "Untitled scene";
   const description = scene.description?.trim() || "";
   const snippets = scene.snippets ?? [];
+  const snippetDefaultOpenState = cardSize === "lg";
 
   if (isFilterExcluded) {
     if (filterVisibilityMode === "hide") {
@@ -135,29 +137,75 @@ export const ListViewScene = ({
           {cardSize !== "sm" && snippets.length > 0 && (
             <div className="mt-4 flex flex-col gap-3 mx-6">
               {snippets.map((snippet, index) => (
-                <div key={`snippet-${index}`} className="rounded-lg px-4 py-3">
-                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    Snippet:{" "}
-                    <b className="text-slate-600">
-                      {snippet.label?.trim() || "Unnamed"}
-                    </b>
-                  </div>
-                  {snippet.text?.trim() ? (
-                    <div
-                      className="tiptap text-sm text-slate-700 leading-6 font-mono mt-2"
-                      dangerouslySetInnerHTML={{ __html: snippet.text }}
-                    />
-                  ) : (
-                    <p className="text-sm italic text-slate-500 font-mono mt-2">
-                      No snippet text yet.
-                    </p>
-                  )}
-                </div>
+                <SnippetCard
+                  key={`snippet-${index}`}
+                  label={snippet.label}
+                  text={snippet.text}
+                  defaultOpenState={snippetDefaultOpenState}
+                  index={index}
+                />
               ))}
             </div>
           )}
         </div>
       </div>
     </article>
+  );
+};
+
+type SnippetCardProps = {
+  label?: string | null;
+  text?: string | null;
+  defaultOpenState: boolean;
+  index: number;
+};
+
+const SnippetCard = ({
+  label,
+  text,
+  defaultOpenState,
+  index,
+}: SnippetCardProps) => {
+  const [isOpen, setIsOpen] = useState(defaultOpenState);
+
+  useEffect(() => {
+    setIsOpen(defaultOpenState);
+  }, [defaultOpenState]);
+
+  const title = label?.trim() || "Unnamed";
+  const hasText = Boolean(text?.trim());
+
+  return (
+    <div className="rounded-lg px-4 py-3">
+      <div className="flex items-center justify-between gap-4">
+        <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          Snippet: <b className="text-slate-600">{title}</b>
+        </div>
+        <Button
+          color="alternative"
+          type="button"
+          size="sm"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          {isOpen ? "Hide" : "Show"}
+        </Button>
+      </div>
+      {isOpen ? (
+        hasText ? (
+          <div
+            id={`snippet-body-${index}`}
+            className="tiptap text-sm text-slate-700 leading-6 font-mono mt-2"
+            dangerouslySetInnerHTML={{ __html: text ?? "" }}
+          />
+        ) : (
+          <p
+            id={`snippet-body-${index}`}
+            className="text-sm italic text-slate-500 font-mono mt-2"
+          >
+            No snippet text yet.
+          </p>
+        )
+      ) : null}
+    </div>
   );
 };

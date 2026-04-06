@@ -109,7 +109,7 @@ export const applyFiltersToPlots = (
       return true;
     }
 
-    return searchFilters.every((filter) => {
+    return searchFilters.some((filter) => {
       const query = normalized(filter.value1);
       const title = normalized(scene.title ?? "");
       const description = normalized(scene.description ?? "");
