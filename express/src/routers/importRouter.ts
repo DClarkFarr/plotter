@@ -77,6 +77,14 @@ importRouter.post(
       storyName,
     });
 
+    if (
+      result.mode === "create" &&
+      result.issues?.some((issue) => issue.level === "error")
+    ) {
+      res.status(422).json(result);
+      return;
+    }
+
     const status = result.mode === "preview" ? 200 : 201;
     res.status(status).json(result);
   }),

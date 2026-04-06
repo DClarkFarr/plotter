@@ -41,6 +41,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-06
 - N/A (frontend rendering of existing story data) (025-filter-visibility-modes)
 - TypeScript 5.9.3 (Node.js + React 19.2.4) + Express 5.2.1, MongoDB 6.16, multer 1.4.5, React 19.2, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS, axios 1.13 (026-import-outline)
 - MongoDB; local filesystem for uploaded assets in `uploads/` (no persistence needed for preview yet) (026-import-outline)
+- TypeScript (Node.js + React) + Express, MongoDB driver, multer, officeparser, React, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS (027-docx-ast-conversion)
+- MongoDB; in-memory file parsing for docx uploads (027-docx-ast-conversion)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -60,9 +62,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 027-docx-ast-conversion: Added TypeScript (Node.js + React) + Express, MongoDB driver, multer, officeparser, React, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS
 - 026-import-outline: Added TypeScript 5.9.3 (Node.js + React 19.2.4) + Express 5.2.1, MongoDB 6.16, multer 1.4.5, React 19.2, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS, axios 1.13
 - 025-filter-visibility-modes: Added TypeScript (web) + React, Vite, Zustand, TanStack Router, TanStack Query, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
-- 024-story-filters: Added TypeScript (React 19 + Express 5) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 
 
 <!-- MANUAL ADDITIONS START -->
