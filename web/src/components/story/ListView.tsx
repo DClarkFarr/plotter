@@ -36,7 +36,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     () => new Set(includedSceneIds),
     [includedSceneIds],
   );
-  const orderedScenes = orderScenesForListView(plots);
+  const orderedScenes = useMemo(() => orderScenesForListView(plots), [plots]);
   const displayMode: ListViewDisplayMode = "normal";
 
   if (orderedScenes.length === 0) {
