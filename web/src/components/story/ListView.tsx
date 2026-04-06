@@ -28,10 +28,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     () => applyFiltersToPlots(plots, filters, { tags, characters }),
     [plots, filters, tags, characters],
   );
-  const filteredSceneCount = useMemo(
-    () => plots.reduce((sum, plot) => sum + plot.scenes.length, 0),
-    [plots],
-  );
+
   const includedSceneIdSet = useMemo(
     () => new Set(includedSceneIds),
     [includedSceneIds],
@@ -55,11 +52,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
       <div className="sticky top-0 z-155 mx-auto max-w-[1000px]">
         <StoryFiltersBar plots={plots} tags={tags} characters={characters} />
       </div>
-      {hasFilters && filteredSceneCount === 0 ? (
-        <div className="mx-auto max-w-[1000px] px-6 py-3 text-sm text-slate-500">
-          No scenes found with current filters.
-        </div>
-      ) : null}
+
       <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
         {orderedScenes.map(({ scene, plot }) => (
           <ListViewScene
