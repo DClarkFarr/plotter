@@ -90,7 +90,10 @@ export const ListViewScene = ({
               {snippets.map((snippet, index) => (
                 <div key={`snippet-${index}`} className="rounded-lg px-4 py-3">
                   <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    Snippet: <b>{snippet.label?.trim() || "Unnamed"}</b>
+                    Snippet:{" "}
+                    <b className="text-slate-600">
+                      {snippet.label?.trim() || "Unnamed"}
+                    </b>
                   </div>
                   {snippet.text?.trim() ? (
                     <div
