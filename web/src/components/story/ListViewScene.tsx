@@ -81,9 +81,9 @@ export const ListViewScene = ({
   }
 
   return (
-    <article className="list-view-scene group border-b border-slate-200">
+    <article className="list-view-scene group border-b border-slate-200 group-last:border-0">
       <div
-        className="p-6 group-last:border-0 last:mb-0 border-l-4 border-l-[var(--plot-color)]"
+        className="p-6 last:mb-0 border-l-4 border-l-[var(--plot-color)]"
         style={{ "--plot-color": theme.baseColor }}
       >
         <div className="flex items-center gap-2">
