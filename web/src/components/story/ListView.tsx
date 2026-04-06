@@ -53,7 +53,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
         <StoryFiltersBar plots={plots} tags={tags} characters={characters} />
       </div>
 
-      <div className="flex my-6 flex-col p-6 mx-auto max-w-[1000px] bg-white shadow-sm">
+      <div className="flex my-6 flex-col mx-auto max-w-[1000px] bg-white shadow-sm">
         {orderedScenes.map(({ scene, plot }) => (
           <ListViewScene
             key={scene.id}
