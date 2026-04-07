@@ -94,7 +94,12 @@ const renderInlineNode = (node: OfficeContentNode): string => {
 };
 
 const listContainerTypes = new Set(["list"]);
-const listItemTypes = new Set(["listItem", "list-item", "list_item", "listitem"]);
+const listItemTypes = new Set([
+  "listItem",
+  "list-item",
+  "list_item",
+  "listitem",
+]);
 
 const isListContainerNode = (node: OfficeContentNode): boolean =>
   listContainerTypes.has(node.type);
