@@ -45,6 +45,33 @@ const getParagraphIndentTwips = (node: OfficeContentNode): number => {
   return Number.isFinite(value) ? value : 0;
 };
 
+const listNodeTypes = new Set([
+  "list",
+  "listItem",
+  "list-item",
+  "list_item",
+  "listitem",
+]);
+
+const isListNode = (node: OfficeContentNode): boolean =>
+  listNodeTypes.has(node.type);
+
+const getNodeIndentTwips = (node: OfficeContentNode): number => {
+  const directIndent = getParagraphIndentTwips(node);
+  if (directIndent > 0) {
+    return directIndent;
+  }
+
+  if (!node.children || node.children.length === 0) {
+    return 0;
+  }
+
+  return Math.max(
+    ...node.children.map((child) => getNodeIndentTwips(child)),
+    0,
+  );
+};
+
 const createEmptyResult = (): ImportParseResult => ({
   elements: [],
   tags: [],
@@ -277,7 +304,13 @@ export const parseImportOutlineDocx = async (
       continue;
     }
 
-    if (node.type !== "paragraph") {
+    if (node.type !== "paragraph" && !isListNode(node)) {
+      addIssue(
+        result.issues,
+        "warning",
+        `Unsupported content type "${node.type}" will be ignored.`,
+        node.text,
+      );
       continue;
     }
 
@@ -287,7 +320,7 @@ export const parseImportOutlineDocx = async (
     }
 
     if (currentScene) {
-      const indentTwips = getParagraphIndentTwips(node);
+      const indentTwips = getNodeIndentTwips(node);
       const isSnippet = indentTwips >= snippetIndentThresholdTwips;
 
       if (isSnippet) {
