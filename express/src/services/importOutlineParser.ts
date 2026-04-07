@@ -130,6 +130,10 @@ const parseSceneHeading = (node: OfficeContentNode): ParsedHeading => {
   };
 };
 
+const ACT_HEADING_SIZE = 2;
+const CHAPTER_HEADING_SIZE = 3;
+const SCENE_HEADING_SIZE = 4;
+
 export const parseImportOutlineDocx = async (
   fileBuffer: Buffer,
 ): Promise<ImportParseResult> => {
@@ -163,7 +167,7 @@ export const parseImportOutlineDocx = async (
   for (const node of ast.content) {
     const headingLevel = getHeadingLevel(node);
 
-    if (headingLevel === 1) {
+    if (headingLevel === ACT_HEADING_SIZE) {
       actIndex += 1;
       const act: ActElement = {
         id: `act_${actIndex}`,
@@ -179,7 +183,7 @@ export const parseImportOutlineDocx = async (
       continue;
     }
 
-    if (headingLevel === 2) {
+    if (headingLevel === CHAPTER_HEADING_SIZE) {
       chapterIndex += 1;
       if (!currentAct) {
         addIssue(
@@ -202,7 +206,7 @@ export const parseImportOutlineDocx = async (
       continue;
     }
 
-    if (headingLevel === 4) {
+    if (headingLevel === SCENE_HEADING_SIZE) {
       sceneIndex += 1;
       const parsedHeading = parseSceneHeading(node);
       const sceneTitle = parsedHeading.title || `Scene ${sceneIndex}`;
@@ -254,14 +258,7 @@ export const parseImportOutlineDocx = async (
         result.tags.push(tag);
         sceneTagIds.push(tag.id);
       }
-      if (!currentChapter) {
-        addIssue(
-          result.issues,
-          "error",
-          "Scene appears before any chapter heading.",
-          getHeadingText(node),
-        );
-      }
+
       const scene: SceneElement = {
         id: `scene_${sceneIndex}`,
         type: "scene",
