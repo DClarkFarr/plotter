@@ -24,7 +24,7 @@ List sections for a story.
 
 ## POST /stories/:storyId/sections
 
-Create a section for a story. If the target vertical index is occupied by any scene in the grid, shift scenes (all plots) and sections upward from that index.
+Create a section for a story.
 
 **Request**
 
@@ -46,29 +46,13 @@ Create a section for a story. If the target vertical index is occupied by any sc
     "title": "string",
     "verticalIndex": 0,
     "type": "act"
-  },
-  "scenes": [
-    {
-      "id": "string",
-      "plotId": "string",
-      "verticalIndex": 1
-    }
-  ],
-  "sections": [
-    {
-      "id": "string",
-      "storyId": "string",
-      "verticalIndex": 1
-    }
-  ]
+  }
 }
 ```
 
-`scenes` and `sections` are optional arrays of shifted resources (empty or omitted when no shift occurs).
-
 ## PATCH /stories/:storyId/sections/:sectionId
 
-Update a section. If `verticalIndex` changes to an occupied grid row, shift scenes (all plots) and sections upward from that index.
+Update a section.
 
 **Request**
 
@@ -90,21 +74,7 @@ Update a section. If `verticalIndex` changes to an occupied grid row, shift scen
     "title": "string",
     "verticalIndex": 2,
     "type": "section"
-  },
-  "scenes": [
-    {
-      "id": "string",
-      "plotId": "string",
-      "verticalIndex": 3
-    }
-  ],
-  "sections": [
-    {
-      "id": "string",
-      "storyId": "string",
-      "verticalIndex": 3
-    }
-  ]
+  }
 }
 ```
 

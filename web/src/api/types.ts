@@ -296,8 +296,6 @@ export interface SectionsResponse {
 
 export interface SectionResponse {
   section: Section;
-  scenes?: Scene[];
-  sections?: Section[];
 }
 
 export interface MessageResponse {
