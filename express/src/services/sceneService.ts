@@ -12,6 +12,11 @@ import {
   getSceneByVerticalIndex,
   shiftScenesUpwardFromIndex,
 } from "../models/scenes";
+import {
+  getSectionByVerticalIndex,
+  SectionDocument,
+  shiftSectionsUpwardFromIndex,
+} from "../models/sections";
 import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
@@ -296,16 +301,23 @@ export const moveSingleCardWithinPlot = async (
   const { /* fromIndex, */ toIndex } = input;
 
   // step 1: check if a shift is required.
-  const shouldShiftOnIndex = await sceneMoveRequiresShift(toPlotId, toIndex);
+  const shouldShiftOnIndex = await sceneMoveRequiresShift(
+    plot.storyId,
+    toPlotId,
+    toIndex,
+  );
 
   // step 2: shift scenes and return resources
   const scenesToUpdate: SceneDocument[] = [];
+  const sectionsToUpdate: SectionDocument[] = [];
   if (shouldShiftOnIndex) {
-    const { scenes: shiftedScenes } = await shiftGridUpwardOnIndex({
-      verticalIndex: toIndex,
-      storyId: plot.storyId,
-    });
+    const { scenes: shiftedScenes, sections: shiftedSections } =
+      await shiftGridUpwardOnIndex({
+        verticalIndex: toIndex,
+        storyId: plot.storyId,
+      });
     scenesToUpdate.push(...shiftedScenes);
+    sectionsToUpdate.push(...shiftedSections);
   }
 
   // step 3: move target scene to new index
@@ -321,24 +333,29 @@ export const moveSingleCardWithinPlot = async (
 
   return {
     scenes: scenesToUpdate,
+    sections: sectionsToUpdate,
   };
 };
 
 export const sceneMoveRequiresShift = async (
+  storyId: ObjectId,
   targetPlotId: ObjectId,
   targetVerticalIndex: number,
 ): Promise<boolean> => {
   // step 1: Check if there is anything on that index.
-  // Currently, only checking scenes. Add more resources here.
+  // Currently, checking scenes and sections.
 
   const existingScene = await getSceneByVerticalIndex(
     targetPlotId,
     targetVerticalIndex,
   );
+  const existingSection = await getSectionByVerticalIndex(
+    storyId,
+    targetVerticalIndex,
+  );
 
   // step 2: if any resources are found, return true
-  // Currently only checking existingScene scene
-  return Boolean(existingScene);
+  return Boolean(existingScene || existingSection);
 };
 
 export const shiftGridUpwardOnIndex = async ({
@@ -347,7 +364,7 @@ export const shiftGridUpwardOnIndex = async ({
 }: {
   verticalIndex: number;
   storyId: ObjectId;
-}): Promise<{ scenes: SceneDocument[] }> => {
+}): Promise<{ scenes: SceneDocument[]; sections: SectionDocument[] }> => {
   // step 1: collect necessary resources
   const plotsIds = await listPlotIdsByStoryId(storyId);
 
@@ -361,8 +378,11 @@ export const shiftGridUpwardOnIndex = async ({
     scenes.push(...shiftedScenes);
   }
 
-  // 3: return shifted resources. Currently only scenes.
+  const sections = await shiftSectionsUpwardFromIndex(storyId, verticalIndex);
+
+  // 3: return shifted resources.
   return {
     scenes,
+    sections,
   };
 };

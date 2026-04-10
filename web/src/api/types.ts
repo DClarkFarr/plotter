@@ -159,6 +159,16 @@ export interface SceneTagVariant {
   variant: string;
 }
 
+export type SectionType = "act" | "section";
+
+export interface Section {
+  id: string;
+  storyId: string;
+  title: string;
+  verticalIndex: number;
+  type: SectionType;
+}
+
 export interface Plot {
   id: string;
   title: string;
@@ -206,6 +216,18 @@ export interface UpdateSceneInput {
   snippets?: SceneSnippet[];
   verticalIndex?: number;
   pov?: string | null;
+}
+
+export interface CreateSectionInput {
+  title: string;
+  verticalIndex: number;
+  type: SectionType;
+}
+
+export interface UpdateSectionInput {
+  title?: string;
+  verticalIndex?: number;
+  type?: SectionType;
 }
 
 // ─── Response Envelopes ───────────────────────────────────────────────────────
@@ -266,6 +288,16 @@ export interface PlotResponse {
 
 export interface SceneResponse {
   scene: Scene;
+}
+
+export interface SectionsResponse {
+  sections: Section[];
+}
+
+export interface SectionResponse {
+  section: Section;
+  scenes?: Scene[];
+  sections?: Section[];
 }
 
 export interface MessageResponse {

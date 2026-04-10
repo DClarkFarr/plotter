@@ -23,6 +23,7 @@ import {
   useStoryQuery,
   useStoryTagsQuery,
 } from "../queries/story/story-queries";
+import { useStorySectionsQuery } from "../queries/section/section-queries";
 import { useSidebarStore } from "../store/sidebarStore";
 import { CharacterModal } from "../components/character/CharacterModal";
 
@@ -34,6 +35,7 @@ export function StoryPage() {
   const tagsQuery = useStoryTagsQuery(storyId);
   const plotsQuery = useStoryPlotsQuery(storyId);
   const charactersQuery = useStoryCharactersQuery(storyId);
+  const sectionsQuery = useStorySectionsQuery(storyId);
   const {
     cardDisplay,
     cardSize,
@@ -56,12 +58,14 @@ export function StoryPage() {
     storyQuery.isLoading ||
     tagsQuery.isLoading ||
     plotsQuery.isLoading ||
-    charactersQuery.isLoading;
+    charactersQuery.isLoading ||
+    sectionsQuery.isLoading;
   const error =
     storyQuery.error ||
     tagsQuery.error ||
     plotsQuery.error ||
-    charactersQuery.error;
+    charactersQuery.error ||
+    sectionsQuery.error;
 
   if (isLoading) {
     return (

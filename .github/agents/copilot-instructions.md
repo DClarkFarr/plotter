@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-06
+Auto-generated from all feature plans. Last updated: 2026-04-10
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -43,6 +43,7 @@ Auto-generated from all feature plans. Last updated: 2026-04-06
 - MongoDB; local filesystem for uploaded assets in `uploads/` (no persistence needed for preview yet) (026-import-outline)
 - TypeScript (Node.js + React) + Express, MongoDB driver, multer, officeparser, React, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS (027-docx-ast-conversion)
 - MongoDB; in-memory file parsing for docx uploads (027-docx-ast-conversion)
+- TypeScript 5.9.3, React 19.2.4 (web), Node.js + TypeScript (express) + Express 5.2.1, MongoDB 6.16.0, Vite 8.0.1, Tailwind CSS 4.2.2, Flowbite React 0.12.17, TanStack Router 1.168.1, TanStack Query 5.94.5, Zustand 5.0.12 (028-sections-collection)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -62,9 +63,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 028-sections-collection: Added TypeScript 5.9.3, React 19.2.4 (web), Node.js + TypeScript (express) + Express 5.2.1, MongoDB 6.16.0, Vite 8.0.1, Tailwind CSS 4.2.2, Flowbite React 0.12.17, TanStack Router 1.168.1, TanStack Query 5.94.5, Zustand 5.0.12
 - 027-docx-ast-conversion: Added TypeScript (Node.js + React) + Express, MongoDB driver, multer, officeparser, React, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS
 - 026-import-outline: Added TypeScript 5.9.3 (Node.js + React 19.2.4) + Express 5.2.1, MongoDB 6.16, multer 1.4.5, React 19.2, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS, axios 1.13
-- 025-filter-visibility-modes: Added TypeScript (web) + React, Vite, Zustand, TanStack Router, TanStack Query, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
 
 
 <!-- MANUAL ADDITIONS START -->

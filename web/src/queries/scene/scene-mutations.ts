@@ -7,6 +7,7 @@ import type {
   CreateSceneInput,
   Plot,
   Scene,
+  Section,
   UpdateSceneInput,
 } from "../../api/types";
 import {
@@ -17,6 +18,8 @@ import {
 } from "../../api/stories";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useStoryPlotsQuery } from "../story/story-queries";
+import { useStorySectionsQuery } from "../section/section-queries";
+import { shiftSectionsUpwardFromIndex } from "../section/section-helpers";
 import { shiftScenesForInsert, sortScenes } from "./scene-helpers";
 
 export function useCreateSceneMutation(storyId: string) {
@@ -277,6 +280,11 @@ const useMoveSingleWithinPlot = () => {
           useStoryPlotsQuery.queryKey(input.storyId),
         ) ?? [];
 
+      const previousSections =
+        queryClient.getQueryData<Section[]>(
+          useStorySectionsQuery.queryKey(input.storyId),
+        ) ?? [];
+
       const shouldShift = moveRequiresShift(
         queryClient,
         input.storyId,
@@ -287,9 +295,14 @@ const useMoveSingleWithinPlot = () => {
       if (shouldShift) {
         const shiftedResources = shiftGridUpwardOnIndex(
           previousPlots,
+          previousSections,
           input.toIndex,
         );
         previousPlots = shiftedResources.plots;
+        queryClient.setQueryData<Section[]>(
+          useStorySectionsQuery.queryKey(input.storyId),
+          shiftedResources.sections,
+        );
       }
 
       const foundScene = previousPlots
@@ -357,6 +370,7 @@ const useMoveSingleWithinPlot = () => {
       return {
         previous: {
           plots: previousPlots,
+          sections: previousSections,
         },
       };
     },
@@ -365,6 +379,10 @@ const useMoveSingleWithinPlot = () => {
         queryClient.setQueryData(
           useStoryPlotsQuery.queryKey(input.storyId),
           context.previous.plots,
+        );
+        queryClient.setQueryData(
+          useStorySectionsQuery.queryKey(input.storyId),
+          context.previous.sections,
         );
       }
     },
@@ -376,7 +394,11 @@ const useMoveSingleWithinPlot = () => {
   return { moveSingleCardWithinPlot: mutateAsync, isMutating: !isIdle };
 };
 
-function shiftGridUpwardOnIndex(plots: Plot[], targetVerticalIndex: number) {
+function shiftGridUpwardOnIndex(
+  plots: Plot[],
+  sections: Section[],
+  targetVerticalIndex: number,
+) {
   /**
    * Currently just updating plots
    */
@@ -398,6 +420,7 @@ function shiftGridUpwardOnIndex(plots: Plot[], targetVerticalIndex: number) {
         ),
       };
     }),
+    sections: shiftSectionsUpwardFromIndex(sections, targetVerticalIndex),
   };
 }
 
@@ -417,7 +440,13 @@ function moveRequiresShift(
     targetVerticalIndex,
   );
 
-  return hasScene;
+  const hasSection = hasSectionOnIndex(
+    queryClient,
+    storyId,
+    targetVerticalIndex,
+  );
+
+  return hasScene || hasSection;
 }
 
 function hasSceneOnIndex(
@@ -442,6 +471,24 @@ function hasSceneOnIndex(
     (scene) => scene.verticalIndex === targetVerticalIndex,
   );
   return hasSceneAtTargetIndex;
+}
+
+function hasSectionOnIndex(
+  queryClient: QueryClient,
+  storyId: string,
+  targetVerticalIndex: number,
+) {
+  const sections = queryClient.getQueryData<Section[]>(
+    useStorySectionsQuery.queryKey(storyId),
+  );
+
+  if (!sections) {
+    return false;
+  }
+
+  return sections.some(
+    (section) => section.verticalIndex === targetVerticalIndex,
+  );
 }
 
 export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {

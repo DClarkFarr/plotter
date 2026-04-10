@@ -7,6 +7,7 @@ import {
   type CreateCharacterInput,
   type CreateSceneInput,
   type CreateTagInput,
+  type CreateSectionInput,
   type ImportCharactersInput,
   type ImportCharactersResponse,
   type ImportTagsInput,
@@ -14,12 +15,16 @@ import {
   type ImportOutlineInput,
   type ImportOutlineResponse,
   type UpdateTagInput,
+  type UpdateSectionInput,
   type CreatePlotInput,
   type Plot,
   type PlotResponse,
   type PlotsResponse,
   type Scene,
   type SceneResponse,
+  type Section,
+  type SectionResponse,
+  type SectionsResponse,
   type Tag,
   type TagResponse,
   type TagsResponse,
@@ -279,6 +284,17 @@ export async function listStoryPlots(storyId: string): Promise<Plot[]> {
   }
 }
 
+export async function listStorySections(storyId: string): Promise<Section[]> {
+  try {
+    const { data } = await apiClient.get<SectionsResponse>(
+      `/stories/${storyId}/sections`,
+    );
+    return data.sections;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function createPlot(
   storyId: string,
   input: CreatePlotInput,
@@ -289,6 +305,37 @@ export async function createPlot(
       input,
     );
     return data.plot;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function createSection(
+  storyId: string,
+  input: CreateSectionInput,
+): Promise<Section> {
+  try {
+    const { data } = await apiClient.post<SectionResponse>(
+      `/stories/${storyId}/sections`,
+      input,
+    );
+    return data.section;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function updateSection(
+  storyId: string,
+  sectionId: string,
+  input: UpdateSectionInput,
+): Promise<Section> {
+  try {
+    const { data } = await apiClient.patch<SectionResponse>(
+      `/stories/${storyId}/sections/${sectionId}`,
+      input,
+    );
+    return data.section;
   } catch (err) {
     throw toApiError(err);
   }

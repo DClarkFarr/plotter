@@ -53,6 +53,20 @@ const toSceneResponse = (scene: {
   pov: scene.pov ? scene.pov.toHexString() : null,
 });
 
+const toSectionResponse = (section: {
+  _id: { toHexString(): string };
+  storyId: { toHexString(): string };
+  title: string;
+  verticalIndex: number;
+  type: string;
+}) => ({
+  id: section._id.toHexString(),
+  storyId: section.storyId.toHexString(),
+  title: section.title,
+  verticalIndex: section.verticalIndex,
+  type: section.type,
+});
+
 const parseOptionalString = (value: unknown): string | undefined => {
   if (value === undefined || value === null) {
     return undefined;
@@ -317,7 +331,7 @@ const applySceneRoutes = () => {
 
       await getStoryForUser(storyId, userId);
 
-      const payload = {
+      const shiftData = {
         fromPlotId: requireString(req.body?.fromPlotId, "fromPlotId"),
         toPlotId: requireString(req.body?.toPlotId, "toPlotId"),
         sceneId,
@@ -325,15 +339,23 @@ const applySceneRoutes = () => {
         toIndex: requireNumber(req.body?.toIndex, "toIndex"),
       };
 
-      const changedResources = await moveSingleCardWithinPlot(payload);
+      const changedResources = await moveSingleCardWithinPlot(shiftData);
 
-      /**
-       * Currently only have scenes implemented.
-       * Will return more resources similarly here.
-       */
-      res.status(200).json({
+      const payload: {
+        scenes: Array<ReturnType<typeof toSceneResponse>>;
+        sections: Array<ReturnType<typeof toSectionResponse>>;
+      } = {
         scenes: changedResources.scenes.map(toSceneResponse),
-      });
+        sections: changedResources.sections.map(toSectionResponse),
+      };
+
+      if (changedResources.sections?.length) {
+        payload.sections = changedResources.sections.map((section) =>
+          toSectionResponse(section),
+        );
+      }
+
+      res.status(200).json(payload);
     }),
   );
 

@@ -12,6 +12,7 @@ export const COLLECTIONS = {
   characters: "characters",
   plots: "plots",
   scenes: "scenes",
+  sections: "sections",
   sessions: "sessions",
   passwordResets: "passwordResets",
   authAttempts: "authAttempts",
