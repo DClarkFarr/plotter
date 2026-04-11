@@ -168,34 +168,50 @@ export const shiftScenesDownwardFromIndex = async (
 
 export const shiftScenesInVerticalIndexRange = async (
   plotId: ObjectId,
-  rangeStart: number,
-  rangeEnd: number,
+  rangeStart: number | undefined,
+  rangeEnd: number | undefined,
   shift: number,
 ) => {
-  if (rangeStart > rangeEnd || shift === 0) {
+  if ((rangeStart && rangeEnd && rangeStart > rangeEnd) || shift === 0) {
     return [] as SceneDocument[];
   }
 
   const collection = getScenesCollection();
 
+  let verticalIndexFilter: Record<string, unknown> = {};
+  let updatedIndexFilter: Record<string, unknown> = {};
+  if (rangeStart !== undefined && rangeEnd !== undefined) {
+    verticalIndexFilter = { $gte: rangeStart, $lte: rangeEnd };
+    updatedIndexFilter = {
+      $gte: rangeStart + shift,
+      $lte: rangeEnd + shift,
+    };
+  } else if (rangeStart !== undefined) {
+    verticalIndexFilter.$gte = rangeStart;
+    updatedIndexFilter.$gte = rangeStart + shift;
+  } else if (rangeEnd !== undefined) {
+    verticalIndexFilter.$lte = rangeEnd;
+    updatedIndexFilter.$lte = rangeEnd + shift;
+  } else {
+    throw new Error("Either rangeStart or rangeEnd must be defined");
+  }
+
   await collection.updateMany(
     activeSceneFilter({
       plotId,
-      verticalIndex: { $gte: rangeStart, $lte: rangeEnd },
+      verticalIndex: verticalIndexFilter,
     }),
     { $inc: { verticalIndex: shift } },
   );
-
-  const updatedRangeStart = rangeStart + shift;
-  const updatedRangeEnd = rangeEnd + shift;
 
   return collection
     .find(
       activeSceneFilter({
         plotId,
-        verticalIndex: { $gte: updatedRangeStart, $lte: updatedRangeEnd },
+        verticalIndex: updatedIndexFilter,
       }),
     )
+    .sort({ verticalIndex: 1 })
     .toArray();
 };
 
@@ -378,12 +394,16 @@ export const getSceneByIdForPlotIds = async (
 export const getSceneByVerticalIndex = async (
   plotId: string | ObjectId,
   verticalIndex: number,
+  excludeSceneId?: string | ObjectId,
 ): Promise<SceneDocument | null> => {
   const collection = getScenesCollection();
   return collection.findOne(
     activeSceneFilter({
       plotId: ensureObjectId(plotId, "plotId"),
       verticalIndex,
+      ...(excludeSceneId && {
+        _id: { $ne: ensureObjectId(excludeSceneId, "sceneId") },
+      }),
     }),
   );
 };

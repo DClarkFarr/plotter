@@ -178,31 +178,47 @@ export const shiftSectionsDownwardFromIndex = async (
 
 export const shiftSectionsInVerticalIndexRange = async (
   storyId: ObjectId,
-  rangeStart: number,
-  rangeEnd: number,
+  rangeStart: number | undefined,
+  rangeEnd: number | undefined,
   shift: number,
 ): Promise<SectionDocument[]> => {
-  if (rangeStart > rangeEnd || shift === 0) {
+  if ((rangeStart && rangeEnd && rangeStart > rangeEnd) || shift === 0) {
     return [] as SectionDocument[];
   }
 
   const collection = getSectionsCollection();
 
+  let verticalIndexFilter: Record<string, unknown> = {};
+  let updatedIndexFilter: Record<string, unknown> = {};
+  if (rangeStart !== undefined && rangeEnd !== undefined) {
+    verticalIndexFilter = { $gte: rangeStart, $lte: rangeEnd };
+    updatedIndexFilter = {
+      $gte: rangeStart + shift,
+      $lte: rangeEnd + shift,
+    };
+  } else if (rangeStart !== undefined) {
+    verticalIndexFilter.$gte = rangeStart;
+    updatedIndexFilter.$gte = rangeStart + shift;
+  } else if (rangeEnd !== undefined) {
+    verticalIndexFilter.$lte = rangeEnd;
+    updatedIndexFilter.$lte = rangeEnd + shift;
+  } else {
+    throw new Error("Either rangeStart or rangeEnd must be defined");
+  }
+
   await collection.updateMany(
     {
       storyId,
-      verticalIndex: { $gte: rangeStart, $lte: rangeEnd },
+      verticalIndex: verticalIndexFilter,
     },
     { $inc: { verticalIndex: shift } },
   );
 
-  const updatedRangeStart = rangeStart + shift;
-  const updatedRangeEnd = rangeEnd + shift;
-
   return collection
     .find({
       storyId,
-      verticalIndex: { $gte: updatedRangeStart, $lte: updatedRangeEnd },
+      verticalIndex: updatedIndexFilter,
     })
+    .sort({ verticalIndex: 1 })
     .toArray();
 };

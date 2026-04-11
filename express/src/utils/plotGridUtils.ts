@@ -144,11 +144,11 @@ export const shiftGridDownwardFromIndex = async (
 
 export const shiftGridInVerticalIndexRange = async (
   storyId: ObjectId,
-  rangeStart: number,
-  rangeEnd: number,
+  rangeStart: number | undefined,
+  rangeEnd: number | undefined,
   shift: number,
 ): Promise<GridShiftResult> => {
-  if (rangeStart > rangeEnd || shift === 0) {
+  if ((rangeStart && rangeEnd && rangeStart >= rangeEnd) || shift === 0) {
     return { scenes: [], sections: [] };
   }
 
@@ -162,6 +162,7 @@ export const shiftGridInVerticalIndexRange = async (
       rangeEnd,
       shift,
     );
+    console.log("plotId", plotId.toHexString(), "shiftedScenes", shiftedScenes);
     scenes.push(...shiftedScenes);
   }
 
@@ -175,11 +176,22 @@ export const shiftGridInVerticalIndexRange = async (
   return { scenes, sections };
 };
 
-export type MoveRangeShift = {
-  rangeStart: number;
-  rangeEnd: number;
-  shift: number;
-};
+export type MoveRangeShift =
+  | {
+      rangeStart: number;
+      rangeEnd: number;
+      shift: number;
+    }
+  | {
+      rangeStart: number;
+      rangeEnd: undefined;
+      shift: number;
+    }
+  | {
+      rangeStart: number;
+      rangeEnd: number;
+      shift: number;
+    };
 
 export const getMoveRangeShift = (
   fromIndex: number,
@@ -190,6 +202,15 @@ export const getMoveRangeShift = (
   }
 
   if (toIndex > fromIndex) {
+    const diff = toIndex - fromIndex;
+    if (diff === 1) {
+      // no scenes to shift over, so move everything up.
+      return {
+        rangeStart: toIndex,
+        rangeEnd: undefined,
+        shift: 1,
+      };
+    }
     return {
       rangeStart: fromIndex + 1,
       rangeEnd: toIndex,
@@ -197,6 +218,15 @@ export const getMoveRangeShift = (
     };
   }
 
+  const diff = fromIndex - toIndex;
+  if (diff === 1) {
+    // no scenes to shift over, so move everything down.
+    return {
+      rangeStart: toIndex,
+      rangeEnd: undefined,
+      shift: -1,
+    };
+  }
   return {
     rangeStart: toIndex,
     rangeEnd: fromIndex - 1,

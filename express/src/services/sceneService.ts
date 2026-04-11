@@ -113,9 +113,15 @@ const assertTagVariantsValid = async (
 const assertPlotScenePositionIsOpen = async (
   plotId: ObjectId,
   verticalIndex: number,
+  excludeSceneId?: string | ObjectId,
 ): Promise<void> => {
-  const found = await getSceneByVerticalIndex(plotId, verticalIndex);
+  const found = await getSceneByVerticalIndex(
+    plotId,
+    verticalIndex,
+    excludeSceneId,
+  );
   if (found) {
+    console.error("assertPlotScenePositionIsOpen found", found);
     throw new Error("Scene verticalIndex is already occupied");
   }
 };
@@ -350,6 +356,7 @@ export const moveSingleCardWithinPlot = async (
   const scenesToUpdate: SceneDocument[] = [];
   const sectionsToUpdate: SectionDocument[] = [];
   const shift = getMoveRangeShift(fromIndex, toIndex);
+  console.log("got shift", shift);
   if (shift) {
     const [hasScene, hasSection] = await Promise.all([
       hasSceneOnPlotIndex(toPlotId, toIndex),
@@ -370,7 +377,7 @@ export const moveSingleCardWithinPlot = async (
   }
 
   // step 2: move target scene to new index
-  await assertPlotScenePositionIsOpen(toPlotId, toIndex);
+  await assertPlotScenePositionIsOpen(toPlotId, toIndex, sceneId);
 
   const updatedScene = await updateSceneById(sceneId, {
     verticalIndex: toIndex,
