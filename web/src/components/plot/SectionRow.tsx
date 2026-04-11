@@ -54,16 +54,23 @@ export const SectionRow = ({ section, className, style }: SectionRowProps) => {
       className={`section-row flex items-center gap-4 w-full h-full ${className ?? ""}`}
       style={style}
     >
-      <input
-        aria-label="Section title"
-        className={`bg-transparent focus:outline-none font-semibold text-slate-700 ${titleSize} w-[360px] max-w-[60%]`}
-        disabled={updateMutation.isPending}
-        value={draftTitle}
-        onChange={(event) => setDraftTitle(event.target.value)}
-        onBlur={handleCommit}
-        onKeyDown={handleKeyDown}
-      />
-      <div className="flex-1 h-1 bg-slate-300/80 rounded-full" />
+      <div className="max-w-full">
+        <div
+          className={`shadow whitespace-nowrap h-0 overflow-hidden font-semibold px-2 ${titleSize}`}
+        >
+          {draftTitle}
+        </div>
+        <input
+          aria-label="Section title"
+          className={`bg-transparent focus:outline-none focus:bg-gray-200 hover:bg-gray-200 font-semibold text-slate-700 ${titleSize} w-full`}
+          disabled={updateMutation.isPending}
+          value={draftTitle}
+          onChange={(event) => setDraftTitle(event.target.value)}
+          onBlur={handleCommit}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
+      <div className="grow h-1 bg-slate-300/80 rounded-full" />
     </div>
   );
 };
