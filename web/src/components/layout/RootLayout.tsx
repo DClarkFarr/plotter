@@ -24,6 +24,12 @@ export function RootLayout() {
   useEffect(() => {
     if (error instanceof ApiError) {
       if (error.serverMessage !== "Network Error") {
+        console.warn(
+          "clearing user",
+          error.serverMessage,
+          error.status,
+          error.stack,
+        );
         clearUser();
       }
     }
