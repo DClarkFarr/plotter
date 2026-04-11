@@ -7,7 +7,7 @@ import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
 import { findCharacterById } from "../../../utils/characterLookup";
 import { CharacterDisplay } from "../../character/CharacterDisplay";
-import { Button, ButtonGroup } from "flowbite-react";
+import { Button } from "flowbite-react";
 import {
   useStoryCharactersQuery,
   useStoryTagsQuery,

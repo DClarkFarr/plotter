@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Button, ButtonGroup, Textarea, TextInput } from "flowbite-react";
+import { Button, Textarea, TextInput } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useDebounce } from "../../../utils/useDebounce";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
