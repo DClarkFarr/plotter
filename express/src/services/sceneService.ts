@@ -328,7 +328,10 @@ export type MoveSingleSceneWithinPlotInput = {
 };
 export const moveSingleCardWithinPlot = async (
   input: MoveSingleSceneWithinPlotInput,
-): Promise<{ scene: SceneDocument | null; shiftedResources?: ShiftedResources }> => {
+): Promise<{
+  scene: SceneDocument | null;
+  shiftedResources?: ShiftedResources;
+}> => {
   const fromPlotId = ensureObjectId(input.fromPlotId, "fromPlotId");
   const toPlotId = ensureObjectId(input.toPlotId, "toPlotId");
   const sceneId = ensureObjectId(input.sceneId, "sceneId");
@@ -336,7 +339,7 @@ export const moveSingleCardWithinPlot = async (
   const plot = await assertPlotExists(toPlotId);
   await assertSceneExists(sceneId);
 
-  const { /* fromIndex, */ toIndex } = input;
+  const { fromIndex, toIndex } = input;
 
   // step 1: shift the bounded range between indices (if needed)
   // Because we're going to unify getting shifted resources to the frontend,
@@ -344,10 +347,9 @@ export const moveSingleCardWithinPlot = async (
   // and shifted sections to do it the same way.
   const scenesToUpdate: SceneDocument[] = [];
   const sectionsToUpdate: SectionDocument[] = [];
-  const shift = getMoveRangeShift(input.fromIndex, toIndex);
+  const shift = getMoveRangeShift(fromIndex, toIndex);
   if (shift) {
     const { scenes: shiftedScenes, sections: shiftedSections } =
-      // grid shift needs to get updated resources to frontend
       await shiftGridInVerticalIndexRange(
         plot.storyId,
         shift.rangeStart,
