@@ -78,7 +78,7 @@ export const ColHeader = ({
 
   return (
     <div
-      className="col-header group relative flex items-center justify-center bg-gray-200 min-h-[80px] focus-within:z-10"
+      className="col-header group relative flex items-center justify-center bg-gray-300 min-h-[80px] focus-within:z-10"
       data-row={rowIndex}
     >
       <ButtonGroup className="absolute left-2 top-[50%] translate-y-[-50%] invisible opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 z-200">
