@@ -1,4 +1,5 @@
 import type { Scene } from "../../api/types";
+import type { MoveRangeShift } from "../story/shift-logic";
 
 export const sortScenes = (scenes: Scene[]) =>
   [...scenes].sort((a, b) => a.verticalIndex - b.verticalIndex);
@@ -34,3 +35,18 @@ export const shiftScenesForInsert = (
     return scene;
   });
 };
+
+const shouldShiftIndex = (verticalIndex: number, shift: MoveRangeShift) => {
+  if (shift.rangeEnd === undefined) {
+    return verticalIndex >= shift.rangeStart;
+  }
+
+  return verticalIndex >= shift.rangeStart && verticalIndex <= shift.rangeEnd;
+};
+
+export const shiftScenesInRange = (scenes: Scene[], shift: MoveRangeShift) =>
+  scenes.map((scene) =>
+    shouldShiftIndex(scene.verticalIndex, shift)
+      ? { ...scene, verticalIndex: scene.verticalIndex + shift.shift }
+      : scene,
+  );

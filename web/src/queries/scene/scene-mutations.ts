@@ -1,8 +1,4 @@
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   CreateSceneInput,
   Plot,
@@ -20,9 +16,16 @@ import {
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useStoryPlotsQuery } from "../story/story-queries";
 import { useStorySectionsQuery } from "../section/section-queries";
-import { shiftSectionsUpwardFromIndex } from "../section/section-helpers";
 import { shiftScenesForInsert, sortScenes } from "./scene-helpers";
-import { applyShiftedResources } from "../story/shifted-resources";
+import {
+  applyOptimisticShiftToState,
+  applyShiftedResources,
+} from "../story/shifted-resources";
+import {
+  getMoveRangeShift,
+  shouldShiftAfterSceneRemoval,
+  shouldShiftForSceneInsert,
+} from "../story/shift-logic";
 
 export function useCreateSceneMutation(storyId: string) {
   const queryClient = useQueryClient();
@@ -35,7 +38,7 @@ export function useCreateSceneMutation(storyId: string) {
       await queryClient.cancelQueries({
         queryKey: useStoryPlotsQuery.queryKey(storyId),
       });
-      const previous = queryClient.getQueryData<Plot[]>(
+      const previousPlots = queryClient.getQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
       );
       const previousSections = queryClient.getQueryData<Section[]>(
@@ -43,7 +46,7 @@ export function useCreateSceneMutation(storyId: string) {
       );
 
       const tempId = `temp-${Date.now()}`;
-      if (previous) {
+      if (previousPlots) {
         const optimistic: Scene = {
           id: tempId,
           title: input.title,
@@ -58,47 +61,67 @@ export function useCreateSceneMutation(storyId: string) {
           pov: input.pov ?? null,
         };
 
-        const updated = previous.map((plot) => {
+        let nextPlots = previousPlots;
+        const hasSectionsCache = previousSections !== undefined;
+        let nextSections = previousSections ?? [];
+
+        const shouldShift = shouldShiftForSceneInsert(
+          nextPlots,
+          nextSections,
+          input.plotId,
+          input.verticalIndex,
+        );
+
+        if (shouldShift) {
+          const shifted = applyOptimisticShiftToState(nextPlots, nextSections, {
+            rangeStart: input.verticalIndex,
+            rangeEnd: undefined,
+            shift: 1,
+          });
+          nextPlots = shifted.plots;
+          nextSections = shifted.sections;
+        }
+
+        nextPlots = nextPlots.map((plot) => {
           if (plot.id !== input.plotId) {
             return plot;
           }
 
-          const hasSceneAtIndex = plot.scenes.some(
-            (scene) => scene.verticalIndex === input.verticalIndex,
-          );
-          const hasSectionAtIndex =
-            previousSections?.some(
-              (section) => section.verticalIndex === input.verticalIndex,
-            ) ?? false;
-          const shouldShift = hasSceneAtIndex && !hasSectionAtIndex;
-
-          const shifted = shouldShift
-            ? plot.scenes.map((scene) =>
-                scene.verticalIndex >= input.verticalIndex
-                  ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
-                  : scene,
-              )
-            : plot.scenes;
-
           return {
             ...plot,
-            scenes: sortScenes([...shifted, optimistic]),
+            scenes: sortScenes([...plot.scenes, optimistic]),
           };
         });
 
         queryClient.setQueryData<Plot[]>(
           useStoryPlotsQuery.queryKey(storyId),
-          updated,
+          nextPlots,
         );
+
+        if (hasSectionsCache) {
+          queryClient.setQueryData<Section[]>(
+            useStorySectionsQuery.queryKey(storyId),
+            nextSections,
+          );
+        }
       }
 
-      return { previous, tempId };
+      return {
+        previous: { plots: previousPlots, sections: previousSections },
+        tempId,
+      };
     },
     onError: (_error, _input, context) => {
-      if (context?.previous) {
+      if (context?.previous?.plots) {
         queryClient.setQueryData(
           useStoryPlotsQuery.queryKey(storyId),
-          context.previous,
+          context.previous.plots,
+        );
+      }
+      if (context?.previous?.sections) {
+        queryClient.setQueryData(
+          useStorySectionsQuery.queryKey(storyId),
+          context.previous.sections,
         );
       }
     },
@@ -250,24 +273,72 @@ export function useDeleteSceneMutation(storyId: string) {
       await queryClient.cancelQueries({
         queryKey: useStoryPlotsQuery.queryKey(storyId),
       });
-      const previous = queryClient.getQueryData<Plot[]>(
+      const previousPlots = queryClient.getQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
       );
+      const previousSections = queryClient.getQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+      );
 
-      if (previous) {
+      if (previousPlots) {
+        const target = previousPlots
+          .find((plot) => plot.scenes.some((scene) => scene.id === sceneId))
+          ?.scenes.find((scene) => scene.id === sceneId);
+
+        let nextPlots = removeSceneFromPlots(previousPlots, sceneId);
+        const hasSectionsCache = previousSections !== undefined;
+        let nextSections = previousSections ?? [];
+
+        if (target) {
+          const shouldShift = shouldShiftAfterSceneRemoval(
+            previousPlots,
+            nextSections,
+            target.plotId,
+            target.verticalIndex,
+            target.id,
+          );
+
+          if (shouldShift) {
+            const shifted = applyOptimisticShiftToState(
+              nextPlots,
+              nextSections,
+              {
+                rangeStart: target.verticalIndex + 1,
+                rangeEnd: undefined,
+                shift: -1,
+              },
+            );
+            nextPlots = shifted.plots;
+            nextSections = shifted.sections;
+          }
+        }
+
         queryClient.setQueryData<Plot[]>(
           useStoryPlotsQuery.queryKey(storyId),
-          removeSceneFromPlots(previous, sceneId),
+          nextPlots,
         );
+
+        if (hasSectionsCache) {
+          queryClient.setQueryData<Section[]>(
+            useStorySectionsQuery.queryKey(storyId),
+            nextSections,
+          );
+        }
       }
 
-      return { previous };
+      return { previous: { plots: previousPlots, sections: previousSections } };
     },
     onError: (_error, _sceneId, context) => {
-      if (context?.previous) {
+      if (context?.previous?.plots) {
         queryClient.setQueryData(
           useStoryPlotsQuery.queryKey(storyId),
-          context.previous,
+          context.previous.plots,
+        );
+      }
+      if (context?.previous?.sections) {
+        queryClient.setQueryData(
+          useStorySectionsQuery.queryKey(storyId),
+          context.previous.sections,
         );
       }
     },
@@ -296,42 +367,45 @@ const useMoveSingleWithinPlot = () => {
         queryKey: useStoryPlotsQuery.queryKey(input.storyId),
       });
 
-      let previousPlots =
+      const previousPlots =
         queryClient.getQueryData<Plot[]>(
           useStoryPlotsQuery.queryKey(input.storyId),
         ) ?? [];
 
-      const previousSections =
-        queryClient.getQueryData<Section[]>(
-          useStorySectionsQuery.queryKey(input.storyId),
-        ) ?? [];
-
-      const shouldShift = moveRequiresShift(
-        queryClient,
-        input.storyId,
-        input.toPlotId,
-        input.toIndex,
+      const previousSections = queryClient.getQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(input.storyId),
       );
 
-      if (shouldShift) {
-        const shiftedResources = shiftGridUpwardOnIndex(
-          previousPlots,
-          previousSections,
-          input.toIndex,
+      let nextPlots = previousPlots;
+      const hasSectionsCache = previousSections !== undefined;
+      let nextSections = previousSections ?? [];
+
+      const shift = getMoveRangeShift({
+        fromIndex: input.fromIndex,
+        toIndex: input.toIndex,
+        fromPlotId: input.fromPlotId,
+        toPlotId: input.toPlotId,
+        resource: { id: input.sceneId, type: "scene" },
+        plots: nextPlots,
+        sections: nextSections,
+      });
+
+      if (shift) {
+        const shifted = applyOptimisticShiftToState(
+          nextPlots,
+          nextSections,
+          shift,
         );
-        previousPlots = shiftedResources.plots;
-        queryClient.setQueryData<Section[]>(
-          useStorySectionsQuery.queryKey(input.storyId),
-          shiftedResources.sections,
-        );
+        nextPlots = shifted.plots;
+        nextSections = shifted.sections;
       }
 
-      const foundScene = previousPlots
+      const foundScene = nextPlots
         .find((plot) => plot.id === input.fromPlotId)
         ?.scenes.find((scene) => scene.id === input.sceneId);
 
       // update scene vertical index
-      previousPlots = previousPlots.map((plot) => {
+      nextPlots = nextPlots.map((plot) => {
         if (
           plot.id === input.fromPlotId &&
           input.fromPlotId !== input.toPlotId
@@ -339,10 +413,10 @@ const useMoveSingleWithinPlot = () => {
           /**
            * If moving to new plot, remove scene from old plot
            */
-          return {
-            ...plot,
-            scenes: plot.scenes.filter((scene) => scene.id !== input.sceneId),
-          };
+          const remaining = plot.scenes.filter(
+            (scene) => scene.id !== input.sceneId,
+          );
+          return { ...plot, scenes: sortScenes(remaining) };
         }
 
         if (plot.id === input.toPlotId && input.fromPlotId !== input.toPlotId) {
@@ -352,7 +426,14 @@ const useMoveSingleWithinPlot = () => {
           if (foundScene) {
             return {
               ...plot,
-              scenes: sortScenes([...plot.scenes, { ...foundScene }]),
+              scenes: sortScenes([
+                ...plot.scenes,
+                {
+                  ...foundScene,
+                  verticalIndex: input.toIndex,
+                  plotId: input.toPlotId,
+                },
+              ]),
             };
           }
 
@@ -366,18 +447,19 @@ const useMoveSingleWithinPlot = () => {
           /**
            * Same plot move, just update vertical index of scene
            */
+          const updatedScenes = plot.scenes.map((scene) => {
+            if (scene.id === input.sceneId) {
+              return {
+                ...scene,
+                verticalIndex: input.toIndex,
+                plotId: input.toPlotId,
+              };
+            }
+            return scene;
+          });
           return {
             ...plot,
-            scenes: plot.scenes.map((scene) => {
-              if (scene.id === input.sceneId) {
-                return {
-                  ...scene,
-                  verticalIndex: input.toIndex,
-                  plotId: input.toPlotId,
-                };
-              }
-              return scene;
-            }),
+            scenes: sortScenes(updatedScenes),
           };
         }
         return plot;
@@ -385,8 +467,15 @@ const useMoveSingleWithinPlot = () => {
 
       queryClient.setQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(input.storyId),
-        previousPlots,
+        nextPlots,
       );
+
+      if (hasSectionsCache) {
+        queryClient.setQueryData<Section[]>(
+          useStorySectionsQuery.queryKey(input.storyId),
+          nextSections,
+        );
+      }
 
       return {
         previous: {
@@ -428,103 +517,6 @@ const useMoveSingleWithinPlot = () => {
 
   return { moveSingleCardWithinPlot: mutateAsync, isMutating: !isIdle };
 };
-
-function shiftGridUpwardOnIndex(
-  plots: Plot[],
-  sections: Section[],
-  targetVerticalIndex: number,
-) {
-  /**
-   * Currently just updating plots
-   */
-  return {
-    plots: plots.map((plot) => {
-      const hasScenesToUpdate = plot.scenes.some(
-        (scene) => scene.verticalIndex >= targetVerticalIndex,
-      );
-      if (!hasScenesToUpdate) {
-        return plot;
-      }
-
-      return {
-        ...plot,
-        scenes: plot.scenes.map((scene) =>
-          scene.verticalIndex >= targetVerticalIndex
-            ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
-            : scene,
-        ),
-      };
-    }),
-    sections: shiftSectionsUpwardFromIndex(sections, targetVerticalIndex),
-  };
-}
-
-function moveRequiresShift(
-  queryClient: QueryClient,
-  storyId: string,
-  targetPlotId: string,
-  targetVerticalIndex: number,
-) {
-  // Check full grid.
-  // currently just supporting scenes
-
-  const hasScene = hasSceneOnIndex(
-    queryClient,
-    storyId,
-    targetPlotId,
-    targetVerticalIndex,
-  );
-
-  const hasSection = hasSectionOnIndex(
-    queryClient,
-    storyId,
-    targetVerticalIndex,
-  );
-
-  return hasScene || hasSection;
-}
-
-function hasSceneOnIndex(
-  queryClient: QueryClient,
-  storyId: string,
-  targetPlotId: string,
-  targetVerticalIndex: number,
-) {
-  const plots = queryClient.getQueryData<Plot[]>(
-    useStoryPlotsQuery.queryKey(storyId),
-  );
-  if (!plots) {
-    return false;
-  }
-
-  const targetPlot = plots.find((plot) => plot.id === targetPlotId);
-  if (!targetPlot) {
-    return false;
-  }
-
-  const hasSceneAtTargetIndex = targetPlot.scenes.some(
-    (scene) => scene.verticalIndex === targetVerticalIndex,
-  );
-  return hasSceneAtTargetIndex;
-}
-
-function hasSectionOnIndex(
-  queryClient: QueryClient,
-  storyId: string,
-  targetVerticalIndex: number,
-) {
-  const sections = queryClient.getQueryData<Section[]>(
-    useStorySectionsQuery.queryKey(storyId),
-  );
-
-  if (!sections) {
-    return false;
-  }
-
-  return sections.some(
-    (section) => section.verticalIndex === targetVerticalIndex,
-  );
-}
 
 export const MoveSceneMutations = {
   useMoveSingleWithinPlot,
