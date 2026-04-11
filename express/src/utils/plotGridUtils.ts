@@ -266,7 +266,10 @@ export const getMoveRangeShift = async (
   const targetOccupied = await isTargetOccupied();
 
   if (fromIndex === toIndex) {
-    // we know the plots must not be the same, because of the
+    /**
+     * we know the plots must not be the same, because of the
+     * the above check and return.
+     */
     if (targetOccupied) {
       return {
         rangeStart: toIndex,
@@ -284,18 +287,32 @@ export const getMoveRangeShift = async (
   const sourceRowEmpty = await isSourceRowEmpty();
 
   if (sourceRowEmpty && targetOccupied) {
+    /**
+     * With an empty source and an occupied target,
+     * we can shift all the rows toward the empty source and
+     * out of the ocupied target, leaving us space for the moved cell.
+     */
     return {
       rangeStart,
       rangeEnd,
       shift: fromIndex < toIndex ? -1 : 1,
     };
   } else if (targetOccupied) {
+    /**
+     * The source wasn't empty, but the target is occupied.
+     * So shift everything >= to the target, effectively clearing the target.
+     */
     return {
       rangeStart: toIndex,
       rangeEnd: undefined,
       shift: 1,
     };
   }
+
+  /**
+   * None of the above conditions were matched, so do nothing.
+   * This includes moving from an occupied row to an open target.
+   */
 
   return null;
 };
