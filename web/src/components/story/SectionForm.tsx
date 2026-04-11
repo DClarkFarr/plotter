@@ -95,7 +95,7 @@ export const SectionForm = () => {
     );
   }
 
-  const typeLabel = selectedSection.type === "act" ? "Act" : "Section";
+  const typeLabel = selectedSection.type === "act" ? "Act" : "Chapter";
   const rowLabel = `${typeLabel} — Row ${selectedSection.verticalIndex + 1}`;
 
   return (

@@ -68,7 +68,7 @@ export const ColHeader = ({
   const handleAddChapter = () => {
     createSectionMutation.mutate({
       title: `Chapter ${rowIndex + 1}`,
-      type: "section",
+      type: "chapter",
       verticalIndex: rowIndex,
     });
     setShowSectionButtons(false);

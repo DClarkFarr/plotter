@@ -197,7 +197,7 @@ export type MoveRangeShiftProps = {
   toIndex: number;
   fromPlotId: ObjectId;
   toPlotId: ObjectId;
-  resource: { id: ObjectId; type: "scene" | "section" };
+  resource: { id: ObjectId; type: "scene" | "chapter" };
 };
 export const getMoveRangeShift = async (
   props: MoveRangeShiftProps,
@@ -227,7 +227,7 @@ export const getMoveRangeShift = async (
   const storyId = fromPlot.storyId;
 
   const isTargetOccupied = async (): Promise<boolean> => {
-    if (resource.type === "section") {
+    if (resource.type === "chapter") {
       const [hasScene, hasSection] = await Promise.all([
         hasSceneOnStoryIndex(storyId, toIndex),
         hasSectionOnIndex(storyId, toIndex),
@@ -243,7 +243,7 @@ export const getMoveRangeShift = async (
   };
 
   const isSourceRowEmpty = async (): Promise<boolean> => {
-    if (resource.type === "section") {
+    if (resource.type === "chapter") {
       return true;
     }
 

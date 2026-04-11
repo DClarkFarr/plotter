@@ -83,13 +83,13 @@ export const ListViewScene = ({
   }
 
   return (
-    <article className="list-view-scene group border-b border-slate-200 group-last:border-0">
+    <article className="list-view-scene bg-white group shadow-sm">
       <div
         className="p-6 last:mb-0 border-l-4 border-l-[var(--plot-color)]"
         style={{ "--plot-color": theme.baseColor }}
       >
         <div className="flex items-center gap-2">
-          <h3 className="text-2xl font-semibold text-slate-900 flex-1 flex gap-4 flex-wrap items-center">
+          <h3 className="text-xl font-semibold text-slate-900 flex-1 flex gap-4 flex-wrap items-center">
             <span>{title}</span>
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               {plot.title}

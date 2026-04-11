@@ -10,7 +10,7 @@ import {
   touchTimestamps,
 } from "./types";
 
-export type SectionType = "act" | "section";
+export type SectionType = "act" | "chapter";
 
 export interface SectionDefinition extends BaseModelBlueprint {
   storyId: ObjectId;

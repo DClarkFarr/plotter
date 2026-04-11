@@ -73,10 +73,10 @@ const toShiftedResourcesResponse = (resources: {
   sections: resources.sections.map((section) => toSectionResponse(section)),
 });
 
-const parseSectionType = (value: unknown): "act" | "section" => {
+const parseSectionType = (value: unknown): "act" | "chapter" => {
   const type = requireString(value, "type");
-  if (type !== "act" && type !== "section") {
-    throw new ValidationError("type", "type must be act or section");
+  if (type !== "act" && type !== "chapter") {
+    throw new ValidationError("type", "type must be act or chapter");
   }
   return type;
 };

@@ -159,7 +159,7 @@ export interface SceneTagVariant {
   variant: string;
 }
 
-export type SectionType = "act" | "section";
+export type SectionType = "act" | "chapter";
 
 export interface Section {
   id: string;

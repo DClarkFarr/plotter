@@ -32,8 +32,8 @@ const assertStoryExists = async (storyId: string | ObjectId): Promise<void> => {
 };
 
 const assertSectionType = (type: string): SectionType => {
-  if (type !== "act" && type !== "section") {
-    throw new Error("Section type must be act or section");
+  if (type !== "act" && type !== "chapter") {
+    throw new Error("Section type must be act or chapter");
   }
 
   return type;
@@ -166,7 +166,7 @@ export const updateSectionForStory = async (
       toIndex: targetIndex,
       fromPlotId: fallbackPlotId,
       toPlotId: fallbackPlotId,
-      resource: { id: current._id, type: "section" },
+      resource: { id: current._id, type: "chapter" },
     });
     if (shift) {
       shiftedResources = await shiftGridInVerticalIndexRange(
