@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { Button, ButtonGroup, Tooltip } from "flowbite-react";
-import { useQueryClient } from "@tanstack/react-query";
 import type { Plot, Section } from "../../api/types";
-import { applyOptimisticShift } from "../../queries/story/shifted-resources";
 import { useCreateSectionMutation } from "../../queries/section/section-mutations";
 import { useStoryGridShiftMutation } from "../../queries/story/story-mutations";
 import IconArrowExpandUp from "~icons/mdi/arrow-expand-up";
@@ -30,7 +28,6 @@ export const ColHeader = ({
   plots,
   sections,
 }: ColHeaderProps) => {
-  const queryClient = useQueryClient();
   const gridShiftMutation = useStoryGridShiftMutation(storyId);
   const createSectionMutation = useCreateSectionMutation(storyId);
 
@@ -40,20 +37,10 @@ export const ColHeader = ({
   );
 
   const handleInsertAbove = () => {
-    applyOptimisticShift(queryClient, storyId, {
-      rangeStart: rowIndex,
-      rangeEnd: undefined,
-      shift: 1,
-    });
     gridShiftMutation.mutate({ startIndex: rowIndex, shift: 1 });
   };
 
   const handleInsertBelow = () => {
-    applyOptimisticShift(queryClient, storyId, {
-      rangeStart: rowIndex + 1,
-      rangeEnd: undefined,
-      shift: 1,
-    });
     gridShiftMutation.mutate({ startIndex: rowIndex + 1, shift: 1 });
   };
 
@@ -62,11 +49,6 @@ export const ColHeader = ({
       return;
     }
 
-    applyOptimisticShift(queryClient, storyId, {
-      rangeStart: rowIndex + 1,
-      rangeEnd: undefined,
-      shift: -1,
-    });
     gridShiftMutation.mutate({ startIndex: rowIndex, shift: -1 });
   };
 

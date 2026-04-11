@@ -7,7 +7,10 @@ import {
 } from "../../api/stories";
 import type { ImportOutlineInput, StoryGridShiftInput } from "../../api/types";
 import type { Story } from "../../api/types";
-import { applyShiftedResources } from "./shifted-resources";
+import {
+  applyOptimisticShift,
+  applyShiftedResources,
+} from "./shifted-resources";
 import { useStoryPlotsQuery } from "./story-queries";
 import { useStorySectionsQuery } from "../section/section-queries";
 import { useStoryQuery } from "./story-queries";
@@ -61,6 +64,15 @@ export function useStoryGridShiftMutation(storyId: string) {
 
   return useMutation({
     mutationFn: (input: StoryGridShiftInput) => shiftStoryGrid(storyId, input),
+    onMutate: (input) => {
+      const rangeStart =
+        input.shift === -1 ? input.startIndex + 1 : input.startIndex;
+      applyOptimisticShift(queryClient, storyId, {
+        rangeStart,
+        rangeEnd: undefined,
+        shift: input.shift,
+      });
+    },
     onError: () => {
       queryClient.invalidateQueries({
         queryKey: useStoryPlotsQuery.queryKey(storyId),
