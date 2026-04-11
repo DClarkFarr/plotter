@@ -5,6 +5,7 @@ import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import { useDraggable } from "@dnd-kit/react";
 import { useSidebarStore } from "../../store/sidebarStore";
+import { useSectionEditorStore } from "../../store/sectionEditorStore";
 
 export type SectionRowProps = {
   section: Section;

@@ -4,8 +4,10 @@ import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
+import { useSectionEditorStore } from "../../store/sectionEditorStore";
 import { SceneForm } from "../story/SceneForm";
 import { SceneFormLoading } from "../story/SceneFormLoading";
+import { SectionForm } from "../story/SectionForm";
 import { ManageCharactersPanel } from "../story/ManageCharactersPanel";
 import { ManageTagsPanel } from "../story/ManageTagsPanel";
 
@@ -18,6 +20,9 @@ export function DashboardLayout() {
   const currentView = getCurrentView(views);
 
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
+  const selectedSectionId = useSectionEditorStore(
+    (state) => state.selectedSectionId,
+  );
 
   return (
     <div className="x-scroller w-screen overflow-x-hidden relative">
@@ -42,6 +47,7 @@ export function DashboardLayout() {
             )}
           </>
         )}
+        {currentView === "section" && <SectionForm key={selectedSectionId} />}
         {currentView === "character" && <ManageCharactersPanel />}
 
         {currentView === "tag" && <ManageTagsPanel />}

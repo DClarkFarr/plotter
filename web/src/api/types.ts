@@ -167,6 +167,7 @@ export interface Section {
   title: string;
   verticalIndex: number;
   type: SectionType;
+  description?: string | null;
 }
 
 export interface ShiftedResources {
@@ -227,12 +228,14 @@ export interface CreateSectionInput {
   title: string;
   verticalIndex: number;
   type: SectionType;
+  description?: string;
 }
 
 export interface UpdateSectionInput {
   title?: string;
   verticalIndex?: number;
   type?: SectionType;
+  description?: string;
 }
 
 export interface StoryGridShiftInput {

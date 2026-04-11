@@ -26,12 +26,14 @@ const toSectionResponse = (section: {
   title: string;
   verticalIndex: number;
   type: string;
+  description?: string;
 }) => ({
   id: section._id.toHexString(),
   storyId: section.storyId.toHexString(),
   title: section.title,
   verticalIndex: section.verticalIndex,
   type: section.type,
+  description: section.description ?? null,
 });
 
 const toSceneResponse = (scene: {
@@ -109,12 +111,14 @@ const applySectionRoutes = () => {
         "verticalIndex",
       );
       const type = parseSectionType(req.body?.type);
+      const description = optionalString(req.body?.description, "description");
 
       const created = await createSectionForStory(storyId, {
         storyId,
         title,
         verticalIndex,
         type,
+        ...(description !== undefined && { description }),
       });
 
       const payload: {
@@ -149,11 +153,13 @@ const applySectionRoutes = () => {
         "verticalIndex",
       );
       const rawType = req.body?.type;
+      const description = optionalString(req.body?.description, "description");
 
       const updates = {
         ...(title !== undefined && { title }),
         ...(verticalIndex !== undefined && { verticalIndex }),
         ...(rawType !== undefined && { type: parseSectionType(rawType) }),
+        ...(description !== undefined && { description }),
       };
 
       const updated = await updateSectionForStory(storyId, sectionId, updates);

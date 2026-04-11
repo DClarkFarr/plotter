@@ -67,14 +67,6 @@ export const createSectionForStory = async (
 
   const type = assertSectionType(input.type);
 
-  const existingSection = await getSectionByVerticalIndex(
-    storyObjectId,
-    input.verticalIndex,
-  );
-  if (existingSection) {
-    throw new Error("Section verticalIndex is already occupied");
-  }
-
   const shouldShift = await shouldShiftForSectionInsert(
     storyObjectId,
     input.verticalIndex,
@@ -89,6 +81,7 @@ export const createSectionForStory = async (
     title: trimmedTitle,
     type,
     storyId: storyObjectId,
+    ...(input.description !== undefined && { description: input.description }),
   });
 
   return {
@@ -145,6 +138,10 @@ export const updateSectionForStory = async (
 
   if (updates.type !== undefined) {
     nextUpdates.type = assertSectionType(updates.type);
+  }
+
+  if (updates.description !== undefined) {
+    nextUpdates.description = updates.description;
   }
 
   const targetIndex = updates.verticalIndex;

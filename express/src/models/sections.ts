@@ -17,6 +17,7 @@ export interface SectionDefinition extends BaseModelBlueprint {
   title: string;
   verticalIndex: number;
   type: SectionType;
+  description?: string;
 }
 
 export type SectionBlueprint = ModelBlueprint<SectionDefinition>;
@@ -67,6 +68,7 @@ export interface CreateSectionInput {
   title: string;
   verticalIndex: number;
   type: SectionType;
+  description?: string;
 }
 
 export const createSection = async (
@@ -78,6 +80,7 @@ export const createSection = async (
     title: input.title,
     verticalIndex: input.verticalIndex,
     type: input.type,
+    ...(input.description !== undefined && { description: input.description }),
     ...createTimestamps(),
   };
 
@@ -91,6 +94,7 @@ export interface UpdateSectionInput {
   title?: string;
   verticalIndex?: number;
   type?: SectionType;
+  description?: string;
 }
 
 export const updateSectionById = async (
@@ -110,6 +114,10 @@ export const updateSectionById = async (
 
   if (updates.type !== undefined) {
     updatePayload.type = updates.type;
+  }
+
+  if (updates.description !== undefined) {
+    updatePayload.description = updates.description;
   }
 
   const result = await collection.findOneAndUpdate(

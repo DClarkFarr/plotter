@@ -48,6 +48,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-11
 - TypeScript (Node.js + React 19) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki (032-col-header-actions)
 - MongoDB (backend), N/A for this frontend-only change (032-col-header-actions)
 - MongoDB (backend), N/A for UI-only state (032-col-header-actions)
+- TypeScript 5.x (Node.js 20 backend, React 18 frontend) + Express (backend), React + TanStack Query + Zustand + TipTap + Flowbite React (frontend) (034-section-sidebar-edit)
+- MongoDB (existing `sections` collection — additive field only) (034-section-sidebar-edit)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -67,9 +69,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 034-section-sidebar-edit: Added TypeScript 5.x (Node.js 20 backend, React 18 frontend) + Express (backend), React + TanStack Query + Zustand + TipTap + Flowbite React (frontend)
 - 032-col-header-actions: Added TypeScript (Node.js + React 19) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
 - 032-col-header-actions: Added TypeScript (Node.js + React 19) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
-- 031-sync-optimistic-shifts: Added TypeScript (Node.js + React) + Express, MongoDB driver, TanStack Query, TanStack Router, Zustand, Flowbite React, Tailwind CSS, dnd-ki
 
 
 <!-- MANUAL ADDITIONS START -->

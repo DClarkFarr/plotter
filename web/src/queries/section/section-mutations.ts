@@ -201,6 +201,9 @@ export function useUpdateSectionMutation(storyId: string) {
                 ...(input.verticalIndex !== undefined && {
                   verticalIndex: input.verticalIndex,
                 }),
+                ...(input.description !== undefined && {
+                  description: input.description,
+                }),
               }
             : section,
         ),
