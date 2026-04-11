@@ -21,7 +21,14 @@ import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
-import { getPlotForStory } from "./plotService";
+import {
+  shouldShiftAfterSceneRemoval,
+  shouldShiftForSceneInsert,
+  shiftGridDownwardFromIndex,
+  shiftGridInVerticalIndexRange,
+  shiftGridUpwardFromIndex,
+  getMoveRangeShift,
+} from "../utils/plotGridUtils";
 
 const assertPlotExists = async (plotId: string | ObjectId) => {
   const plot = await getPlotById(plotId);
@@ -175,6 +182,18 @@ export const createSceneForStory = async (
     throw new Error("Plot not found");
   }
 
+  const shouldShift = await shouldShiftForSceneInsert(
+    storyObjectId,
+    plot._id,
+    input.verticalIndex,
+  );
+  if (shouldShift) {
+    // shift needs to get updated resources to frontend
+    await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex);
+  }
+
+  await assertPlotScenePositionIsOpen(plot._id, input.verticalIndex);
+
   return createScene({
     ...input,
     plotId: plot._id,
@@ -278,7 +297,26 @@ export const deleteSceneForStory = async (
     return false;
   }
 
-  return deleteSceneById(sceneId);
+  const removed = await deleteSceneById(sceneId);
+  if (!removed) {
+    return false;
+  }
+
+  // For deleting a scene, the plot > vertical index of the deleted scene
+  // will never have a scene in that spot after deletion.
+  // So in this case, we need to check if there is anything in any of the other plots.
+  // Modify shouldShiftAfterSceneRemoval to take just the vertical index.
+  const shouldShift = await shouldShiftAfterSceneRemoval(
+    storyObjectId,
+    plot._id,
+    current.verticalIndex,
+  );
+  if (shouldShift) {
+    // grid shift needs to get updates to frontend
+    await shiftGridDownwardFromIndex(storyObjectId, current.verticalIndex);
+  }
+
+  return true;
 };
 
 export type MoveSingleSceneWithinPlotInput = {
@@ -300,27 +338,27 @@ export const moveSingleCardWithinPlot = async (
 
   const { /* fromIndex, */ toIndex } = input;
 
-  // step 1: check if a shift is required.
-  const shouldShiftOnIndex = await sceneMoveRequiresShift(
-    plot.storyId,
-    toPlotId,
-    toIndex,
-  );
-
-  // step 2: shift scenes and return resources
+  // step 1: shift the bounded range between indices (if needed)
+  // Because we're going to unify getting shifted resources to the frontend,
+  // we probably should remove the explicit sending shifted scenes
+  // and shifted sections to do it the same way.
   const scenesToUpdate: SceneDocument[] = [];
   const sectionsToUpdate: SectionDocument[] = [];
-  if (shouldShiftOnIndex) {
+  const shift = getMoveRangeShift(input.fromIndex, toIndex);
+  if (shift) {
     const { scenes: shiftedScenes, sections: shiftedSections } =
-      await shiftGridUpwardOnIndex({
-        verticalIndex: toIndex,
-        storyId: plot.storyId,
-      });
+      // grid shift needs to get updated resources to frontend
+      await shiftGridInVerticalIndexRange(
+        plot.storyId,
+        shift.rangeStart,
+        shift.rangeEnd,
+        shift.shift,
+      );
     scenesToUpdate.push(...shiftedScenes);
     sectionsToUpdate.push(...shiftedSections);
   }
 
-  // step 3: move target scene to new index
+  // step 2: move target scene to new index
   await assertPlotScenePositionIsOpen(toPlotId, toIndex);
 
   const updatedScene = await updateSceneById(sceneId, {
@@ -356,33 +394,4 @@ export const sceneMoveRequiresShift = async (
 
   // step 2: if any resources are found, return true
   return Boolean(existingScene || existingSection);
-};
-
-export const shiftGridUpwardOnIndex = async ({
-  verticalIndex,
-  storyId,
-}: {
-  verticalIndex: number;
-  storyId: ObjectId;
-}): Promise<{ scenes: SceneDocument[]; sections: SectionDocument[] }> => {
-  // step 1: collect necessary resources
-  const plotsIds = await listPlotIdsByStoryId(storyId);
-
-  // step 2: shift resources
-  const scenes: SceneDocument[] = [];
-  for (const plotId of plotsIds) {
-    const shiftedScenes = await shiftScenesUpwardFromIndex(
-      plotId,
-      verticalIndex,
-    );
-    scenes.push(...shiftedScenes);
-  }
-
-  const sections = await shiftSectionsUpwardFromIndex(storyId, verticalIndex);
-
-  // 3: return shifted resources.
-  return {
-    scenes,
-    sections,
-  };
 };

@@ -142,6 +142,63 @@ export const shiftScenesUpwardFromIndex = async (
     .toArray();
 };
 
+export const shiftScenesDownwardFromIndex = async (
+  plotId: ObjectId,
+  fromIndex: number,
+) => {
+  const collection = getScenesCollection();
+
+  await collection.updateMany(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: { $gt: fromIndex },
+    }),
+    { $inc: { verticalIndex: -1 } },
+  );
+
+  return collection
+    .find(
+      activeSceneFilter({
+        plotId,
+        verticalIndex: { $gte: fromIndex },
+      }),
+    )
+    .toArray();
+};
+
+export const shiftScenesInVerticalIndexRange = async (
+  plotId: ObjectId,
+  rangeStart: number,
+  rangeEnd: number,
+  shift: number,
+) => {
+  if (rangeStart > rangeEnd || shift === 0) {
+    return [] as SceneDocument[];
+  }
+
+  const collection = getScenesCollection();
+
+  await collection.updateMany(
+    activeSceneFilter({
+      plotId,
+      verticalIndex: { $gte: rangeStart, $lte: rangeEnd },
+    }),
+    { $inc: { verticalIndex: shift } },
+  );
+
+  const updatedRangeStart = rangeStart + shift;
+  const updatedRangeEnd = rangeEnd + shift;
+
+  return collection
+    .find(
+      activeSceneFilter({
+        plotId,
+        verticalIndex: { $gte: updatedRangeStart, $lte: updatedRangeEnd },
+      }),
+    )
+    .toArray();
+};
+
 export interface CreateSceneInput {
   title: string;
   description: string;

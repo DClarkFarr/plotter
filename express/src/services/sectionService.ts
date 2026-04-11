@@ -2,23 +2,26 @@ import { ObjectId } from "mongodb";
 import {
   createSection as createSectionModel,
   CreateSectionInput,
+  deleteSectionById,
   getSectionById,
   getSectionByVerticalIndex,
   listSectionsByStoryId,
   SectionDocument,
   SectionType,
-  shiftSectionsUpwardFromIndex,
   updateSectionById as updateSectionByIdModel,
   UpdateSectionInput,
 } from "../models/sections";
-import {
-  getSceneByVerticalIndex,
-  SceneDocument,
-  shiftScenesUpwardFromIndex,
-} from "../models/scenes";
-import { listPlotIdsByStoryId } from "../models/plots";
+import { SceneDocument } from "../models/scenes";
 import { getStoryById } from "../models/stories";
 import { ensureObjectId } from "../models/types";
+import {
+  shouldShiftAfterSectionRemoval,
+  shouldShiftForSectionInsert,
+  shiftGridDownwardFromIndex,
+  shiftGridInVerticalIndexRange,
+  shiftGridUpwardFromIndex,
+  getMoveRangeShift,
+} from "../utils/plotGridUtils";
 
 const assertStoryExists = async (storyId: string | ObjectId): Promise<void> => {
   const story = await getStoryById(storyId);
@@ -40,41 +43,6 @@ export const listSectionsForStory = async (
 ): Promise<SectionDocument[]> => {
   await assertStoryExists(storyId);
   return listSectionsByStoryId(storyId);
-};
-
-const hasSceneOnIndex = async (
-  storyId: ObjectId,
-  verticalIndex: number,
-): Promise<boolean> => {
-  const plotIds = await listPlotIdsByStoryId(storyId);
-  for (const plotId of plotIds) {
-    const scene = await getSceneByVerticalIndex(plotId, verticalIndex);
-    if (scene) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const shiftGridUpwardFromIndex = async (
-  storyId: ObjectId,
-  verticalIndex: number,
-): Promise<{ scenes: SceneDocument[]; sections: SectionDocument[] }> => {
-  const plotIds = await listPlotIdsByStoryId(storyId);
-  const scenes: SceneDocument[] = [];
-
-  for (const plotId of plotIds) {
-    const shiftedScenes = await shiftScenesUpwardFromIndex(
-      plotId,
-      verticalIndex,
-    );
-    scenes.push(...shiftedScenes);
-  }
-
-  const sections = await shiftSectionsUpwardFromIndex(storyId, verticalIndex);
-
-  return { scenes, sections };
 };
 
 export const createSectionForStory = async (
@@ -107,10 +75,15 @@ export const createSectionForStory = async (
     throw new Error("Section verticalIndex is already occupied");
   }
 
-  const shouldShift = await hasSceneOnIndex(storyObjectId, input.verticalIndex);
+  const shouldShift = await shouldShiftForSectionInsert(
+    storyObjectId,
+    input.verticalIndex,
+  );
 
   const shiftedResources = shouldShift
-    ? await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex)
+    ? // need to get shifted resources to frontend for grid update after insert
+      // should follow same pattern used in other cases
+      await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex)
     : { scenes: [], sections: [] };
 
   const section = await createSectionModel({
@@ -192,11 +165,14 @@ export const updateSectionForStory = async (
       throw new Error("Section verticalIndex is already occupied");
     }
 
-    const shouldShift = await hasSceneOnIndex(storyObjectId, targetIndex);
-    if (shouldShift) {
-      const shifted = await shiftGridUpwardFromIndex(
+    const shift = getMoveRangeShift(current.verticalIndex, targetIndex);
+    if (shift) {
+      // need to get shifted resources to frontend.
+      const shifted = await shiftGridInVerticalIndexRange(
         storyObjectId,
-        targetIndex,
+        shift.rangeStart,
+        shift.rangeEnd,
+        shift.shift,
       );
       shiftedResources.scenes = shifted.scenes;
       shiftedResources.sections = shifted.sections;
@@ -210,4 +186,31 @@ export const updateSectionForStory = async (
     scenes: shiftedResources.scenes,
     sections: shiftedResources.sections,
   };
+};
+
+export const deleteSectionForStory = async (
+  storyId: string | ObjectId,
+  sectionId: string | ObjectId,
+): Promise<boolean> => {
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  const current = await getSectionForStory(storyObjectId, sectionId);
+  if (!current) {
+    return false;
+  }
+
+  const removed = await deleteSectionById(sectionId);
+  if (!removed) {
+    return false;
+  }
+
+  const shouldShift = await shouldShiftAfterSectionRemoval(
+    storyObjectId,
+    current.verticalIndex,
+  );
+  if (shouldShift) {
+    // need to get shifted resources to frontend for grid update after deletion
+    await shiftGridDownwardFromIndex(storyObjectId, current.verticalIndex);
+  }
+
+  return true;
 };

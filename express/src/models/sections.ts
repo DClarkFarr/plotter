@@ -121,6 +121,17 @@ export const updateSectionById = async (
   return result;
 };
 
+export const deleteSectionById = async (
+  id: string | ObjectId,
+): Promise<boolean> => {
+  const collection = getSectionsCollection();
+  const result = await collection.deleteOne({
+    _id: ensureObjectId(id, "sectionId"),
+  });
+
+  return result.deletedCount > 0;
+};
+
 export const shiftSectionsUpwardFromIndex = async (
   storyId: ObjectId,
   fromIndex: number,
@@ -138,7 +149,60 @@ export const shiftSectionsUpwardFromIndex = async (
   return collection
     .find({
       storyId,
-      verticalIndex: { $gte: fromIndex },
+      verticalIndex: { $gte: fromIndex + 1 },
+    })
+    .toArray();
+};
+
+export const shiftSectionsDownwardFromIndex = async (
+  storyId: ObjectId,
+  fromIndex: number,
+): Promise<SectionDocument[]> => {
+  const collection = getSectionsCollection();
+
+  await collection.updateMany(
+    {
+      storyId,
+      verticalIndex: { $gt: fromIndex },
+    },
+    { $inc: { verticalIndex: -1 } },
+  );
+
+  return collection
+    .find({
+      storyId,
+      verticalIndex: { $gt: fromIndex - 1 },
+    })
+    .toArray();
+};
+
+export const shiftSectionsInVerticalIndexRange = async (
+  storyId: ObjectId,
+  rangeStart: number,
+  rangeEnd: number,
+  shift: number,
+): Promise<SectionDocument[]> => {
+  if (rangeStart > rangeEnd || shift === 0) {
+    return [] as SectionDocument[];
+  }
+
+  const collection = getSectionsCollection();
+
+  await collection.updateMany(
+    {
+      storyId,
+      verticalIndex: { $gte: rangeStart, $lte: rangeEnd },
+    },
+    { $inc: { verticalIndex: shift } },
+  );
+
+  const updatedRangeStart = rangeStart + shift;
+  const updatedRangeEnd = rangeEnd + shift;
+
+  return collection
+    .find({
+      storyId,
+      verticalIndex: { $gte: updatedRangeStart, $lte: updatedRangeEnd },
     })
     .toArray();
 };
