@@ -419,7 +419,6 @@ const PlotGridBody = ({
                       <SectionRow
                         key={`section-${cell.section.id}`}
                         section={cell.section}
-                        style={{ gridColumn: "2 / -1" }}
                       />
                     );
                   } else if (cell.type === "section-spacer") {
