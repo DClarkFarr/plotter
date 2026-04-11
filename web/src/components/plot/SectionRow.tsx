@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import type { Section } from "../../api/types";
-import { Button, ButtonGroup } from "flowbite-react";
+import { Button } from "flowbite-react";
 import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
 import { useDraggable } from "@dnd-kit/react";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { useSectionEditorStore } from "../../store/sectionEditorStore";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 
 export type SectionRowProps = {
   section: Section;
@@ -54,26 +55,18 @@ export const SectionRow = ({ section, className }: SectionRowProps) => {
       </div>
       <div className="grow flex flex-col justify-center rounded-full w-full relative">
         <div className="h-1 bg-slate-300/80"></div>
-        <ButtonGroup className="button-group absolute left-1 transform opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
-          <Button
-            ref={handleRef}
-            color="gray"
-            size="xs"
-            type="button"
-            aria-label="Move section"
-          >
-            <IconArrowAll />
-          </Button>
-          <Button
-            color="cyan"
-            size="xs"
-            type="button"
-            aria-label="Edit section"
-            onClick={handleEdit}
-          >
-            <IconLeadPencil />
-          </Button>
-        </ButtonGroup>
+        <div className="button-group absolute left-1 transform opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
+          <CustomTooltip content={`Move ${section.type}`}>
+            <Button ref={handleRef} color="gray" size="xs" type="button">
+              <IconArrowAll />
+            </Button>
+          </CustomTooltip>
+          <CustomTooltip content={`Edit ${section.type}`}>
+            <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
+              <IconLeadPencil />
+            </Button>
+          </CustomTooltip>
+        </div>
       </div>
     </div>
   );

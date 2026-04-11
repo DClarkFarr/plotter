@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Button, Tooltip } from "flowbite-react";
+import { Button } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 import { useParams } from "@tanstack/react-router";
 import { useStoryTagsQuery } from "../../queries/story/story-queries";
 import {
@@ -154,7 +155,7 @@ export function ManageTagsPanel() {
             Rename tags and keep your story organized.
           </p>
         </div>
-        <Tooltip
+        <CustomTooltip
           content="import tags from another story"
           className="whitespace-nowrap"
         >
@@ -165,7 +166,7 @@ export function ManageTagsPanel() {
           >
             <IconImport className="" /> Tags
           </Button>
-        </Tooltip>
+        </CustomTooltip>
       </div>
 
       <div className="mb-4">

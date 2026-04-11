@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, ModalBody, ModalHeader, Tooltip } from "flowbite-react";
+import { Modal, ModalBody, ModalHeader } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 import { resolveCharacterImageUrl } from "../../utils/characterImage";
 import { deriveAvatarColor } from "../../utils/avatarColor";
 import { deriveAvatarInitials } from "../layout/avatarInitials";
@@ -84,7 +85,7 @@ export const CharacterCard = ({
 
       {showEdit && onEditImage ? (
         <div className="absolute right-3 top-3">
-          <Tooltip content="Edit image" className="whitespace-nowrap">
+          <CustomTooltip content="Edit image" className="whitespace-nowrap">
             <button
               type="button"
               onClick={onEditImage}
@@ -92,7 +93,7 @@ export const CharacterCard = ({
             >
               <IconAccountBoxEditOutline className="" />
             </button>
-          </Tooltip>
+          </CustomTooltip>
         </div>
       ) : null}
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Button, ButtonGroup, TextInput, Tooltip } from "flowbite-react";
+import { Button, TextInput } from "flowbite-react";
+import { CustomTooltip } from "../../helpers/CustomTooltip";
 import type { Plot } from "../../../api/types";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
 
@@ -66,26 +67,26 @@ export const PlotHeaderCreate = ({
       style={themeStyles}
       className="rounded-lg row-header z-150 border border-[var(--plot-color-soft)] bg-[var(--plot-color)] p-6 flex flex-col h-full relative group text-[var(--plot-text)] transition-colors duration-300"
     >
-      <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <Button
-          color="gray"
-          size="xs"
-          type="button"
-          onClick={handleCreate}
-          disabled={isPending}
+      <div className="button-group absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <CustomTooltip
+          content={isPending ? "Creating..." : "Create"}
+          className="whitespace-nowrap"
         >
-          <Tooltip
-            content={isPending ? "Creating..." : "Create"}
-            className="whitespace-nowrap"
+          <Button
+            color="gray"
+            size="xs"
+            type="button"
+            onClick={handleCreate}
+            disabled={isPending}
           >
             {isPending ? (
               <IconDotsCircle className="animate-spin" />
             ) : (
               <IconCheckThick />
             )}
-          </Tooltip>
-        </Button>
-      </ButtonGroup>
+          </Button>
+        </CustomTooltip>
+      </div>
 
       <div className="text-xs uppercase tracking-[0.2em] opacity-70">
         Create Plot {plotIndex + 1}

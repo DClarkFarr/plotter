@@ -1,11 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Textarea,
-  TextInput,
-  Tooltip,
-} from "flowbite-react";
+import { Button, ButtonGroup, Textarea, TextInput } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useDebounce } from "../../../utils/useDebounce";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
@@ -18,6 +12,7 @@ import { useClickOutside } from "../../../hooks/useClickOutside";
 import { useStoryStore } from "../../../store/storyStore";
 import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useUpdatePlotMutation } from "../../../queries/plot/plot-mutations";
+import { CustomTooltip } from "../../helpers/CustomTooltip";
 
 export type PlotHeaderProps = {
   storyId: string;
@@ -109,22 +104,18 @@ export const PlotHeader = ({
         style={themeStyles}
         className="plot-header row-header  group w-[var(--column-width)] rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-[var(--card-padding)] h-full relative z-150 text-[var(--plot-text)] transition-colors duration-300"
       >
-        <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
-          <Button
-            color="green"
-            size="xs"
-            type="button"
-            onClick={() => setIsEditing(false)}
-          >
-            <Tooltip
-              content="Save & Close"
-              className="whitespace-nowrap"
-              placement="left"
+        <div className="button-group absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-100">
+          <CustomTooltip content="Save & Close" placement="left">
+            <Button
+              color="green"
+              size="xs"
+              type="button"
+              onClick={() => setIsEditing(false)}
             >
               <IconCheckThick />
-            </Tooltip>
-          </Button>
-        </ButtonGroup>
+            </Button>
+          </CustomTooltip>
+        </div>
         <div className="flex flex-col gap-3">
           <TextInput
             value={draftTitle}
@@ -163,47 +154,47 @@ export const PlotHeader = ({
       style={themeStyles}
       className="plot-header row-header z-150 w-[var(--column-width)] group relative rounded-lg border border-[var(--plot-color)] bg-[var(--plot-color-soft)] p-[var(--card-padding)] h-full text-[var(--plot-text)] transition-colors duration-300"
     >
-      <ButtonGroup className="absolute z-10 right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <div className="button-group absolute z-10 right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {canMoveLeft ? (
-          <Button
-            color="gray"
-            size="xs"
-            type="button"
-            disabled={isPending}
-            onClick={() =>
-              updateMutation.mutate({
-                horizontalIndex: plot.horizontalIndex - 1,
-              })
-            }
-          >
-            <Tooltip content="Move left" className="whitespace-nowrap">
+          <CustomTooltip placement="bottom" content="Move left">
+            <Button
+              color="gray"
+              size="xs"
+              type="button"
+              disabled={isPending}
+              onClick={() =>
+                updateMutation.mutate({
+                  horizontalIndex: plot.horizontalIndex - 1,
+                })
+              }
+            >
               <IconMoveLeft />
-            </Tooltip>
-          </Button>
+            </Button>
+          </CustomTooltip>
         ) : null}
         {canMoveRight ? (
-          <Button
-            color="gray"
-            size="xs"
-            type="button"
-            disabled={isPending}
-            onClick={() =>
-              updateMutation.mutate({
-                horizontalIndex: plot.horizontalIndex + 1,
-              })
-            }
-          >
-            <Tooltip content="Move right" className="whitespace-nowrap">
+          <CustomTooltip placement="bottom" content="Move right">
+            <Button
+              color="gray"
+              size="xs"
+              type="button"
+              disabled={isPending}
+              onClick={() =>
+                updateMutation.mutate({
+                  horizontalIndex: plot.horizontalIndex + 1,
+                })
+              }
+            >
               <IconMoveRight />
-            </Tooltip>
-          </Button>
+            </Button>
+          </CustomTooltip>
         ) : null}
-        <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
-          <Tooltip content="Edit">
+        <CustomTooltip placement="bottom" content="Edit">
+          <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
             <IconLeadPencil />
-          </Tooltip>
-        </Button>
-      </ButtonGroup>
+          </Button>
+        </CustomTooltip>
+      </div>
 
       <div>
         <div className="text-xs uppercase tracking-[0.2em] opacity-70">

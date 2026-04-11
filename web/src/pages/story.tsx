@@ -16,7 +16,7 @@ import IconAccountGroup from "~icons/mdi/account-group";
 import IconTag from "~icons/mdi/tag";
 import IconEyeRemove from "~icons/mdi/eye-remove";
 import IconEyeMinus from "~icons/mdi/eye-minus";
-import { Tooltip } from "flowbite-react";
+import { CustomTooltip } from "../components/helpers/CustomTooltip";
 import {
   useStoryCharactersQuery,
   useStoryPlotsQuery,
@@ -95,7 +95,7 @@ export function StoryPage() {
             </span>
 
             <div className="button-group">
-              <Tooltip content="Grid view">
+              <CustomTooltip content="Grid view">
                 <button
                   type="button"
                   onClick={() => setCardDisplay("grid")}
@@ -107,8 +107,8 @@ export function StoryPage() {
                 >
                   <IconViewGrid className="text-sm" />
                 </button>
-              </Tooltip>
-              <Tooltip content="List view">
+              </CustomTooltip>
+              <CustomTooltip content="List view">
                 <button
                   type="button"
                   onClick={() => setCardDisplay("list")}
@@ -120,7 +120,7 @@ export function StoryPage() {
                 >
                   <IconMenu className="text-sm" />
                 </button>
-              </Tooltip>
+              </CustomTooltip>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ export function StoryPage() {
                 characters={characters}
                 onOpenCustomText={() => setIsCustomTextOpen(true)}
               />
-              <Tooltip
+              <CustomTooltip
                 content={
                   filterVisibilityMode === "hide"
                     ? "Hide filtered scenes"
@@ -179,7 +179,7 @@ export function StoryPage() {
                     <IconEyeMinus className="text-base text-slate-600" />
                   )}
                 </button>
-              </Tooltip>
+              </CustomTooltip>
             </div>
           </div>
 
@@ -188,7 +188,7 @@ export function StoryPage() {
               Assets
             </span>
             <div className="button-group">
-              <Tooltip content="Manage characters">
+              <CustomTooltip content="Manage characters">
                 <button
                   type="button"
                   onClick={() => {
@@ -199,8 +199,8 @@ export function StoryPage() {
                 >
                   <IconAccountGroup className="text-sm" />
                 </button>
-              </Tooltip>
-              <Tooltip content="Manage tags">
+              </CustomTooltip>
+              <CustomTooltip content="Manage tags">
                 <button
                   type="button"
                   onClick={() => {
@@ -211,7 +211,7 @@ export function StoryPage() {
                 >
                   <IconTag className="text-sm" />
                 </button>
-              </Tooltip>
+              </CustomTooltip>
             </div>
           </div>
         </div>

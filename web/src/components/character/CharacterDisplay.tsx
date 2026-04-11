@@ -1,4 +1,4 @@
-import { Tooltip } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 import type { Character } from "../../api/types";
 import { CharacterAvatar } from "../story/CharacterAvatar";
 import { CharacterCardPopover } from "./CharacterCardPopover";
@@ -24,14 +24,14 @@ export const CharacterDisplay = ({
   withCharacteristicsSummary = false,
 }: CharacterDisplayProps) => {
   const contentInner = avatarOnly ? (
-    <Tooltip content={character.title} placement="top">
+    <CustomTooltip content={character.title} placement="top">
       <CharacterAvatar
         name={character.title}
         imageUrl={character.imageUrl}
         showColorDot={showColorDot}
         size={avatarSize}
       />
-    </Tooltip>
+    </CustomTooltip>
   ) : (
     <div className="flex flex-col gap-1">
       <div className="flex gap-1 items-center">

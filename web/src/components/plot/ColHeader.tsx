@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Button, ButtonGroup, Tooltip } from "flowbite-react";
+import { Button } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 import type { Plot, Section } from "../../api/types";
 import { useCreateSectionMutation } from "../../queries/section/section-mutations";
 import { useStoryGridShiftMutation } from "../../queries/story/story-mutations";
@@ -81,96 +82,105 @@ export const ColHeader = ({
       className="col-header group relative flex items-center justify-center bg-gray-300 min-h-[80px] focus-within:z-10"
       data-row={rowIndex}
     >
-      <ButtonGroup className="absolute left-2 top-[50%] translate-y-[-50%] invisible opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 z-200">
+      <div className="absolute button-group left-2 top-[50%] translate-y-[-50%] invisible opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 z-200">
         {showSectionButtons && (
           <>
-            <Button
-              color="gray"
-              size="xs"
-              type="button"
-              disabled={isCreatingSection}
-              onClick={handleAddAct}
-            >
-              Act
-            </Button>
-            <Button
-              color="gray"
-              size="xs"
-              type="button"
-              disabled={isCreatingSection}
-              onClick={handleAddChapter}
-            >
-              Chapter
-            </Button>
-            <Button
-              color="red"
-              size="xs"
-              type="button"
-              onClick={() => setShowSectionButtons(false)}
-            >
-              <Tooltip
-                content="Back to main actions"
-                className="whitespace-nowrap"
+            <CustomTooltip content="Add Act">
+              <Button
+                color="gray"
+                size="xs"
+                type="button"
+                disabled={isCreatingSection}
+                onClick={handleAddAct}
               >
-                <IconClose />
-              </Tooltip>
-            </Button>
-          </>
-        )}
-        {!showSectionButtons && (
-          <>
-            <Button
-              color="gray"
-              size="xs"
-              type="button"
-              onClick={() => setShowSectionButtons(true)}
-            >
-              <Tooltip
-                content="Insert Act/Chapter"
-                className="whitespace-nowrap"
+                Act
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip content="Add Chapter">
+              <Button
+                color="gray"
+                size="xs"
+                type="button"
+                disabled={isCreatingSection}
+                onClick={handleAddChapter}
               >
-                <IconPlus />
-              </Tooltip>
-            </Button>
-
-            <Button
-              color="gray"
-              size="xs"
-              type="button"
-              onClick={handleInsertAbove}
+                Chapter
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip
+              content="Back to main actions"
+              className="whitespace-nowrap"
             >
-              <Tooltip content="insert row above" className="whitespace-nowrap">
-                <IconArrowExpandUp />
-              </Tooltip>
-            </Button>
-            <Button
-              color="gray"
-              size="xs"
-              type="button"
-              onClick={handleInsertBelow}
-            >
-              <Tooltip content="create row below" className="whitespace-nowrap">
-                <IconArrowExpandDown />
-              </Tooltip>
-            </Button>
-            {isRowEmpty ? (
               <Button
                 color="red"
                 size="xs"
                 type="button"
-                onClick={handleClearEmptyRow}
+                onClick={() => setShowSectionButtons(false)}
               >
-                <Tooltip
-                  content="clear empty row"
-                  className="whitespace-nowrap"
+                <IconClose />
+              </Button>
+            </CustomTooltip>
+          </>
+        )}
+        {!showSectionButtons && (
+          <>
+            <CustomTooltip
+              content="Insert Act/Chapter"
+              className="whitespace-nowrap"
+            >
+              <Button
+                color="gray"
+                size="xs"
+                type="button"
+                onClick={() => setShowSectionButtons(true)}
+              >
+                <IconPlus />
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip
+              content="insert row above"
+              className="whitespace-nowrap"
+            >
+              <Button
+                color="gray"
+                size="xs"
+                type="button"
+                onClick={handleInsertAbove}
+              >
+                <IconArrowExpandUp />
+              </Button>
+            </CustomTooltip>
+            <CustomTooltip
+              content="create row below"
+              className="whitespace-nowrap"
+            >
+              <Button
+                color="gray"
+                size="xs"
+                type="button"
+                onClick={handleInsertBelow}
+              >
+                <IconArrowExpandDown />
+              </Button>
+            </CustomTooltip>
+            {isRowEmpty ? (
+              <CustomTooltip
+                content="clear empty row"
+                className="whitespace-nowrap"
+              >
+                <Button
+                  color="red"
+                  size="xs"
+                  type="button"
+                  onClick={handleClearEmptyRow}
                 >
                   <IconDelete />
-                </Tooltip>
-              </Button>
+                </Button>
+              </CustomTooltip>
             ) : null}
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <h4 className="text-xl uppercase text-gray-500 tracking-[0.2em]">
         Row {rowIndex + 1}

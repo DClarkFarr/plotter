@@ -5,7 +5,7 @@ import { useCallback, useRef } from "react";
 import { useDraggable, DragDropProvider } from "@dnd-kit/react";
 import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
 import { useShallow } from "zustand/react/shallow";
-import { Button, ButtonGroup } from "flowbite-react";
+import { Button } from "flowbite-react";
 
 import IconCloseThick from "~icons/mdi/close-thick";
 
@@ -155,13 +155,14 @@ export const SidebarToggleButton = ({
     scene: "Selected Scene",
     character: "Manage Characters",
     tag: "Manage Tags",
+    section: "Manage Sections",
   };
 
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);
   const removeSidebarView = useSidebarStore((state) => state.removeSidebarView);
 
   return (
-    <ButtonGroup>
+    <div className="button-group">
       <Button
         size="sm"
         color="dark"
@@ -175,6 +176,6 @@ export const SidebarToggleButton = ({
           <IconCloseThick />
         </Button>
       )}
-    </ButtonGroup>
+    </div>
   );
 };

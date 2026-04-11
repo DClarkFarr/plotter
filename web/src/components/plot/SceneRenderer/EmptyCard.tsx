@@ -9,7 +9,8 @@ import { useCreateSceneMutation } from "../../../queries/scene/scene-mutations";
 import { useDroppable } from "@dnd-kit/react";
 import { CollisionPriority } from "@dnd-kit/abstract";
 import { memo } from "react";
-import { Button, ButtonGroup, Tooltip } from "flowbite-react";
+import { Button } from "flowbite-react";
+import { CustomTooltip } from "../../helpers/CustomTooltip";
 
 export const EmptyCard = memo(
   ({
@@ -91,8 +92,8 @@ export const EmptyCard = memo(
       >
         {!isDropTarget && (
           <div className="h-full w-full flex justify-center items-center">
-            <ButtonGroup className="button-group opacity-0 transition-opacity duration-250 -z-1 group-hover:opacity-100 group-hover:z-1">
-              <Tooltip content="Create a new scene">
+            <div className="button-group opacity-0 transition-opacity duration-250 -z-1 group-hover:opacity-100 group-hover:z-1">
+              <CustomTooltip content="Create a new scene">
                 <Button
                   type="button"
                   className="px-2 py-2 leading-none h-auto cursor-pointer"
@@ -103,8 +104,8 @@ export const EmptyCard = memo(
                 >
                   <IconPlus />
                 </Button>
-              </Tooltip>
-            </ButtonGroup>
+              </CustomTooltip>
+            </div>
           </div>
         )}
       </div>

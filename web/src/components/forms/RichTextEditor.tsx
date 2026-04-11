@@ -6,7 +6,8 @@ import {
   type EditorStateSnapshot,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, ButtonGroup, Tooltip } from "flowbite-react";
+import { Button, ButtonGroup } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 
 import IconFormatBold from "~icons/mdi/format-bold";
 import IconFormatItalic from "~icons/mdi/format-italic";
@@ -69,7 +70,7 @@ export const MenuBar = ({
   return (
     <div className="control-group">
       <ButtonGroup className="button-group">
-        <Tooltip content="Bold" className="whitespace-nowrap">
+        <CustomTooltip content="Bold" className="whitespace-nowrap">
           <Button
             color={editorState.isBold ? "dark" : "gray"}
             outline={!editorState.isBold}
@@ -80,8 +81,8 @@ export const MenuBar = ({
           >
             <IconFormatBold className="h-4 w-4" />
           </Button>
-        </Tooltip>
-        <Tooltip content="Italic" className="whitespace-nowrap">
+        </CustomTooltip>
+        <CustomTooltip content="Italic" className="whitespace-nowrap">
           <Button
             color={editorState.isItalic ? "dark" : "gray"}
             outline={!editorState.isItalic}
@@ -92,8 +93,8 @@ export const MenuBar = ({
           >
             <IconFormatItalic className="h-4 w-4" />
           </Button>
-        </Tooltip>
-        <Tooltip content="Strike" className="whitespace-nowrap">
+        </CustomTooltip>
+        <CustomTooltip content="Strike" className="whitespace-nowrap">
           <Button
             color={editorState.isStrike ? "dark" : "gray"}
             outline={!editorState.isStrike}
@@ -104,10 +105,10 @@ export const MenuBar = ({
           >
             <IconFormatStrikethrough className="h-4 w-4" />
           </Button>
-        </Tooltip>
+        </CustomTooltip>
       </ButtonGroup>
       <ButtonGroup className="button-group">
-        <Tooltip content="Clear marks" className="whitespace-nowrap">
+        <CustomTooltip content="Clear marks" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -118,9 +119,9 @@ export const MenuBar = ({
           >
             <IconFormatClear className="h-4 w-4" />
           </Button>
-        </Tooltip>
+        </CustomTooltip>
         {!isSimpleMode && (
-          <Tooltip content="Clear nodes" className="whitespace-nowrap">
+          <CustomTooltip content="Clear nodes" className="whitespace-nowrap">
             <Button
               color="gray"
               outline
@@ -131,12 +132,12 @@ export const MenuBar = ({
             >
               <IconBroom className="h-4 w-4" />
             </Button>
-          </Tooltip>
+          </CustomTooltip>
         )}
       </ButtonGroup>
       {!isSimpleMode && (
         <ButtonGroup className="button-group">
-          <Tooltip content="Paragraph" className="whitespace-nowrap">
+          <CustomTooltip content="Paragraph" className="whitespace-nowrap">
             <Button
               color={editorState.isParagraph ? "dark" : "gray"}
               outline={!editorState.isParagraph}
@@ -146,8 +147,8 @@ export const MenuBar = ({
             >
               P
             </Button>
-          </Tooltip>
-          <Tooltip content="H1" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="H1" className="whitespace-nowrap">
             <Button
               color={editorState.isHeading1 ? "dark" : "gray"}
               outline={!editorState.isHeading1}
@@ -159,8 +160,8 @@ export const MenuBar = ({
             >
               H1
             </Button>
-          </Tooltip>
-          <Tooltip content="H2" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="H2" className="whitespace-nowrap">
             <Button
               color={editorState.isHeading2 ? "dark" : "gray"}
               outline={!editorState.isHeading2}
@@ -172,8 +173,8 @@ export const MenuBar = ({
             >
               H2
             </Button>
-          </Tooltip>
-          <Tooltip content="H3" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="H3" className="whitespace-nowrap">
             <Button
               color={editorState.isHeading3 ? "dark" : "gray"}
               outline={!editorState.isHeading3}
@@ -185,8 +186,8 @@ export const MenuBar = ({
             >
               H3
             </Button>
-          </Tooltip>
-          <Tooltip content="H4" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="H4" className="whitespace-nowrap">
             <Button
               color={editorState.isHeading4 ? "dark" : "gray"}
               outline={!editorState.isHeading4}
@@ -198,8 +199,8 @@ export const MenuBar = ({
             >
               H4
             </Button>
-          </Tooltip>
-          {/* <Tooltip content="H5" className="whitespace-nowrap">
+          </CustomTooltip>
+          {/* <CustomTooltip content="H5" className="whitespace-nowrap">
           <Button
             color={editorState.isHeading5 ? "dark" : "gray"}
             outline={!editorState.isHeading5}
@@ -211,8 +212,8 @@ export const MenuBar = ({
           >
             H5
           </Button>
-        </Tooltip>
-        <Tooltip content="H6" className="whitespace-nowrap">
+        </CustomTooltip>
+        <CustomTooltip content="H6" className="whitespace-nowrap">
           <Button
             color={editorState.isHeading6 ? "dark" : "gray"}
             outline={!editorState.isHeading6}
@@ -224,11 +225,11 @@ export const MenuBar = ({
           >
             H6
           </Button>
-        </Tooltip> */}
+        </CustomTooltip> */}
         </ButtonGroup>
       )}
       <ButtonGroup className="button-group">
-        <Tooltip content="Bullet list" className="whitespace-nowrap">
+        <CustomTooltip content="Bullet list" className="whitespace-nowrap">
           <Button
             color={editorState.isBulletList ? "dark" : "gray"}
             outline={!editorState.isBulletList}
@@ -238,8 +239,8 @@ export const MenuBar = ({
           >
             <IconFormatListBulleted className="h-4 w-4" />
           </Button>
-        </Tooltip>
-        <Tooltip content="Ordered list" className="whitespace-nowrap">
+        </CustomTooltip>
+        <CustomTooltip content="Ordered list" className="whitespace-nowrap">
           <Button
             color={editorState.isOrderedList ? "dark" : "gray"}
             outline={!editorState.isOrderedList}
@@ -249,11 +250,11 @@ export const MenuBar = ({
           >
             <IconFormatListNumbered className="h-4 w-4" />
           </Button>
-        </Tooltip>
+        </CustomTooltip>
       </ButtonGroup>
       {!isSimpleMode && (
         <ButtonGroup className="button-group">
-          <Tooltip content="Code" className="whitespace-nowrap">
+          <CustomTooltip content="Code" className="whitespace-nowrap">
             <Button
               color={editorState.isCode ? "dark" : "gray"}
               outline={!editorState.isCode}
@@ -264,8 +265,8 @@ export const MenuBar = ({
             >
               <IconCodeTags className="h-4 w-4" />
             </Button>
-          </Tooltip>
-          <Tooltip content="Code block" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="Code block" className="whitespace-nowrap">
             <Button
               color={editorState.isCodeBlock ? "dark" : "gray"}
               outline={!editorState.isCodeBlock}
@@ -275,8 +276,8 @@ export const MenuBar = ({
             >
               <IconCodeBraces className="h-4 w-4" />
             </Button>
-          </Tooltip>
-          <Tooltip content="Blockquote" className="whitespace-nowrap">
+          </CustomTooltip>
+          <CustomTooltip content="Blockquote" className="whitespace-nowrap">
             <Button
               color={editorState.isBlockquote ? "dark" : "gray"}
               outline={!editorState.isBlockquote}
@@ -286,12 +287,12 @@ export const MenuBar = ({
             >
               <IconFormatQuoteClose className="h-4 w-4" />
             </Button>
-          </Tooltip>
+          </CustomTooltip>
         </ButtonGroup>
       )}
       {!isSimpleMode && (
         <ButtonGroup className="button-group">
-          <Tooltip content="Horizontal rule" className="whitespace-nowrap">
+          <CustomTooltip content="Horizontal rule" className="whitespace-nowrap">
             <Button
               color="gray"
               outline
@@ -301,8 +302,8 @@ export const MenuBar = ({
             >
               <IconMinus className="h-4 w-4" />
             </Button>
-          </Tooltip>
-          {/* <Tooltip content="Hard break" className="whitespace-nowrap">
+          </CustomTooltip>
+          {/* <CustomTooltip content="Hard break" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -312,11 +313,11 @@ export const MenuBar = ({
           >
             <IconKeyboardReturn className="h-4 w-4" />
           </Button>
-        </Tooltip> */}
+        </CustomTooltip> */}
         </ButtonGroup>
       )}
       <ButtonGroup className="button-group">
-        <Tooltip content="Undo" className="whitespace-nowrap">
+        <CustomTooltip content="Undo" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -327,8 +328,8 @@ export const MenuBar = ({
           >
             <IconUndo className="h-4 w-4" />
           </Button>
-        </Tooltip>
-        <Tooltip content="Redo" className="whitespace-nowrap">
+        </CustomTooltip>
+        <CustomTooltip content="Redo" className="whitespace-nowrap">
           <Button
             color="gray"
             outline
@@ -339,7 +340,7 @@ export const MenuBar = ({
           >
             <IconRedo className="h-4 w-4" />
           </Button>
-        </Tooltip>
+        </CustomTooltip>
       </ButtonGroup>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Button, Tooltip } from "flowbite-react";
+import { Button } from "flowbite-react";
+import { CustomTooltip } from "../helpers/CustomTooltip";
 import { useParams } from "@tanstack/react-router";
 import IconDelete from "~icons/mdi/delete";
 import IconPencil from "~icons/mdi/pencil";
@@ -102,7 +103,7 @@ export function ManageCharactersPanel() {
             Create and edit character details from a dedicated modal.
           </p>
         </div>
-        <Tooltip
+        <CustomTooltip
           content="import characters from another story"
           className="whitespace-nowrap"
         >
@@ -113,7 +114,7 @@ export function ManageCharactersPanel() {
           >
             <IconImport className="" /> Characters
           </Button>
-        </Tooltip>
+        </CustomTooltip>
       </div>
 
       <div>

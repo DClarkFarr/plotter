@@ -19,6 +19,7 @@ import IconEyeRemove from "~icons/mdi/eye-remove";
 import IconEyeMinus from "~icons/mdi/eye-minus";
 import { memo } from "react";
 import { useDraggable } from "@dnd-kit/react";
+import { CustomTooltip } from "../../helpers/CustomTooltip";
 
 export const SceneCard = memo(
   ({
@@ -127,26 +128,18 @@ export const SceneCard = memo(
         data-c={plotIndex}
         className={`card card--scene group relative z-1 focus-within:z-10 p-[var(--card-padding)] w-[var(--column-width)] min-h-[var(--card-min-height)] border border-[var(--plot-color-soft)] radius-2 h-full ${isDragging ? `scale-80` : ``} ${isDropTarget && !isDragSource ? `text-white border-purple-300 bg-purple-900 shadow-lg` : `bg-[var(--plot-color)]  border-[var(--plot-color)] text-[var(--plot-text)]`}`}
       >
-        <ButtonGroup className="absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
-          <Button
-            ref={handleRef}
-            color="gray"
-            size="xs"
-            type="button"
-            aria-label="Move scene"
-          >
-            <IconArrowAll />
-          </Button>
-          <Button
-            color="cyan"
-            size="xs"
-            type="button"
-            aria-label="Edit scene"
-            onClick={handleEdit}
-          >
-            <IconLeadPencil />
-          </Button>
-        </ButtonGroup>
+        <div className="button-group absolute right-1 top-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
+          <CustomTooltip content="Move scene">
+            <Button ref={handleRef} color="gray" size="xs" type="button">
+              <IconArrowAll />
+            </Button>
+          </CustomTooltip>
+          <CustomTooltip content="Edit scene">
+            <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
+              <IconLeadPencil />
+            </Button>
+          </CustomTooltip>
+        </div>
         <div className="-mt-[var(--card-padding)] -ml-[var(--card-padding)] pt-0.5 pl-0.5 pb-1">
           <SceneTags
             tags={tags}
