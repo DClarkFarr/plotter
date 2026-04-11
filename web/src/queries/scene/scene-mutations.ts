@@ -8,6 +8,7 @@ import type {
   Plot,
   Scene,
   Section,
+  ShiftedResources,
   UpdateSceneInput,
 } from "../../api/types";
 import {
@@ -21,6 +22,7 @@ import { useStoryPlotsQuery } from "../story/story-queries";
 import { useStorySectionsQuery } from "../section/section-queries";
 import { shiftSectionsUpwardFromIndex } from "../section/section-helpers";
 import { shiftScenesForInsert, sortScenes } from "./scene-helpers";
+import { applyShiftedResources } from "../story/shifted-resources";
 
 export function useCreateSceneMutation(storyId: string) {
   const queryClient = useQueryClient();
@@ -35,6 +37,9 @@ export function useCreateSceneMutation(storyId: string) {
       });
       const previous = queryClient.getQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
+      );
+      const previousSections = queryClient.getQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
       );
 
       const tempId = `temp-${Date.now()}`;
@@ -58,11 +63,22 @@ export function useCreateSceneMutation(storyId: string) {
             return plot;
           }
 
-          const shifted = plot.scenes.map((scene) =>
-            scene.verticalIndex >= input.verticalIndex
-              ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
-              : scene,
+          const hasSceneAtIndex = plot.scenes.some(
+            (scene) => scene.verticalIndex === input.verticalIndex,
           );
+          const hasSectionAtIndex =
+            previousSections?.some(
+              (section) => section.verticalIndex === input.verticalIndex,
+            ) ?? false;
+          const shouldShift = hasSceneAtIndex && !hasSectionAtIndex;
+
+          const shifted = shouldShift
+            ? plot.scenes.map((scene) =>
+                scene.verticalIndex >= input.verticalIndex
+                  ? { ...scene, verticalIndex: scene.verticalIndex + 1 }
+                  : scene,
+              )
+            : plot.scenes;
 
           return {
             ...plot,
@@ -86,7 +102,8 @@ export function useCreateSceneMutation(storyId: string) {
         );
       }
     },
-    onSuccess: (scene, _input, context) => {
+    onSuccess: (response, _input, context) => {
+      const scene = response.scene;
       queryClient.setQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
         (current) => {
@@ -111,6 +128,7 @@ export function useCreateSceneMutation(storyId: string) {
           });
         },
       );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
     },
     onSettled: () => {
       useSceneEditorStore.getState().setSaving(false);
@@ -180,7 +198,8 @@ export function useUpdateSceneMutation(storyId: string) {
         );
       }
     },
-    onSuccess: (scene) => {
+    onSuccess: (response) => {
+      const scene = response.scene;
       queryClient.setQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
         (current) => {
@@ -201,6 +220,7 @@ export function useUpdateSceneMutation(storyId: string) {
           });
         },
       );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
     },
     onSettled: () => {
       useSceneEditorStore.getState().setSaving(false);
@@ -251,12 +271,13 @@ export function useDeleteSceneMutation(storyId: string) {
         );
       }
     },
-    onSuccess: (_data, sceneId) => {
+    onSuccess: (response, sceneId) => {
       queryClient.setQueryData<Plot[]>(
         useStoryPlotsQuery.queryKey(storyId),
         (current) =>
           current ? removeSceneFromPlots(current, sceneId) : current,
       );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
     },
     onSettled: () => {
       useSceneEditorStore.getState().setSaving(false);
@@ -386,8 +407,22 @@ const useMoveSingleWithinPlot = () => {
         );
       }
     },
-    onSuccess: ({ scenes }, input) => {
-      console.log("apply scenes", scenes, "from", input);
+    onSuccess: (response, input) => {
+      if (response.shiftedResources) {
+        applyShiftedResources(
+          queryClient,
+          input.storyId,
+          response.shiftedResources,
+        );
+      }
+
+      if (response.scene) {
+        const shiftedResources: ShiftedResources = {
+          scenes: [response.scene],
+          sections: [],
+        };
+        applyShiftedResources(queryClient, input.storyId, shiftedResources);
+      }
     },
   });
 
@@ -490,23 +525,6 @@ function hasSectionOnIndex(
     (section) => section.verticalIndex === targetVerticalIndex,
   );
 }
-
-export const findAndUpdatePlotScenes = (plots: Plot[], scenes: Scene[]) => {
-  const sceneMap = new Map(scenes.map((scene) => [scene.id, scene]));
-
-  return plots.map((plot) => {
-    const hasScene = plot.scenes.some((scene) => sceneMap.has(scene.id));
-    if (!hasScene) {
-      return plot;
-    }
-
-    const nextScenes = plot.scenes.map(
-      (scene) => sceneMap.get(scene.id) ?? scene,
-    );
-
-    return { ...plot, scenes: sortScenes(nextScenes) };
-  });
-};
 
 export const MoveSceneMutations = {
   useMoveSingleWithinPlot,

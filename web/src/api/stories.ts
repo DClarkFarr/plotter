@@ -8,12 +8,15 @@ import {
   type CreateSceneInput,
   type CreateTagInput,
   type CreateSectionInput,
+  type DeleteSceneResponse,
+  type DeleteSectionResponse,
   type ImportCharactersInput,
   type ImportCharactersResponse,
   type ImportTagsInput,
   type ImportTagsResponse,
   type ImportOutlineInput,
   type ImportOutlineResponse,
+  type ShiftedResources,
   type UpdateTagInput,
   type UpdateSectionInput,
   type CreatePlotInput,
@@ -313,13 +316,13 @@ export async function createPlot(
 export async function createSection(
   storyId: string,
   input: CreateSectionInput,
-): Promise<Section> {
+): Promise<SectionResponse> {
   try {
     const { data } = await apiClient.post<SectionResponse>(
       `/stories/${storyId}/sections`,
       input,
     );
-    return data.section;
+    return data;
   } catch (err) {
     throw toApiError(err);
   }
@@ -329,13 +332,27 @@ export async function updateSection(
   storyId: string,
   sectionId: string,
   input: UpdateSectionInput,
-): Promise<Section> {
+): Promise<SectionResponse> {
   try {
     const { data } = await apiClient.patch<SectionResponse>(
       `/stories/${storyId}/sections/${sectionId}`,
       input,
     );
-    return data.section;
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function deleteSection(
+  storyId: string,
+  sectionId: string,
+): Promise<DeleteSectionResponse> {
+  try {
+    const { data } = await apiClient.delete<DeleteSectionResponse>(
+      `/stories/${storyId}/sections/${sectionId}`,
+    );
+    return data;
   } catch (err) {
     throw toApiError(err);
   }
@@ -361,13 +378,13 @@ export async function createScene(
   storyId: string,
   plotId: string,
   input: CreateSceneInput,
-): Promise<Scene> {
+): Promise<SceneResponse> {
   try {
     const { data } = await apiClient.post<SceneResponse>(
       `/stories/${storyId}/plots/${plotId}/scenes`,
       input,
     );
-    return data.scene;
+    return data;
   } catch (err) {
     throw toApiError(err);
   }
@@ -376,9 +393,12 @@ export async function createScene(
 export async function deleteScene(
   storyId: string,
   sceneId: string,
-): Promise<void> {
+): Promise<DeleteSceneResponse> {
   try {
-    await apiClient.delete<void>(`/stories/${storyId}/scenes/${sceneId}`);
+    const { data } = await apiClient.delete<DeleteSceneResponse>(
+      `/stories/${storyId}/scenes/${sceneId}`,
+    );
+    return data;
   } catch (err) {
     throw toApiError(err);
   }
@@ -388,13 +408,13 @@ export async function updateScene(
   storyId: string,
   sceneId: string,
   input: UpdateSceneInput,
-): Promise<Scene> {
+): Promise<SceneResponse> {
   try {
     const { data } = await apiClient.patch<SceneResponse>(
       `/stories/${storyId}/scenes/${sceneId}`,
       input,
     );
-    return data.scene;
+    return data;
   } catch (err) {
     throw toApiError(err);
   }
@@ -406,7 +426,8 @@ export async function moveSingleSceneWithinPlot(
   try {
     return await apiClient
       .post<{
-        scenes: Scene[];
+        scene?: Scene | null;
+        shiftedResources?: ShiftedResources;
       }>(
         `/stories/${input.storyId}/scenes/${input.sceneId}/move-within-plot`,
         input,

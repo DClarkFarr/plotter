@@ -10,18 +10,14 @@ import {
   updateSceneById as updateSceneByIdModel,
   UpdateSceneInput,
   getSceneByVerticalIndex,
-  shiftScenesUpwardFromIndex,
 } from "../models/scenes";
-import {
-  getSectionByVerticalIndex,
-  SectionDocument,
-  shiftSectionsUpwardFromIndex,
-} from "../models/sections";
+import { SectionDocument } from "../models/sections";
 import { getCharacterById } from "../models/characters";
 import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
 import {
+  ShiftedResources,
   shouldShiftAfterSceneRemoval,
   shouldShiftForSceneInsert,
   shiftGridDownwardFromIndex,
@@ -174,7 +170,7 @@ export const createScene = async (
 export const createSceneForStory = async (
   storyId: string | ObjectId,
   input: CreateSceneInput,
-): Promise<SceneDocument> => {
+): Promise<{ scene: SceneDocument; shiftedResources?: ShiftedResources }> => {
   const storyObjectId = ensureObjectId(storyId, "storyId");
   const plot = await assertPlotExists(input.plotId);
 
@@ -187,17 +183,18 @@ export const createSceneForStory = async (
     plot._id,
     input.verticalIndex,
   );
-  if (shouldShift) {
-    // shift needs to get updated resources to frontend
-    await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex);
-  }
+  const shiftedResources = shouldShift
+    ? await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex)
+    : undefined;
 
   await assertPlotScenePositionIsOpen(plot._id, input.verticalIndex);
 
-  return createScene({
+  const scene = await createScene({
     ...input,
     plotId: plot._id,
   });
+
+  return shiftedResources ? { scene, shiftedResources } : { scene };
 };
 
 export const updateSceneById = async (
@@ -285,21 +282,21 @@ export const updateSceneForStory = async (
 export const deleteSceneForStory = async (
   storyId: string | ObjectId,
   sceneId: string | ObjectId,
-): Promise<boolean> => {
+): Promise<{ deleted: boolean; shiftedResources?: ShiftedResources }> => {
   const storyObjectId = ensureObjectId(storyId, "storyId");
   const current = await getSceneForStory(storyObjectId, sceneId);
   if (!current) {
-    return false;
+    return { deleted: false };
   }
 
   const plot = await assertPlotExists(current.plotId);
   if (plot.storyId.toHexString() !== storyObjectId.toHexString()) {
-    return false;
+    return { deleted: false };
   }
 
   const removed = await deleteSceneById(sceneId);
   if (!removed) {
-    return false;
+    return { deleted: false };
   }
 
   // For deleting a scene, the plot > vertical index of the deleted scene
@@ -312,11 +309,14 @@ export const deleteSceneForStory = async (
     current.verticalIndex,
   );
   if (shouldShift) {
-    // grid shift needs to get updates to frontend
-    await shiftGridDownwardFromIndex(storyObjectId, current.verticalIndex);
+    const shiftedResources = await shiftGridDownwardFromIndex(
+      storyObjectId,
+      current.verticalIndex,
+    );
+    return { deleted: true, shiftedResources };
   }
 
-  return true;
+  return { deleted: true };
 };
 
 export type MoveSingleSceneWithinPlotInput = {
@@ -328,13 +328,13 @@ export type MoveSingleSceneWithinPlotInput = {
 };
 export const moveSingleCardWithinPlot = async (
   input: MoveSingleSceneWithinPlotInput,
-) => {
+): Promise<{ scene: SceneDocument | null; shiftedResources?: ShiftedResources }> => {
   const fromPlotId = ensureObjectId(input.fromPlotId, "fromPlotId");
   const toPlotId = ensureObjectId(input.toPlotId, "toPlotId");
   const sceneId = ensureObjectId(input.sceneId, "sceneId");
 
   const plot = await assertPlotExists(toPlotId);
-  const scene = await assertSceneExists(sceneId);
+  await assertSceneExists(sceneId);
 
   const { /* fromIndex, */ toIndex } = input;
 
@@ -369,29 +369,12 @@ export const moveSingleCardWithinPlot = async (
     scenesToUpdate.push(updatedScene);
   }
 
-  return {
-    scenes: scenesToUpdate,
-    sections: sectionsToUpdate,
-  };
-};
+  const shiftedResources: ShiftedResources | undefined =
+    scenesToUpdate.length || sectionsToUpdate.length
+      ? { scenes: scenesToUpdate, sections: sectionsToUpdate }
+      : undefined;
 
-export const sceneMoveRequiresShift = async (
-  storyId: ObjectId,
-  targetPlotId: ObjectId,
-  targetVerticalIndex: number,
-): Promise<boolean> => {
-  // step 1: Check if there is anything on that index.
-  // Currently, checking scenes and sections.
-
-  const existingScene = await getSceneByVerticalIndex(
-    targetPlotId,
-    targetVerticalIndex,
-  );
-  const existingSection = await getSectionByVerticalIndex(
-    storyId,
-    targetVerticalIndex,
-  );
-
-  // step 2: if any resources are found, return true
-  return Boolean(existingScene || existingSection);
+  return shiftedResources
+    ? { scene: updatedScene ?? null, shiftedResources }
+    : { scene: updatedScene ?? null };
 };

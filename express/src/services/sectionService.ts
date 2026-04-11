@@ -11,10 +11,10 @@ import {
   updateSectionById as updateSectionByIdModel,
   UpdateSectionInput,
 } from "../models/sections";
-import { SceneDocument } from "../models/scenes";
 import { getStoryById } from "../models/stories";
 import { ensureObjectId } from "../models/types";
 import {
+  ShiftedResources,
   shouldShiftAfterSectionRemoval,
   shouldShiftForSectionInsert,
   shiftGridDownwardFromIndex,
@@ -50,8 +50,7 @@ export const createSectionForStory = async (
   input: CreateSectionInput,
 ): Promise<{
   section: SectionDocument;
-  scenes: SceneDocument[];
-  sections: SectionDocument[];
+  shiftedResources: ShiftedResources | undefined;
 }> => {
   if (input.verticalIndex < 0) {
     throw new Error("verticalIndex must be >= 0");
@@ -81,10 +80,8 @@ export const createSectionForStory = async (
   );
 
   const shiftedResources = shouldShift
-    ? // need to get shifted resources to frontend for grid update after insert
-      // should follow same pattern used in other cases
-      await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex)
-    : { scenes: [], sections: [] };
+    ? await shiftGridUpwardFromIndex(storyObjectId, input.verticalIndex)
+    : undefined;
 
   const section = await createSectionModel({
     ...input,
@@ -95,8 +92,7 @@ export const createSectionForStory = async (
 
   return {
     section,
-    scenes: shiftedResources.scenes,
-    sections: shiftedResources.sections,
+    shiftedResources,
   };
 };
 
@@ -123,13 +119,12 @@ export const updateSectionForStory = async (
   updates: UpdateSectionInput,
 ): Promise<{
   section: SectionDocument | null;
-  scenes: SceneDocument[];
-  sections: SectionDocument[];
+  shiftedResources: ShiftedResources | undefined;
 }> => {
   const storyObjectId = ensureObjectId(storyId, "storyId");
   const current = await getSectionForStory(storyObjectId, sectionId);
   if (!current) {
-    return { section: null, scenes: [], sections: [] };
+    return { section: null, shiftedResources: undefined };
   }
 
   if (updates.verticalIndex !== undefined) {
@@ -152,10 +147,7 @@ export const updateSectionForStory = async (
   }
 
   const targetIndex = updates.verticalIndex;
-  const shiftedResources = {
-    scenes: [] as SceneDocument[],
-    sections: [] as SectionDocument[],
-  };
+  let shiftedResources: ShiftedResources | undefined;
   if (targetIndex !== undefined && targetIndex !== current.verticalIndex) {
     const occupied = await getSectionByVerticalIndex(
       storyObjectId,
@@ -167,15 +159,12 @@ export const updateSectionForStory = async (
 
     const shift = getMoveRangeShift(current.verticalIndex, targetIndex);
     if (shift) {
-      // need to get shifted resources to frontend.
-      const shifted = await shiftGridInVerticalIndexRange(
+      shiftedResources = await shiftGridInVerticalIndexRange(
         storyObjectId,
         shift.rangeStart,
         shift.rangeEnd,
         shift.shift,
       );
-      shiftedResources.scenes = shifted.scenes;
-      shiftedResources.sections = shifted.sections;
     }
   }
 
@@ -183,24 +172,23 @@ export const updateSectionForStory = async (
 
   return {
     section,
-    scenes: shiftedResources.scenes,
-    sections: shiftedResources.sections,
+    shiftedResources,
   };
 };
 
 export const deleteSectionForStory = async (
   storyId: string | ObjectId,
   sectionId: string | ObjectId,
-): Promise<boolean> => {
+): Promise<{ deleted: boolean; shiftedResources?: ShiftedResources }> => {
   const storyObjectId = ensureObjectId(storyId, "storyId");
   const current = await getSectionForStory(storyObjectId, sectionId);
   if (!current) {
-    return false;
+    return { deleted: false };
   }
 
   const removed = await deleteSectionById(sectionId);
   if (!removed) {
-    return false;
+    return { deleted: false };
   }
 
   const shouldShift = await shouldShiftAfterSectionRemoval(
@@ -208,9 +196,12 @@ export const deleteSectionForStory = async (
     current.verticalIndex,
   );
   if (shouldShift) {
-    // need to get shifted resources to frontend for grid update after deletion
-    await shiftGridDownwardFromIndex(storyObjectId, current.verticalIndex);
+    const shiftedResources = await shiftGridDownwardFromIndex(
+      storyObjectId,
+      current.verticalIndex,
+    );
+    return { deleted: true, shiftedResources };
   }
 
-  return true;
+  return { deleted: true };
 };

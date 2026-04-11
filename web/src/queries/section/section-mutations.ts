@@ -4,9 +4,10 @@ import type {
   Section,
   UpdateSectionInput,
 } from "../../api/types";
-import { createSection, updateSection } from "../../api/stories";
+import { createSection, deleteSection, updateSection } from "../../api/stories";
 import { useStorySectionsQuery } from "./section-queries";
 import { sortSections } from "./section-helpers";
+import { applyShiftedResources } from "../story/shifted-resources";
 
 export function useCreateSectionMutation(storyId: string) {
   const queryClient = useQueryClient();
@@ -48,7 +49,8 @@ export function useCreateSectionMutation(storyId: string) {
         );
       }
     },
-    onSuccess: (section, _input, context) => {
+    onSuccess: (response, _input, context) => {
+      const section = response.section;
       queryClient.setQueryData<Section[]>(
         useStorySectionsQuery.queryKey(storyId),
         (current) => {
@@ -63,6 +65,7 @@ export function useCreateSectionMutation(storyId: string) {
           return sortSections(hasSection ? replaced : [...replaced, section]);
         },
       );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
     },
   });
 }
@@ -77,7 +80,8 @@ export function useUpdateSectionMutation(storyId: string) {
   return useMutation({
     mutationFn: (input: UpdateSectionPayload) =>
       updateSection(storyId, input.sectionId, input),
-    onSuccess: (section) => {
+    onSuccess: (response) => {
+      const section = response.section;
       queryClient.setQueryData<Section[]>(
         useStorySectionsQuery.queryKey(storyId),
         (current) => {
@@ -92,6 +96,51 @@ export function useUpdateSectionMutation(storyId: string) {
           return sortSections(hasSection ? next : [...next, section]);
         },
       );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
+    },
+  });
+}
+
+export function useDeleteSectionMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sectionId: string) => deleteSection(storyId, sectionId),
+    onMutate: async (sectionId) => {
+      await queryClient.cancelQueries({
+        queryKey: useStorySectionsQuery.queryKey(storyId),
+      });
+
+      const previous = queryClient.getQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+      );
+
+      if (previous) {
+        queryClient.setQueryData<Section[]>(
+          useStorySectionsQuery.queryKey(storyId),
+          previous.filter((section) => section.id !== sectionId),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_error, _sectionId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          useStorySectionsQuery.queryKey(storyId),
+          context.previous,
+        );
+      }
+    },
+    onSuccess: (response, sectionId) => {
+      queryClient.setQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+        (current) =>
+          current
+            ? current.filter((section) => section.id !== sectionId)
+            : current,
+      );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
     },
   });
 }

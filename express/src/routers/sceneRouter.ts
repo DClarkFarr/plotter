@@ -67,6 +67,14 @@ const toSectionResponse = (section: {
   type: section.type,
 });
 
+const toShiftedResourcesResponse = (resources: {
+  scenes: Array<Parameters<typeof toSceneResponse>[0]>;
+  sections: Array<Parameters<typeof toSectionResponse>[0]>;
+}) => ({
+  scenes: resources.scenes.map((scene) => toSceneResponse(scene)),
+  sections: resources.sections.map((section) => toSectionResponse(section)),
+});
+
 const parseOptionalString = (value: unknown): string | undefined => {
   if (value === undefined || value === null) {
     return undefined;
@@ -247,7 +255,20 @@ const applySceneRoutes = () => {
         verticalIndex,
       });
 
-      res.status(201).json({ scene: toSceneResponse(created) });
+      const payload: {
+        scene: ReturnType<typeof toSceneResponse>;
+        shiftedResources?: ReturnType<typeof toShiftedResourcesResponse>;
+      } = {
+        scene: toSceneResponse(created.scene),
+      };
+
+      if (created.shiftedResources) {
+        payload.shiftedResources = toShiftedResourcesResponse(
+          created.shiftedResources,
+        );
+      }
+
+      res.status(201).json(payload);
     }),
   );
 
@@ -342,16 +363,17 @@ const applySceneRoutes = () => {
       const changedResources = await moveSingleCardWithinPlot(shiftData);
 
       const payload: {
-        scenes: Array<ReturnType<typeof toSceneResponse>>;
-        sections: Array<ReturnType<typeof toSectionResponse>>;
-      } = {
-        scenes: changedResources.scenes.map(toSceneResponse),
-        sections: changedResources.sections.map(toSectionResponse),
-      };
+        scene?: ReturnType<typeof toSceneResponse> | null;
+        shiftedResources?: ReturnType<typeof toShiftedResourcesResponse>;
+      } = {};
 
-      if (changedResources.sections?.length) {
-        payload.sections = changedResources.sections.map((section) =>
-          toSectionResponse(section),
+      if (changedResources.scene) {
+        payload.scene = toSceneResponse(changedResources.scene);
+      }
+
+      if (changedResources.shiftedResources) {
+        payload.shiftedResources = toShiftedResourcesResponse(
+          changedResources.shiftedResources,
         );
       }
 
@@ -369,12 +391,25 @@ const applySceneRoutes = () => {
       await getStoryForUser(storyId, userId);
 
       const deleted = await deleteSceneForStory(storyId, sceneId);
-      if (!deleted) {
+      if (!deleted.deleted) {
         res.status(404).json({ error: "Scene not found" });
         return;
       }
 
-      res.status(204).send();
+      const payload: {
+        deleted: true;
+        shiftedResources?: ReturnType<typeof toShiftedResourcesResponse>;
+      } = {
+        deleted: true,
+      };
+
+      if (deleted.shiftedResources) {
+        payload.shiftedResources = toShiftedResourcesResponse(
+          deleted.shiftedResources,
+        );
+      }
+
+      res.status(200).json(payload);
     }),
   );
 };

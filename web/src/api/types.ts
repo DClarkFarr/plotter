@@ -169,6 +169,11 @@ export interface Section {
   type: SectionType;
 }
 
+export interface ShiftedResources {
+  scenes: Scene[];
+  sections: Section[];
+}
+
 export interface Plot {
   id: string;
   title: string;
@@ -288,6 +293,7 @@ export interface PlotResponse {
 
 export interface SceneResponse {
   scene: Scene;
+  shiftedResources?: ShiftedResources;
 }
 
 export interface SectionsResponse {
@@ -296,6 +302,17 @@ export interface SectionsResponse {
 
 export interface SectionResponse {
   section: Section;
+  shiftedResources?: ShiftedResources;
+}
+
+export interface DeleteSceneResponse {
+  deleted: true;
+  shiftedResources?: ShiftedResources;
+}
+
+export interface DeleteSectionResponse {
+  deleted: true;
+  shiftedResources?: ShiftedResources;
 }
 
 export interface MessageResponse {

@@ -18,10 +18,12 @@ import { listPlotIdsByStoryId } from "../models/plots";
 export type GridShiftScope = "plot" | "story";
 export type GridShiftDirection = "up" | "down";
 
-export type GridShiftResult = {
+export type ShiftedResources = {
   scenes: SceneDocument[];
   sections: SectionDocument[];
 };
+
+export type GridShiftResult = ShiftedResources;
 
 export const hasSectionOnIndex = async (
   storyId: ObjectId,
