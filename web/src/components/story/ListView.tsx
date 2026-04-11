@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Virtuoso } from "react-virtuoso";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import type { Plot } from "../../api/types";
 import {
   entryIsScene,
@@ -15,6 +15,7 @@ import { StoryFiltersBar } from "./StoryFiltersBar";
 import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
 import { useStorySectionsQuery } from "../../queries/section/section-queries";
 import { ListViewSection } from "./ListViewSection";
+import { ListViewSidebarItem } from "./ListViewSidebarItem";
 
 export type ListViewProps = {
   storyId: string;
@@ -45,7 +46,72 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     [plots, sections],
   );
 
-  const [isScrolling, setIsScrolling] = useState(false);
+  const isScrolling = useRef(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+
+  // Sync sidebar Virtuoso scroll position to active item
+  useEffect(() => {
+    if (activeIndex !== null) {
+      virtuosoRef.current?.scrollIntoView({
+        index: activeIndex,
+        behavior: "auto",
+      });
+    }
+  }, [activeIndex]);
+
+  // Track which main-list item is topmost in the viewport via IntersectionObserver
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const intersecting = new Set<string>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) intersecting.add(e.target.id);
+          else intersecting.delete(e.target.id);
+        }
+        for (let i = 0; i < orderedScenes.length; i++) {
+          const entry = orderedScenes[i];
+          const id = entryIsScene(entry)
+            ? `list-item-scene-${entry.scene.id}`
+            : `list-item-section-${entry.section.id}`;
+          if (intersecting.has(id) && !isScrolling.current) {
+            setActiveIndex(i);
+            return;
+          }
+        }
+      },
+      { root: container, rootMargin: "0px 0px -70% 0px", threshold: 0 },
+    );
+
+    container
+      .querySelectorAll('[id^="list-item-"]')
+      .forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [orderedScenes]);
+
+  const handleSidebarClick = (index: number) => {
+    const entry = orderedScenes[index];
+    if (!entry) return;
+    const id = entryIsScene(entry)
+      ? `list-item-scene-${entry.scene.id}`
+      : `list-item-section-${entry.section.id}`;
+
+    setActiveIndex(index);
+    isScrolling.current = true;
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    setTimeout(() => {
+      isScrolling.current = false;
+    }, 500);
+  };
 
   if (orderedScenes.length === 0) {
     return (
@@ -57,30 +123,32 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
 
   return (
     <div
+      ref={scrollContainerRef}
       className="y-scroller overflow-y-auto h-[var(--grid-height)]"
-      style={{ "--grid-height": `calc(100vh - 61px)` }}
+      style={{
+        "--grid-height": `calc(100vh - 61px)`,
+        "--sidebar-height": `calc(100vh - 101px)`,
+      }}
     >
-      <div className="flex mx-auto gap-x-4 px-6">
-        <div className="shrink w-[300px] sticky top-0 pt-6 pl-6 bg-white h-[var(--grid-height)] shadow-md">
+      <div className="flex mx-auto gap-x-4 px-6 pt-6">
+        <div className="shrink w-[300px] sticky top-0 bg-white h-[var(--sidebar-height)] shadow-md">
           <Virtuoso
+            ref={virtuosoRef}
             style={{ height: "100%" }}
             context={{ isScrolling }}
-            isScrolling={setIsScrolling}
             data={orderedScenes}
-            itemContent={(_index, entry, _data) => {
-              if (entryIsScene(entry)) {
-                const { scene } = entry;
-                return (
-                  <div key={scene.id} className="list-miniview-scene">
-                    {scene.title}
-                  </div>
-                );
-              }
-              const { section } = entry;
+            itemContent={(_index, entry) => {
+              const isExcluded = entryIsScene(entry)
+                ? hasFilters && !includedSceneIdSet.has(entry.scene.id)
+                : false;
               return (
-                <div key={section.id} className="list-miniview-section">
-                  {section.title}
-                </div>
+                <ListViewSidebarItem
+                  entry={entry}
+                  isActive={activeIndex === _index}
+                  isFilterExcluded={isExcluded}
+                  filterVisibilityMode={filterVisibilityMode}
+                  onClick={() => handleSidebarClick(_index)}
+                />
               );
             }}
           />
@@ -98,22 +166,27 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
               if (entryIsScene(entry)) {
                 const { scene, plot } = entry;
                 return (
-                  <ListViewScene
-                    key={scene.id}
-                    scene={scene}
-                    plot={plot}
-                    tags={tags}
-                    characters={characters}
-                    filterVisibilityMode={filterVisibilityMode}
-                    isFilterExcluded={
-                      hasFilters && !includedSceneIdSet.has(scene.id)
-                    }
-                  />
+                  <div key={scene.id} id={`list-item-scene-${scene.id}`}>
+                    <ListViewScene
+                      scene={scene}
+                      plot={plot}
+                      tags={tags}
+                      characters={characters}
+                      filterVisibilityMode={filterVisibilityMode}
+                      isFilterExcluded={
+                        hasFilters && !includedSceneIdSet.has(scene.id)
+                      }
+                    />
+                  </div>
                 );
               }
 
               const { section } = entry;
-              return <ListViewSection section={section} />;
+              return (
+                <div key={section.id} id={`list-item-section-${section.id}`}>
+                  <ListViewSection section={section} />
+                </div>
+              );
             })}
           </div>
         </div>

@@ -50,6 +50,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-11
 - MongoDB (backend), N/A for UI-only state (032-col-header-actions)
 - TypeScript 5.x (Node.js 20 backend, React 18 frontend) + Express (backend), React + TanStack Query + Zustand + TipTap + Flowbite React (frontend) (034-section-sidebar-edit)
 - MongoDB (existing `sections` collection — additive field only) (034-section-sidebar-edit)
+- TypeScript 5.x + React 18, react-virtuoso 4.18.4, Tailwind CSS, unplugin-icons (MDI) (035-listview-sidebar-enhancements)
+- N/A — pure frontend UI change, no persistence (035-listview-sidebar-enhancements)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -69,8 +71,8 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 035-listview-sidebar-enhancements: Added TypeScript 5.x + React 18, react-virtuoso 4.18.4, Tailwind CSS, unplugin-icons (MDI)
 - 034-section-sidebar-edit: Added TypeScript 5.x (Node.js 20 backend, React 18 frontend) + Express (backend), React + TanStack Query + Zustand + TipTap + Flowbite React (frontend)
-- 032-col-header-actions: Added TypeScript (Node.js + React 19) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
 - 032-col-header-actions: Added TypeScript (Node.js + React 19) + TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons, dnd-ki
 
 
