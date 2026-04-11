@@ -14,6 +14,6 @@
 
 ## Decision: Return a bounded shift plan or null
 
-**Rationale**: The shift plan should only be produced when the target row is occupied and a shift is required. Returning `null` for no shift keeps callers simple and avoids applying zero-length shifts.
+**Rationale**: The shift plan is produced only when the target row is occupied. When the source row becomes empty, the shift is bounded to the range between indices and moves toward the source row; otherwise, rows shift downward from the target index to make space. Returning `null` for unoccupied targets keeps callers simple and avoids applying unnecessary shifts.
 
 **Alternatives considered**: Always return a plan with `shift: 0` (rejected because it complicates downstream shift checks and violates existing usage patterns).

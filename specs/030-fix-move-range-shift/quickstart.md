@@ -12,8 +12,8 @@
 4. Move a scene to another plot at the same row:
    - When the row is empty, confirm no shift occurs.
    - When the row is occupied, confirm rows shift down by one.
-5. Move a scene to an adjacent row and confirm the shift matches occupancy rules.
-6. Move a scene to a row more than one position away and confirm only the bounded range shifts.
+5. Move a scene to an adjacent row and confirm only the bounded range shifts when the target is occupied.
+6. Move a scene to a row more than one position away and confirm only the bounded range shifts when the target is occupied.
 7. Move a section to a different row and confirm the source row collapses and the target row respects occupancy.
 
 ## Expected Result

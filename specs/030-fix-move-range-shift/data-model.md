@@ -50,9 +50,6 @@
 
 - Same plot + same index: no shift.
 - Different plot + same index: if target index occupied, shift down from target index by 1.
-- Adjacent move (difference of 1):
-  - If source row becomes empty and target row is occupied, shift the target row down by 1.
-  - If source row remains occupied, shift the grid up from the target row by 1.
-- Multi-row move (difference > 1):
-  - If source row becomes empty and target row is occupied, shift rows between indices toward the source.
-  - If source row remains occupied, shift the grid up from the target row by 1.
+- Different row, target occupied, source row becomes empty: shift rows between indices toward the source by 1.
+- Different row, target occupied, source row remains occupied: shift rows downward from the target index by 1.
+- Different row, target not occupied: no shift.

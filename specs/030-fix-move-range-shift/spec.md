@@ -57,7 +57,7 @@ As a user, I want moving a scene or section to a different row to keep the grid 
 - Moving a section (which occupies a full row) should always treat the source row as empty after the move.
 - Moving a scene from a row that still has other scenes in other plots should not collapse that row.
 - Moving to an empty target row should not shift other rows.
-- Moving to an adjacent row should apply only the minimal shift needed to avoid overlap.
+- Moving to an adjacent row should use the same bounded-range shift rules as multi-row moves.
 
 ## Requirements _(mandatory)_
 
@@ -66,13 +66,14 @@ As a user, I want moving a scene or section to a different row to keep the grid 
 - **FR-001**: The system MUST compute a shift plan for move operations that specifies a range of rows and a shift direction/amount.
 - **FR-002**: If the source plot and destination plot are the same and the source row equals the destination row, the system MUST return a no-shift plan.
 - **FR-003**: If the destination plot differs but the destination row is the same as the source row and is occupied, the system MUST shift rows starting at the destination row down by one before placing the item.
-- **FR-004**: If the destination row differs by one and the source row becomes empty while the destination row is occupied, the system MUST move the destination row down by one and place the item at the destination row.
-- **FR-005**: If the destination row differs by one and the source row remains occupied by other content, the system MUST shift rows upward starting at the destination row to create space.
-- **FR-006**: If the destination row differs by more than one and the source row becomes empty while the destination row is occupied, the system MUST shift rows between the source and destination toward the source row to close the gap.
-- **FR-007**: If the destination row differs by more than one and the source row remains occupied by other content, the system MUST shift rows upward starting at the destination row to create space.
-- **FR-008**: For section moves, the system MUST treat the source row as empty after the move.
+- **FR-004**: If the destination row differs and the target row is occupied while the source row becomes empty, the system MUST shift rows between the source and destination toward the source row by one.
+- **FR-005**: If the destination row differs and the target row is occupied while the source row remains occupied, the system MUST shift rows starting at the destination row down by one.
+- **FR-006**: If the destination row differs and the target row is not occupied, the system MUST return a no-shift plan.
+- **FR-007**: For section moves, the system MUST treat the source row as empty after the move.
+- **FR-008**: For scene moves, the system MUST determine source row emptiness by ignoring the moved scene and checking other plots and sections.
 - **FR-009**: The system MUST avoid row overlap between scenes and sections after any move.
 - **FR-010**: The system MUST preserve the total count of scenes and sections after applying the shift plan.
+- **FR-011**: The system MUST reject move-shift planning when plots are missing or belong to different stories.
 
 ### Key Entities _(include if feature involves data)_
 
