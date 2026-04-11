@@ -193,43 +193,30 @@ export type MoveRangeShift =
       shift: number;
     };
 
-export const getMoveRangeShift = (
-  fromIndex: number,
-  toIndex: number,
-): MoveRangeShift | null => {
-  if (fromIndex === toIndex) {
-    return null;
-  }
-
-  if (toIndex > fromIndex) {
-    const diff = toIndex - fromIndex;
-    if (diff === 1) {
-      // no scenes to shift over, so move everything up.
-      return {
-        rangeStart: toIndex,
-        rangeEnd: undefined,
-        shift: 1,
-      };
-    }
-    return {
-      rangeStart: fromIndex + 1,
-      rangeEnd: toIndex,
-      shift: 1,
-    };
-  }
-
-  const diff = fromIndex - toIndex;
-  if (diff === 1) {
-    // no scenes to shift over, so move everything down.
-    return {
-      rangeStart: toIndex,
-      rangeEnd: undefined,
-      shift: -1,
-    };
-  }
-  return {
-    rangeStart: toIndex,
-    rangeEnd: fromIndex - 1,
-    shift: -1,
-  };
+export type MoveRangeShiftProps = {
+  fromIndex: number;
+  toIndex: number;
+  fromPlotId: ObjectId;
+  toPlotId: ObjectId;
+  resource: { id: ObjectId; type: "scene" | "section" };
+};
+export const getMoveRangeShift = async (
+  props: MoveRangeShiftProps,
+): Promise<MoveRangeShift | null> => {
+  /**
+   * This function needs implmenting
+   * 1) If plot ids are the same and the indexes are the same, do nothing
+   * 2) if plot ids are not the same, but indexes are the same, if the target index is occupied, shift the grid up 1 from the target index
+   * 3) If the indexes are different, and the movement difference is 1.
+   * 3.1) If from row is now empty and the to row is occupied, shift the from to the target row's position, and shift the target row down by 1
+   * 3.2) If the from row is occupied in one of the other plots, shift the whole grid up at the target row
+   * 4) if the indexes are different and the moment difference is greater than 1
+   * 4.1) If the from index now empty and the target index is not, shift the moved over rows toward the from index.
+   * 4.2) If the from index is still occupied in one of the plots, shift the whole grid up at the target index.
+   *
+   *
+   * Notes about implementation:
+   * 1) If the resource is a section, we can assume the from row is empty, as a section takes up the whole row
+   * 2) If the resource is a scene, we need to check if other plots still have a scene on that row.
+   */
 };
