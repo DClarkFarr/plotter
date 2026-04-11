@@ -62,7 +62,7 @@ export const EmptyCard = memo(
       const plotName = plot.title?.trim() || "Untitled Plot";
       const title = `Scene ${rowNumber} in ${plotName}`;
 
-      const scene = await createSceneMutation.mutateAsync({
+      const response = await createSceneMutation.mutateAsync({
         plotId: plot.id,
         title,
         description: "",
@@ -72,8 +72,8 @@ export const EmptyCard = memo(
         verticalIndex: sceneIndex,
       });
 
-      if (scene?.id) {
-        selectScene(scene.id, scene.plotId);
+      if (response?.scene) {
+        selectScene(response?.scene.id, response?.scene.plotId);
         openSidebar();
         addSidebarView("scene");
       }
