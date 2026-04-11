@@ -12,6 +12,7 @@ import {
   UpdateSectionInput,
 } from "../models/sections";
 import { getStoryById } from "../models/stories";
+import { listPlotIdsByStoryId } from "../models/plots";
 import { ensureObjectId } from "../models/types";
 import {
   ShiftedResources,
@@ -157,7 +158,19 @@ export const updateSectionForStory = async (
       throw new Error("Section verticalIndex is already occupied");
     }
 
-    const shift = getMoveRangeShift(current.verticalIndex, targetIndex);
+    const plotIds = await listPlotIdsByStoryId(storyObjectId);
+    const fallbackPlotId = plotIds[0];
+    if (!fallbackPlotId) {
+      throw new Error("Story must have at least one plot");
+    }
+
+    const shift = await getMoveRangeShift({
+      fromIndex: current.verticalIndex,
+      toIndex: targetIndex,
+      fromPlotId: fallbackPlotId,
+      toPlotId: fallbackPlotId,
+      resource: { id: current._id, type: "section" },
+    });
     if (shift) {
       shiftedResources = await shiftGridInVerticalIndexRange(
         storyObjectId,

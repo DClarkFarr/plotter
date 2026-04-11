@@ -18,8 +18,6 @@ import { listTagsByIds } from "../models/tags";
 import { ensureObjectId } from "../models/types";
 import {
   ShiftedResources,
-  hasSceneOnPlotIndex,
-  hasSectionOnIndex,
   shouldShiftAfterSceneRemoval,
   shouldShiftForSceneInsert,
   shiftGridDownwardFromIndex,
@@ -355,25 +353,24 @@ export const moveSingleCardWithinPlot = async (
   // and shifted sections to do it the same way.
   const scenesToUpdate: SceneDocument[] = [];
   const sectionsToUpdate: SectionDocument[] = [];
-  const shift = getMoveRangeShift(fromIndex, toIndex);
+  const shift = await getMoveRangeShift({
+    fromIndex,
+    toIndex,
+    fromPlotId,
+    toPlotId,
+    resource: { id: sceneId, type: "scene" },
+  });
   console.log("got shift", shift);
   if (shift) {
-    const [hasScene, hasSection] = await Promise.all([
-      hasSceneOnPlotIndex(toPlotId, toIndex),
-      hasSectionOnIndex(plot.storyId, toIndex),
-    ]);
-
-    if (hasScene || hasSection) {
-      const { scenes: shiftedScenes, sections: shiftedSections } =
-        await shiftGridInVerticalIndexRange(
-          plot.storyId,
-          shift.rangeStart,
-          shift.rangeEnd,
-          shift.shift,
-        );
-      scenesToUpdate.push(...shiftedScenes);
-      sectionsToUpdate.push(...shiftedSections);
-    }
+    const { scenes: shiftedScenes, sections: shiftedSections } =
+      await shiftGridInVerticalIndexRange(
+        plot.storyId,
+        shift.rangeStart,
+        shift.rangeEnd,
+        shift.shift,
+      );
+    scenesToUpdate.push(...shiftedScenes);
+    sectionsToUpdate.push(...shiftedSections);
   }
 
   // step 2: move target scene to new index

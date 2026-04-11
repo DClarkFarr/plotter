@@ -23,7 +23,9 @@ export function RootLayout() {
 
   useEffect(() => {
     if (error instanceof ApiError) {
-      clearUser();
+      if (error.serverMessage !== "Network Error") {
+        clearUser();
+      }
     }
   }, [error, clearUser]);
 

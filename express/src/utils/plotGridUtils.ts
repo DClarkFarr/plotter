@@ -13,7 +13,7 @@ import {
   shiftSectionsInVerticalIndexRange,
   shiftSectionsUpwardFromIndex,
 } from "../models/sections";
-import { listPlotIdsByStoryId } from "../models/plots";
+import { getPlotById, listPlotIdsByStoryId } from "../models/plots";
 
 export type GridShiftScope = "plot" | "story";
 export type GridShiftDirection = "up" | "down";
@@ -162,7 +162,6 @@ export const shiftGridInVerticalIndexRange = async (
       rangeEnd,
       shift,
     );
-    console.log("plotId", plotId.toHexString(), "shiftedScenes", shiftedScenes);
     scenes.push(...shiftedScenes);
   }
 
@@ -203,20 +202,100 @@ export type MoveRangeShiftProps = {
 export const getMoveRangeShift = async (
   props: MoveRangeShiftProps,
 ): Promise<MoveRangeShift | null> => {
-  /**
-   * This function needs implmenting
-   * 1) If plot ids are the same and the indexes are the same, do nothing
-   * 2) if plot ids are not the same, but indexes are the same, if the target index is occupied, shift the grid up 1 from the target index
-   * 3) If the indexes are different, and the movement difference is 1.
-   * 3.1) If from row is now empty and the to row is occupied, shift the from to the target row's position, and shift the target row down by 1
-   * 3.2) If the from row is occupied in one of the other plots, shift the whole grid up at the target row
-   * 4) if the indexes are different and the moment difference is greater than 1
-   * 4.1) If the from index now empty and the target index is not, shift the moved over rows toward the from index.
-   * 4.2) If the from index is still occupied in one of the plots, shift the whole grid up at the target index.
-   *
-   *
-   * Notes about implementation:
-   * 1) If the resource is a section, we can assume the from row is empty, as a section takes up the whole row
-   * 2) If the resource is a scene, we need to check if other plots still have a scene on that row.
-   */
+  const { fromIndex, toIndex, fromPlotId, toPlotId, resource } = props;
+
+  if (
+    fromIndex === toIndex &&
+    fromPlotId.toHexString() === toPlotId.toHexString()
+  ) {
+    return null;
+  }
+
+  const [fromPlot, toPlot] = await Promise.all([
+    getPlotById(fromPlotId),
+    getPlotById(toPlotId),
+  ]);
+
+  if (!fromPlot || !toPlot) {
+    throw new Error("Plot not found");
+  }
+
+  if (fromPlot.storyId.toHexString() !== toPlot.storyId.toHexString()) {
+    throw new Error("Plots must belong to the same story");
+  }
+
+  const storyId = fromPlot.storyId;
+
+  const isTargetOccupied = async (): Promise<boolean> => {
+    if (resource.type === "section") {
+      const [hasScene, hasSection] = await Promise.all([
+        hasSceneOnStoryIndex(storyId, toIndex),
+        hasSectionOnIndex(storyId, toIndex),
+      ]);
+      return hasScene || hasSection;
+    }
+
+    const [hasScene, hasSection] = await Promise.all([
+      hasSceneOnPlotIndex(toPlotId, toIndex),
+      hasSectionOnIndex(storyId, toIndex),
+    ]);
+    return hasScene || hasSection;
+  };
+
+  const isSourceRowEmpty = async (): Promise<boolean> => {
+    if (resource.type === "section") {
+      return true;
+    }
+
+    const plotIds = await listPlotIdsByStoryId(storyId);
+    for (const plotId of plotIds) {
+      const scene = await getSceneByVerticalIndex(
+        plotId,
+        fromIndex,
+        resource.id,
+      );
+      if (scene) {
+        return false;
+      }
+    }
+
+    const hasSection = await hasSectionOnIndex(storyId, fromIndex);
+    return !hasSection;
+  };
+
+  const targetOccupied = await isTargetOccupied();
+
+  if (fromIndex === toIndex) {
+    // we know the plots must not be the same, because of the
+    if (targetOccupied) {
+      return {
+        rangeStart: toIndex,
+        rangeEnd: undefined,
+        shift: 1,
+      };
+    } else {
+      return null;
+    }
+  }
+
+  const rangeStart = Math.min(fromIndex, toIndex);
+  const rangeEnd = Math.max(fromIndex, toIndex) - 1;
+
+  const sourceRowEmpty = await isSourceRowEmpty();
+
+  if (sourceRowEmpty && targetOccupied) {
+    return {
+      rangeStart,
+      rangeEnd,
+      shift: fromIndex < toIndex ? -1 : 1,
+    };
+  } else if (targetOccupied) {
+    return {
+      rangeStart: toIndex,
+      rangeEnd: undefined,
+      shift: 1,
+    };
+  }
+
+  return null;
 };

@@ -63,9 +63,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 030-fix-move-range-shift: Added TypeScript (Node.js backend, React frontend) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 - 029-plot-grid-utils: Added TypeScript (Node.js backend, React frontend) + Express, MongoDB, React, TanStack Router, TanStack Query, Zustand, Flowbite React, Tailwind CSS, unplugin-icons
 - 028-sections-collection: Added TypeScript 5.9.3, React 19.2.4 (web), Node.js + TypeScript (express) + Express 5.2.1, MongoDB 6.16.0, Vite 8.0.1, Tailwind CSS 4.2.2, Flowbite React 0.12.17, TanStack Router 1.168.1, TanStack Query 5.94.5, Zustand 5.0.12
-- 027-docx-ast-conversion: Added TypeScript (Node.js + React) + Express, MongoDB driver, multer, officeparser, React, TanStack Router/Query, Zustand, Flowbite React, Tailwind CSS
 
 
 <!-- MANUAL ADDITIONS START -->
