@@ -23,6 +23,7 @@ import {
   getPlotWithScenes,
   updatePlotById,
 } from "../services/plotService";
+import { shiftStoryGrid } from "../services/storyGridService";
 import {
   optionalNumber,
   optionalString,
@@ -80,6 +81,28 @@ const toSceneResponse = (scene: {
   snippets: scene.snippets ?? [],
   verticalIndex: scene.verticalIndex,
   pov: scene.pov ? scene.pov.toHexString() : null,
+});
+
+const toSectionResponse = (section: {
+  _id: { toHexString(): string };
+  storyId: { toHexString(): string };
+  title: string;
+  verticalIndex: number;
+  type: string;
+}) => ({
+  id: section._id.toHexString(),
+  storyId: section.storyId.toHexString(),
+  title: section.title,
+  verticalIndex: section.verticalIndex,
+  type: section.type,
+});
+
+const toShiftedResourcesResponse = (resources: {
+  scenes: Array<Parameters<typeof toSceneResponse>[0]>;
+  sections: Array<Parameters<typeof toSectionResponse>[0]>;
+}) => ({
+  scenes: resources.scenes.map((scene) => toSceneResponse(scene)),
+  sections: resources.sections.map((section) => toSectionResponse(section)),
 });
 
 const toPlotResponse = (plot: {
@@ -397,6 +420,28 @@ const applyStoryRoutes = () => {
       res
         .status(200)
         .json({ plots: plots.map((plot) => toPlotResponse(plot)) });
+    }),
+  );
+
+  storyRouter.post(
+    "/:storyId/grid-shift",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+
+      await getStoryForUser(storyId, userId);
+
+      const startIndex = requireNumber(req.body?.startIndex, "startIndex");
+      const shift = requireNumber(req.body?.shift, "shift");
+
+      const shiftedResources = await shiftStoryGrid(storyId, {
+        startIndex,
+        shift,
+      });
+
+      res.status(200).json({
+        shiftedResources: toShiftedResourcesResponse(shiftedResources),
+      });
     }),
   );
 

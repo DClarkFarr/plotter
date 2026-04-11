@@ -235,6 +235,11 @@ export interface UpdateSectionInput {
   type?: SectionType;
 }
 
+export interface StoryGridShiftInput {
+  startIndex: number;
+  shift: number;
+}
+
 // ─── Response Envelopes ───────────────────────────────────────────────────────
 
 export interface AuthUserResponse {
@@ -302,6 +307,10 @@ export interface SectionsResponse {
 
 export interface SectionResponse {
   section: Section;
+  shiftedResources?: ShiftedResources;
+}
+
+export interface StoryGridShiftResponse {
   shiftedResources?: ShiftedResources;
 }
 

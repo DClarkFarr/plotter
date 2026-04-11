@@ -17,6 +17,8 @@ import {
   type ImportOutlineInput,
   type ImportOutlineResponse,
   type ShiftedResources,
+  type StoryGridShiftInput,
+  type StoryGridShiftResponse,
   type UpdateTagInput,
   type UpdateSectionInput,
   type CreatePlotInput,
@@ -79,6 +81,21 @@ export async function getStory(storyId: string): Promise<Story> {
   try {
     const { data } = await apiClient.get<StoryResponse>(`/stories/${storyId}`);
     return data.story;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function shiftStoryGrid(
+  storyId: string,
+  input: StoryGridShiftInput,
+): Promise<StoryGridShiftResponse> {
+  try {
+    const { data } = await apiClient.post<StoryGridShiftResponse>(
+      `/stories/${storyId}/grid-shift`,
+      input,
+    );
+    return data;
   } catch (err) {
     throw toApiError(err);
   }

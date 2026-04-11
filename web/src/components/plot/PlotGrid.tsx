@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { Plot, Scene } from "../../api/types";
+import type { Plot, Scene, Section } from "../../api/types";
 
 import type {
   EmptyRendererProps,
@@ -11,6 +11,8 @@ import { EmptyCard } from "./SceneRenderer/EmptyCard";
 import { SceneCard } from "./SceneRenderer/SceneCard";
 import { PlotHeaderCreate } from "./SceneRenderer/PlotHeaderCreate";
 import { PlotHeader } from "./SceneRenderer/PlotHeader";
+import { ColHeader } from "./ColHeader";
+import { SectionRow } from "./SectionRow";
 import { DragDropProvider } from "@dnd-kit/react";
 import { DragDropManager, Feedback } from "@dnd-kit/dom";
 import { Modifier, type DragOperation } from "@dnd-kit/abstract";
@@ -24,6 +26,7 @@ import {
   useStoryCharactersQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
+import { useStorySectionsQuery } from "../../queries/section/section-queries";
 import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
 
 export type PlotGridProps = {
@@ -45,6 +48,13 @@ type GridCellTypes =
   | {
       type: "col-header";
       index: number;
+    }
+  | {
+      type: "section";
+      section: Section;
+    }
+  | {
+      type: "section-spacer";
     };
 
 const getCellColIndex = (gridIndex: number) => {
@@ -230,6 +240,7 @@ const PlotGridBody = ({
   const hasFilters = useStoryStore((state) => state.hasFilters());
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
+  const { data: sections = [] } = useStorySectionsQuery(storyId);
 
   const { /* plotsFiltered, */ includedSceneIds } = useMemo(
     () => applyFiltersToPlots(plots, filters, { tags, characters }),
@@ -244,8 +255,16 @@ const PlotGridBody = ({
     [includedSceneIds],
   );
 
+  const sectionsByRowIndex = useMemo(() => {
+    const map = new Map<number, Section>();
+    for (const section of sections) {
+      map.set(section.verticalIndex, section);
+    }
+    return map;
+  }, [sections]);
+
   const gridCols = getGridCols(plots);
-  const gridRows = getGridRows(plots);
+  const gridRows = getGridRows(plots, sections);
 
   const RenderSceneCard = renderSceneCard || SceneCard;
   const RenderEmptyCard = renderEmptyCard || EmptyCard;
@@ -264,6 +283,16 @@ const PlotGridBody = ({
 
     for (let r = 0; r < gridRows; r++) {
       const row: GridCellTypes[] = [{ type: "col-header", index: r }];
+
+      const section = sectionsByRowIndex.get(r);
+      if (section) {
+        row.push({ type: "section", section });
+        for (let c = 2; c < gridCols + 1; c++) {
+          row.push({ type: "section-spacer" });
+        }
+        rows.push(row);
+        continue;
+      }
 
       for (let c = 1; c < gridCols + 1; c++) {
         const plot = plots.find(
@@ -284,7 +313,7 @@ const PlotGridBody = ({
     }
 
     return rows;
-  }, [plots, gridCols, gridRows]);
+  }, [plots, gridCols, gridRows, sectionsByRowIndex]);
 
   const plotsByRowIndex = useMemo(() => {
     const map = new Map<number, Plot>();
@@ -329,7 +358,9 @@ const PlotGridBody = ({
                   if (
                     cell.type === "col-header" ||
                     cell.type === "corner" ||
-                    cell.type === "plot"
+                    cell.type === "plot" ||
+                    cell.type === "section" ||
+                    cell.type === "section-spacer"
                   ) {
                     return (
                       <div
@@ -375,17 +406,24 @@ const PlotGridBody = ({
                     );
                   } else if (cell.type === "col-header") {
                     return (
-                      <div
+                      <ColHeader
                         key={`col-header-${r}-${c}`}
-                        className="col-header flex items-center justify-center bg-gray-200"
-                        data-row={r}
-                        data-col={c}
-                      >
-                        <h4 className="text-xl uppercase text-gray-500 tracking-[0.2em]">
-                          Row {r}
-                        </h4>
-                      </div>
+                        storyId={storyId}
+                        rowIndex={getCellRowIndex(r)}
+                        plots={plots}
+                        sections={sections}
+                      />
                     );
+                  } else if (cell.type === "section") {
+                    return (
+                      <SectionRow
+                        key={`section-${cell.section.id}`}
+                        section={cell.section}
+                        style={{ gridColumn: "2 / -1" }}
+                      />
+                    );
+                  } else if (cell.type === "section-spacer") {
+                    return null;
                   } else if (cell.type === "empty") {
                     const plot = plotsByRowIndex.get(getCellColIndex(c));
                     return (
@@ -458,15 +496,19 @@ const getGridCols = (plots: Plot[]) => {
   return maxVerticalPosition;
 };
 
-const getGridRows = (plots: Plot[]) => {
-  const maxVerticalPosition =
-    plots.reduce((max, plot) => {
-      const sceneMax = plot.scenes.reduce(
-        (sMax, scene) => Math.max(sMax, scene.verticalIndex),
-        0,
-      );
-      return Math.max(max, sceneMax);
-    }, 0) + 3;
+const getGridRows = (plots: Plot[], sections: Section[]) => {
+  const sceneMax = plots.reduce((max, plot) => {
+    const plotMax = plot.scenes.reduce(
+      (sMax, scene) => Math.max(sMax, scene.verticalIndex),
+      0,
+    );
+    return Math.max(max, plotMax);
+  }, 0);
 
-  return maxVerticalPosition;
+  const sectionMax = sections.reduce(
+    (max, section) => Math.max(max, section.verticalIndex),
+    0,
+  );
+
+  return Math.max(sceneMax, sectionMax) + 3;
 };

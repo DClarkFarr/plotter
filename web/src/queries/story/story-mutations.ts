@@ -1,11 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   importStoryOutline,
+  shiftStoryGrid,
   updateStory,
   type UpdateStoryInput,
 } from "../../api/stories";
-import type { ImportOutlineInput } from "../../api/types";
+import type { ImportOutlineInput, StoryGridShiftInput } from "../../api/types";
 import type { Story } from "../../api/types";
+import { applyShiftedResources } from "./shifted-resources";
+import { useStoryPlotsQuery } from "./story-queries";
+import { useStorySectionsQuery } from "../section/section-queries";
 import { useStoryQuery } from "./story-queries";
 
 export function useUpdateStoryMutation(storyId: string) {
@@ -49,5 +53,24 @@ export function useUpdateStoryMutation(storyId: string) {
 export function useImportOutlineMutation() {
   return useMutation({
     mutationFn: (input: ImportOutlineInput) => importStoryOutline(input),
+  });
+}
+
+export function useStoryGridShiftMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: StoryGridShiftInput) => shiftStoryGrid(storyId, input),
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: useStoryPlotsQuery.queryKey(storyId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: useStorySectionsQuery.queryKey(storyId),
+      });
+    },
+    onSuccess: (response) => {
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
+    },
   });
 }
