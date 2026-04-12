@@ -206,10 +206,11 @@ const PlotGridBody = ({
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
-  const { data: plots = [] } = useStoryPlotsQuery(storyId);
-  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const filters = useStoryStore((state) => state.filters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
+
+  const { data: plots = [] } = useStoryPlotsQuery(storyId);
+  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
   const { data: sections = [] } = useStorySectionsQuery(storyId);
@@ -224,14 +225,6 @@ const PlotGridBody = ({
     [includedSceneIds],
   );
 
-  const sectionsByRowIndex = useMemo(() => {
-    const map = new Map<number, Section>();
-    for (const section of sections) {
-      map.set(section.verticalIndex, section);
-    }
-    return map;
-  }, [sections]);
-
   const gridCols = getGridCols(plots);
   const gridRows = getGridRows(scenes, sections);
 
@@ -242,7 +235,15 @@ const PlotGridBody = ({
     ...plots.map((plot) => plot.horizontalIndex),
   );
 
-  const plotsByRowIndex = useMemo(() => {
+  const sectionsHorizontalIndexMap = useMemo(() => {
+    const map = new Map<number, Section>();
+    for (const section of sections) {
+      map.set(section.verticalIndex, section);
+    }
+    return map;
+  }, [sections]);
+
+  const plotsHorizontalIndexMap = useMemo(() => {
     const map = new Map<number, Plot>();
     for (const plot of plots) {
       map.set(plot.horizontalIndex, plot);
@@ -250,7 +251,7 @@ const PlotGridBody = ({
     return map;
   }, [plots]);
 
-  const scenesByColIndex = useMemo(() => {
+  const scenesPlotIdVerticalIndexMap = useMemo(() => {
     const plotMap = new Map<string, Map<number, Scene>>();
     for (const scene of scenes) {
       let sceneMap = plotMap.get(scene.plotId);
@@ -274,7 +275,7 @@ const PlotGridBody = ({
     for (let r = 0; r < gridRows; r++) {
       const row: GridCellTypes[] = [{ type: "col-header", index: r }];
 
-      const section = sectionsByRowIndex.get(r);
+      const section = sectionsHorizontalIndexMap.get(r);
       if (section) {
         row.push({ type: "section", section });
         for (let c = 2; c < gridCols + 1; c++) {
@@ -292,7 +293,8 @@ const PlotGridBody = ({
           row.push({ type: "empty" });
           continue;
         }
-        const hasScene = scenesByColIndex.get(plot.id)?.has(r) ?? false;
+        const hasScene =
+          scenesPlotIdVerticalIndexMap.get(plot.id)?.has(r) ?? false;
         if (!hasScene) {
           row.push({ type: "empty" });
         } else {
@@ -303,7 +305,13 @@ const PlotGridBody = ({
     }
 
     return rows;
-  }, [plots, gridCols, gridRows, sectionsByRowIndex, scenesByColIndex]);
+  }, [
+    plots,
+    gridCols,
+    gridRows,
+    sectionsHorizontalIndexMap,
+    scenesPlotIdVerticalIndexMap,
+  ]);
 
   return (
     <div
@@ -350,20 +358,24 @@ const PlotGridBody = ({
                       <SceneActionsCard
                         key={`actions-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
                         storyId={storyId}
-                        plot={plotsByRowIndex.get(getCellColIndex(c))}
+                        plot={plotsHorizontalIndexMap.get(getCellColIndex(c))}
                         plotIndex={getCellColIndex(c)}
                         sceneIndex={getCellRowIndex(r)}
-                        nextScene={scenesByColIndex
+                        nextScene={scenesPlotIdVerticalIndexMap
                           .get(
-                            plotsByRowIndex.get(getCellColIndex(c))?.id || "",
+                            plotsHorizontalIndexMap.get(getCellColIndex(c))
+                              ?.id || "",
                           )
                           ?.get(getCellRowIndex(r))}
-                        prevScene={scenesByColIndex
+                        prevScene={scenesPlotIdVerticalIndexMap
                           .get(
-                            plotsByRowIndex.get(getCellColIndex(c))?.id || "",
+                            plotsHorizontalIndexMap.get(getCellColIndex(c))
+                              ?.id || "",
                           )
                           ?.get(getCellRowIndex(r) - 1)}
-                        isDisabled={!plotsByRowIndex.get(getCellColIndex(c))}
+                        isDisabled={
+                          !plotsHorizontalIndexMap.get(getCellColIndex(c))
+                        }
                       />
                     );
                   }
@@ -399,7 +411,9 @@ const PlotGridBody = ({
                   } else if (cell.type === "section-spacer") {
                     return null;
                   } else if (cell.type === "empty") {
-                    const plot = plotsByRowIndex.get(getCellColIndex(c));
+                    const plot = plotsHorizontalIndexMap.get(
+                      getCellColIndex(c),
+                    );
                     return (
                       <RenderEmptyCard
                         key={`empty-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
@@ -411,9 +425,11 @@ const PlotGridBody = ({
                       />
                     );
                   } else if (cell.type === "scene") {
-                    const plot = plotsByRowIndex.get(getCellColIndex(c));
+                    const plot = plotsHorizontalIndexMap.get(
+                      getCellColIndex(c),
+                    );
 
-                    const scene = scenesByColIndex
+                    const scene = scenesPlotIdVerticalIndexMap
                       .get(plot?.id || "")
                       ?.get(getCellRowIndex(r));
                     const isFilterExcluded =
@@ -431,7 +447,9 @@ const PlotGridBody = ({
                       />
                     );
                   } else if (cell.type === "plot") {
-                    const plot = plotsByRowIndex.get(getCellColIndex(c));
+                    const plot = plotsHorizontalIndexMap.get(
+                      getCellColIndex(c),
+                    );
                     return plot ? (
                       <PlotHeader
                         key={`plot-header-${r}-${c}`}
