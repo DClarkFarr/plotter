@@ -11,6 +11,7 @@
     ".specify/scripts/powershell/": true,
     "mkdir": true,
     "git rev-parse": true,
-    "officeparser": true
+    "officeparser": true,
+    "npx tsc": true
   }
 }

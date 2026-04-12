@@ -126,26 +126,21 @@ export const listStoryTagsForUser = async (
   return listTags({ storyId });
 };
 
-export const listStoryPlotsWithScenesForUser = async (
+export const listStoryPlotsForUser = async (
   storyId: string | ObjectId,
   userId: string | ObjectId,
 ) => {
   await getStoryForUser(storyId, userId);
-  const plots = await listPlots({ storyId });
-  const scenes = await listScenesByPlotIds(plots.map((plot) => plot._id));
-  const scenesByPlot = new Map<string, typeof scenes>();
+  return listPlots({ storyId });
+};
 
-  for (const scene of scenes) {
-    const plotKey = scene.plotId.toHexString();
-    const existing = scenesByPlot.get(plotKey) ?? [];
-    existing.push(scene);
-    scenesByPlot.set(plotKey, existing);
-  }
-
-  return plots.map((plot) => ({
-    ...plot,
-    scenes: scenesByPlot.get(plot._id.toHexString()) ?? [],
-  }));
+export const listStoryScenesForUser = async (
+  storyId: string | ObjectId,
+  userId: string | ObjectId,
+) => {
+  await getStoryForUser(storyId, userId);
+  const plotIds = await listPlotIdsByStoryId(storyId);
+  return listScenesByPlotIds(plotIds);
 };
 
 export const updateStoryById = async (

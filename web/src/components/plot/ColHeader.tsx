@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "flowbite-react";
 import { CustomTooltip } from "../helpers/CustomTooltip";
-import type { Plot, Section } from "../../api/types";
+import type { Scene, Section } from "../../api/types";
 import { useCreateSectionMutation } from "../../queries/section/section-mutations";
 import { useStoryGridShiftMutation } from "../../queries/story/story-mutations";
 import IconArrowExpandUp from "~icons/mdi/arrow-expand-up";
@@ -13,14 +13,12 @@ import IconClose from "~icons/mdi/close";
 export type ColHeaderProps = {
   storyId: string;
   rowIndex: number;
-  plots: Plot[];
+  scenes: Scene[];
   sections: Section[];
 };
 
-const rowHasScene = (plots: Plot[], rowIndex: number) =>
-  plots.some((plot) =>
-    plot.scenes.some((scene) => scene.verticalIndex === rowIndex),
-  );
+const rowHasScene = (scenes: Scene[], rowIndex: number) =>
+  scenes.some((scene) => scene.verticalIndex === rowIndex);
 
 const rowHasSection = (sections: Section[], rowIndex: number) =>
   sections.some((section) => section.verticalIndex === rowIndex);
@@ -28,7 +26,7 @@ const rowHasSection = (sections: Section[], rowIndex: number) =>
 export const ColHeader = ({
   storyId,
   rowIndex,
-  plots,
+  scenes,
   sections,
 }: ColHeaderProps) => {
   const gridShiftMutation = useStoryGridShiftMutation(storyId);
@@ -37,8 +35,8 @@ export const ColHeader = ({
   const [showSectionButtons, setShowSectionButtons] = useState(false);
 
   const isRowEmpty = useMemo(
-    () => !rowHasScene(plots, rowIndex) && !rowHasSection(sections, rowIndex),
-    [plots, sections, rowIndex],
+    () => !rowHasScene(scenes, rowIndex) && !rowHasSection(sections, rowIndex),
+    [scenes, sections, rowIndex],
   );
 
   const handleInsertAbove = () => {

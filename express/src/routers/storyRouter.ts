@@ -5,7 +5,8 @@ import {
   getStoryForUser,
   getStoryStats,
   listStoriesForUser,
-  listStoryPlotsWithScenesForUser,
+  listStoryPlotsForUser,
+  listStoryScenesForUser,
   listStoryTagsForUser,
   updateStoryById,
 } from "../services/storyService";
@@ -20,7 +21,6 @@ import {
 import {
   createPlot,
   getPlotForStory,
-  getPlotWithScenes,
   updatePlotById,
 } from "../services/plotService";
 import { shiftStoryGrid } from "../services/storyGridService";
@@ -112,17 +112,6 @@ const toPlotResponse = (plot: {
   color: string;
   storyId: { toHexString(): string };
   horizontalIndex: number;
-  scenes: Array<{
-    _id: { toHexString(): string };
-    title: string;
-    description: string;
-    plotId: { toHexString(): string };
-    tags: Array<{ toHexString(): string }>;
-    todo: Array<{ text: string; isDone: boolean }>;
-    snippets?: Array<{ label: string; text: string }>;
-    scene?: string;
-    verticalIndex: number;
-  }>;
 }) => ({
   id: plot._id.toHexString(),
   title: plot.title,
@@ -130,7 +119,6 @@ const toPlotResponse = (plot: {
   color: plot.color,
   storyId: plot.storyId.toHexString(),
   horizontalIndex: plot.horizontalIndex,
-  scenes: plot.scenes.map((scene) => toSceneResponse(scene)),
 });
 
 const toStoryResponse = (
@@ -415,11 +403,24 @@ const applyStoryRoutes = () => {
     handleAsync(async (req, res) => {
       const userId = requireUserId(req);
       const storyId = assertparamIsString(req.params.storyId, "storyId");
-      const plots = await listStoryPlotsWithScenesForUser(storyId, userId);
+      const plots = await listStoryPlotsForUser(storyId, userId);
 
       res
         .status(200)
         .json({ plots: plots.map((plot) => toPlotResponse(plot)) });
+    }),
+  );
+
+  storyRouter.get(
+    "/:storyId/scenes",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const scenes = await listStoryScenesForUser(storyId, userId);
+
+      res
+        .status(200)
+        .json({ scenes: scenes.map((scene) => toSceneResponse(scene)) });
     }),
   );
 
@@ -470,10 +471,7 @@ const applyStoryRoutes = () => {
       });
 
       res.status(201).json({
-        plot: toPlotResponse({
-          ...plot,
-          scenes: [],
-        }),
+        plot: toPlotResponse(plot),
       });
     }),
   );
@@ -525,13 +523,7 @@ const applyStoryRoutes = () => {
         return;
       }
 
-      const plotWithScenes = await getPlotWithScenes(plotId);
-      if (!plotWithScenes) {
-        res.status(404).json({ error: "Plot not found" });
-        return;
-      }
-
-      res.status(200).json({ plot: toPlotResponse(plotWithScenes) });
+      res.status(200).json({ plot: toPlotResponse(updated) });
     }),
   );
 

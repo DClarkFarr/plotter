@@ -182,7 +182,6 @@ export interface Plot {
   color: string;
   storyId: string;
   horizontalIndex: number;
-  scenes: Scene[];
 }
 
 export interface CreatePlotInput {
@@ -293,6 +292,10 @@ export interface TagResponse {
 
 export interface PlotsResponse {
   plots: Plot[];
+}
+
+export interface ScenesResponse {
+  scenes: Scene[];
 }
 
 export interface PlotResponse {

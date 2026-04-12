@@ -26,6 +26,7 @@ import {
   type PlotResponse,
   type PlotsResponse,
   type Scene,
+  type ScenesResponse,
   type SceneResponse,
   type Section,
   type SectionResponse,
@@ -299,6 +300,17 @@ export async function listStoryPlots(storyId: string): Promise<Plot[]> {
       `/stories/${storyId}/plots`,
     );
     return data.plots;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function listStoryScenes(storyId: string): Promise<Scene[]> {
+  try {
+    const { data } = await apiClient.get<ScenesResponse>(
+      `/stories/${storyId}/scenes`,
+    );
+    return data.scenes;
   } catch (err) {
     throw toApiError(err);
   }
