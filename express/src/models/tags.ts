@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -40,6 +40,7 @@ export interface CreateTagInput {
 
 export const createTag = async (
   input: CreateTagInput,
+  session?: ClientSession,
 ): Promise<TagDocument> => {
   const collection = getTagsCollection();
   const storyId = ensureObjectId(input.storyId, "storyId");
@@ -53,8 +54,39 @@ export const createTag = async (
     ...createTimestamps(),
   };
 
-  const result = await collection.insertOne(payload as unknown as TagDocument);
+  const result = await collection.insertOne(
+    payload as unknown as TagDocument,
+    session ? { session } : {},
+  );
   return { ...payload, _id: result.insertedId };
+};
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const findTagByName = async (
+  storyId: string | ObjectId,
+  name: string,
+  session?: ClientSession,
+): Promise<TagDocument | null> => {
+  return getTagsCollection().findOne(
+    {
+      storyId: ensureObjectId(storyId, "storyId"),
+      name: { $regex: new RegExp(`^${escapeRegex(name)}$`, "i") },
+    },
+    session ? { session } : undefined,
+  );
+};
+
+export const appendTagVariant = async (
+  tagId: string | ObjectId,
+  variant: string,
+  session?: ClientSession,
+): Promise<void> => {
+  await getTagsCollection().updateOne(
+    { _id: ensureObjectId(tagId, "tagId") },
+    { $addToSet: { variants: variant }, ...touchTimestamps() },
+    session ? { session } : {},
+  );
 };
 
 export interface ListTagsOptions {

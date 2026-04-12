@@ -1,4 +1,4 @@
-import { Collection, Filter, ObjectId } from "mongodb";
+import { ClientSession, Collection, Filter, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -235,6 +235,7 @@ export interface SceneTagVariantInput {
 
 export const createScene = async (
   input: CreateSceneInput,
+  session?: ClientSession,
 ): Promise<SceneDocument> => {
   const collection = getScenesCollection();
   const plotId = ensureObjectId(input.plotId, "plotId");
@@ -269,6 +270,7 @@ export const createScene = async (
 
   const result = await collection.insertOne(
     payload as unknown as SceneDocument,
+    session ? { session } : {},
   );
   return { ...payload, _id: result.insertedId };
 };

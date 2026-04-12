@@ -85,6 +85,15 @@ importRouter.post(
       return;
     }
 
+    // T015: Surface transaction failure as 500 without leaking internals
+    if (
+      result.mode === "create" &&
+      result.message === "Import failed. No data was saved."
+    ) {
+      res.status(500).json({ message: result.message });
+      return;
+    }
+
     const status = result.mode === "preview" ? 200 : 201;
     res.status(status).json(result);
   }),

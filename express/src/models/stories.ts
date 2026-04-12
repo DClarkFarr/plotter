@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -120,6 +120,7 @@ export interface CreateStoryInput {
 
 export const createStory = async (
   input: CreateStoryInput,
+  session?: ClientSession,
 ): Promise<StoryDocument> => {
   const collection = getStoriesCollection();
   const permissions = normalizeStoryPermissions(input.users);
@@ -135,6 +136,7 @@ export const createStory = async (
 
   const result = await collection.insertOne(
     payload as unknown as StoryDocument,
+    session ? { session } : {},
   );
   return { ...payload, _id: result.insertedId };
 };

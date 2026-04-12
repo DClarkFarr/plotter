@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -67,6 +67,7 @@ export interface CreateCharacterInput {
 
 export const createCharacter = async (
   input: CreateCharacterInput,
+  session?: ClientSession,
 ): Promise<CharacterDocument> => {
   const collection = getCharactersCollection();
   const storyId = ensureObjectId(input.storyId, "storyId");
@@ -99,8 +100,25 @@ export const createCharacter = async (
 
   const result = await collection.insertOne(
     payload as unknown as CharacterDocument,
+    session ? { session } : {},
   );
   return { ...payload, _id: result.insertedId };
+};
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const findCharacterByTitle = async (
+  storyId: string | ObjectId,
+  title: string,
+  session?: ClientSession,
+): Promise<CharacterDocument | null> => {
+  return getCharactersCollection().findOne(
+    {
+      storyId: ensureObjectId(storyId, "storyId"),
+      title: { $regex: new RegExp(`^${escapeRegex(title)}$`, "i") },
+    },
+    session ? { session } : undefined,
+  );
 };
 
 export interface ListCharactersOptions {

@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -73,6 +73,7 @@ export interface CreateSectionInput {
 
 export const createSection = async (
   input: CreateSectionInput,
+  session?: ClientSession,
 ): Promise<SectionDocument> => {
   const collection = getSectionsCollection();
   const payload: ModelInsertInput<SectionDefinition> = {
@@ -86,6 +87,7 @@ export const createSection = async (
 
   const result = await collection.insertOne(
     payload as unknown as SectionDocument,
+    session ? { session } : {},
   );
   return { ...payload, _id: result.insertedId };
 };

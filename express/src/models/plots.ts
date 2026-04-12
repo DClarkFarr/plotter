@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -67,6 +67,7 @@ export interface CreatePlotInput {
 
 export const createPlot = async (
   input: CreatePlotInput,
+  session?: ClientSession,
 ): Promise<PlotDocument> => {
   const collection = getPlotsCollection();
   const storyId = ensureObjectId(input.storyId, "storyId");
@@ -85,7 +86,7 @@ export const createPlot = async (
     ...createTimestamps(),
   };
 
-  await collection.insertOne(payload);
+  await collection.insertOne(payload, session ? { session } : {});
   return payload;
 };
 

@@ -13,6 +13,13 @@ export const connectToMongo = async (mongoUrl: string): Promise<Db> => {
   return client.db();
 };
 
+export const getClient = (): MongoClient => {
+  if (!client) {
+    throw new Error("MongoDB client has not been initialized.");
+  }
+  return client;
+};
+
 export const disconnectFromMongo = async (): Promise<void> => {
   if (!client) {
     return;

@@ -12,6 +12,14 @@
     "mkdir": true,
     "git rev-parse": true,
     "officeparser": true,
-    "npx tsc": true
+    "npx tsc": true,
+    "/^bash \\.specify/scripts/bash/create-new-feature\\.sh --json --short-name \"finish-import-db\" \"Now that chapters and acts are implemented in the sections, we are ready to finish the import, creating all the database things\\.\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^bash \\.specify/scripts/bash/setup-plan\\.sh --json 2>/dev/null \\|\\| bash \\.specify/scripts/bash/setup-plan\\.sh$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }
