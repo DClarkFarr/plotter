@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { Section } from "../../api/types";
 import { Button } from "flowbite-react";
 import IconArrowAll from "~icons/mdi/arrow-all";
@@ -13,7 +13,7 @@ export type SectionRowProps = {
   className?: string;
 };
 
-export const SectionRow = ({ section, className }: SectionRowProps) => {
+export const SectionRow = memo(({ section, className }: SectionRowProps) => {
   const selectSection = useSectionEditorStore((s) => s.selectSection);
   const openSidebar = useSidebarStore((s) => s.openSidebar);
   const addSidebarView = useSidebarStore((s) => s.addSidebarView);
@@ -70,4 +70,4 @@ export const SectionRow = ({ section, className }: SectionRowProps) => {
       </div>
     </div>
   );
-};
+});
