@@ -86,146 +86,152 @@ export const importOutlineForStory = async (
     };
   }
 
-  // T006: Open transaction session and run all DB writes atomically
-  const session = getClient().startSession();
+  // T006: Run all DB writes; on failure, hard-delete the story to avoid orphaned data
+  let createdStoryId: ObjectId | null = null;
   try {
-    let storyId: string;
+    const ownerId = ensureObjectId(payload.userId, "userId");
 
-    await session.withTransaction(async () => {
-      const ownerId = ensureObjectId(payload.userId, "userId");
-
-      // T007: Create story and default plot
-      const story = await createStory(
-        {
-          title: storyName,
-          description: "",
-          users: [{ userId: ownerId, role: "owner" }],
-        },
-        session,
-      );
-
-      const plot = await createPlot(
-        {
-          title: "Main",
-          description: "",
-          color: "#6B7280",
-          storyId: story._id,
-          horizontalIndex: 0,
-        },
-        session,
-      );
-
-      // T010: Create tags — story is new, insert each parsed tag directly
-      const tagIdMap = new Map<string, ObjectId>();
-      for (const tag of parsed.tags) {
-        const created = await createTag(
-          {
-            storyId: story._id,
-            name: tag.name,
-            color: tag.color ?? "#000000",
-            variant: tag.variant !== null,
-            variants: tag.variant ? [tag.variant] : [],
-          },
-          session,
-        );
-        tagIdMap.set(tag.id, created._id);
-      }
-
-      // T011: Create characters — story is new, insert each parsed character directly
-      const charIdMap = new Map<string, ObjectId>();
-      for (const character of parsed.characters) {
-        const created = await createCharacter(
-          { storyId: story._id, title: character.name },
-          session,
-        );
-        charIdMap.set(character.id, created._id);
-      }
-
-      // T008: Iterate elements in document order with shared verticalIndex counter
-      let verticalIndex = 0;
-      for (const element of parsed.elements) {
-        if (element.type === "act") {
-          await createSection(
-            {
-              storyId: story._id,
-              title: element.title,
-              type: "act",
-              verticalIndex: verticalIndex++,
-            },
-            session,
-          );
-        } else if (element.type === "chapter") {
-          await createSection(
-            {
-              storyId: story._id,
-              title: element.title,
-              type: "chapter",
-              verticalIndex: verticalIndex++,
-            },
-            session,
-          );
-        } else if (element.type === "scene") {
-          // T012: Map tag IDs and build tagVariants
-          const tags = element.tagIds
-            .map((id) => tagIdMap.get(id))
-            .filter((id): id is ObjectId => id !== undefined);
-
-          const tagVariants = element.tagIds
-            .map((id) => {
-              const tagDbId = tagIdMap.get(id);
-              const parsedTag = parsed.tags.find((t) => t.id === id);
-              if (!tagDbId || !parsedTag?.variant) {
-                return null;
-              }
-              return { tagId: tagDbId, variant: parsedTag.variant };
-            })
-            .filter(
-              (entry): entry is { tagId: ObjectId; variant: string } =>
-                entry !== null,
-            );
-
-          // T013: Resolve POV character
-          const pov = element.povCharacterId
-            ? (charIdMap.get(element.povCharacterId) ?? null)
-            : null;
-
-          await createScene(
-            {
-              plotId: plot._id,
-              title: element.title,
-              description: "",
-              tags,
-              tagVariants,
-              pov,
-              todo: [],
-              snippets: [],
-              verticalIndex: verticalIndex++,
-            },
-            session,
-          );
-        }
-      }
-
-      storyId = story._id.toHexString();
+    // T007: Create story and default plot
+    const story = await createStory({
+      title: storyName,
+      description: "",
+      users: [{ userId: ownerId, role: "owner" }],
     });
+    createdStoryId = story._id;
+
+    const plot = await createPlot({
+      title: "Main",
+      description: "",
+      color: "#6B7280",
+      storyId: story._id,
+      horizontalIndex: 0,
+    });
+
+    // T010: Create tags — group parsed tags by name so variants are merged into one DB tag
+    const tagIdMap = new Map<string, ObjectId>();
+    const tagGroupMap = new Map<
+      string,
+      { color: string; variants: string[]; ids: string[] }
+    >();
+    for (const tag of parsed.tags) {
+      const existing = tagGroupMap.get(tag.name);
+      if (existing) {
+        if (tag.variant && !existing.variants.includes(tag.variant)) {
+          existing.variants.push(tag.variant);
+        }
+        existing.ids.push(tag.id);
+      } else {
+        tagGroupMap.set(tag.name, {
+          color: tag.color ?? "#000000",
+          variants: tag.variant ? [tag.variant] : [],
+          ids: [tag.id],
+        });
+      }
+    }
+    for (const [name, group] of tagGroupMap) {
+      const created = await createTag({
+        storyId: story._id,
+        name,
+        color: group.color,
+        variant: group.variants.length > 0,
+        variants: group.variants,
+      });
+      for (const id of group.ids) {
+        tagIdMap.set(id, created._id);
+      }
+    }
+
+    // T011: Create characters — story is new, insert each parsed character directly
+    const charIdMap = new Map<string, ObjectId>();
+    for (const character of parsed.characters) {
+      const created = await createCharacter({
+        storyId: story._id,
+        title: character.name,
+      });
+      charIdMap.set(character.id, created._id);
+    }
+
+    // T008: Iterate elements in document order with shared verticalIndex counter
+    let verticalIndex = 0;
+    for (const element of parsed.elements) {
+      if (element.type === "act") {
+        await createSection({
+          storyId: story._id,
+          title: element.title,
+          type: "act",
+          verticalIndex: verticalIndex++,
+        });
+      } else if (element.type === "chapter") {
+        await createSection({
+          storyId: story._id,
+          title: element.title,
+          type: "chapter",
+          verticalIndex: verticalIndex++,
+        });
+      } else if (element.type === "scene") {
+        // T012: Map tag IDs and build tagVariants
+        const tags = element.tagIds
+          .map((id) => tagIdMap.get(id))
+          .filter((id): id is ObjectId => id !== undefined);
+
+        const tagVariants = element.tagIds
+          .map((id) => {
+            const tagDbId = tagIdMap.get(id);
+            const parsedTag = parsed.tags.find((t) => t.id === id);
+            if (!tagDbId || !parsedTag?.variant) {
+              return null;
+            }
+            return { tagId: tagDbId, variant: parsedTag.variant };
+          })
+          .filter(
+            (entry): entry is { tagId: ObjectId; variant: string } =>
+              entry !== null,
+          );
+
+        // T013: Resolve POV character
+        const pov = element.povCharacterId
+          ? (charIdMap.get(element.povCharacterId) ?? null)
+          : null;
+
+        await createScene({
+          plotId: plot._id,
+          title: element.title,
+          description: "",
+          tags,
+          tagVariants,
+          pov,
+          todo: [],
+          snippets: [],
+          verticalIndex: verticalIndex++,
+        });
+      }
+    }
 
     return {
       mode: payload.mode,
       summary,
       message: "Import completed",
-      storyId: storyId!,
+      storyId: story._id.toHexString(),
       storyName,
     };
-  } catch {
-    // T009: Transaction failed — no partial data persisted
+  } catch (err) {
+    // T009: Write failed — attempt to remove partially-created story
+    console.error("Caught error importing story", err);
+    if (createdStoryId !== null) {
+      await getClient()
+        .db()
+        .collection("stories")
+        .deleteOne({ _id: createdStoryId })
+        .catch((cleanupErr) =>
+          console.error("Failed to clean up partial story", cleanupErr),
+        );
+    }
     return {
       mode: payload.mode,
       summary,
       storyName,
       message: "Import failed. No data was saved.",
     };
-  } finally {
-    await session.endSession();
   }
 };
 
