@@ -1,12 +1,12 @@
 import type { Express } from "express";
-import type { ImportParseResult, Tag } from "../types/importOutline";
+import type { ImportParseResult } from "../types/importOutline";
 import { parseImportOutlineDocx } from "./importOutlineParser";
 import { createStory } from "../models/stories";
 import { createPlot } from "../models/plots";
 import { createSection } from "../models/sections";
 import { createScene } from "../models/scenes";
-import { createTag, findTagByName, appendTagVariant } from "../models/tags";
-import { createCharacter, findCharacterByTitle } from "../models/characters";
+import { createTag } from "../models/tags";
+import { createCharacter } from "../models/characters";
 import { ensureObjectId } from "../models/types";
 import { getClient } from "../utils/mongo";
 import type { ObjectId } from "mongodb";
@@ -115,47 +115,30 @@ export const importOutlineForStory = async (
         session,
       );
 
-      // T010: Resolve/create tags — build tagIdMap before element loop
+      // T010: Create tags — story is new, insert each parsed tag directly
       const tagIdMap = new Map<string, ObjectId>();
       for (const tag of parsed.tags) {
-        const existing = await findTagByName(story._id, tag.name, session);
-        if (existing) {
-          if (tag.variant && !existing.variants.includes(tag.variant)) {
-            await appendTagVariant(existing._id, tag.variant, session);
-          }
-          tagIdMap.set(tag.id, existing._id);
-        } else {
-          const created = await createTag(
-            {
-              storyId: story._id,
-              name: tag.name,
-              color: tag.color ?? "#000000",
-              variant: tag.variant !== null,
-              variants: tag.variant ? [tag.variant] : [],
-            },
-            session,
-          );
-          tagIdMap.set(tag.id, created._id);
-        }
-      }
-
-      // T011: Resolve/create characters — build charIdMap before element loop
-      const charIdMap = new Map<string, ObjectId>();
-      for (const character of parsed.characters) {
-        const existing = await findCharacterByTitle(
-          story._id,
-          character.name,
+        const created = await createTag(
+          {
+            storyId: story._id,
+            name: tag.name,
+            color: tag.color ?? "#000000",
+            variant: tag.variant !== null,
+            variants: tag.variant ? [tag.variant] : [],
+          },
           session,
         );
-        if (existing) {
-          charIdMap.set(character.id, existing._id);
-        } else {
-          const created = await createCharacter(
-            { storyId: story._id, title: character.name },
-            session,
-          );
-          charIdMap.set(character.id, created._id);
-        }
+        tagIdMap.set(tag.id, created._id);
+      }
+
+      // T011: Create characters — story is new, insert each parsed character directly
+      const charIdMap = new Map<string, ObjectId>();
+      for (const character of parsed.characters) {
+        const created = await createCharacter(
+          { storyId: story._id, title: character.name },
+          session,
+        );
+        charIdMap.set(character.id, created._id);
       }
 
       // T008: Iterate elements in document order with shared verticalIndex counter

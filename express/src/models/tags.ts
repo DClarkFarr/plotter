@@ -61,34 +61,6 @@ export const createTag = async (
   return { ...payload, _id: result.insertedId };
 };
 
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-export const findTagByName = async (
-  storyId: string | ObjectId,
-  name: string,
-  session?: ClientSession,
-): Promise<TagDocument | null> => {
-  return getTagsCollection().findOne(
-    {
-      storyId: ensureObjectId(storyId, "storyId"),
-      name: { $regex: new RegExp(`^${escapeRegex(name)}$`, "i") },
-    },
-    session ? { session } : undefined,
-  );
-};
-
-export const appendTagVariant = async (
-  tagId: string | ObjectId,
-  variant: string,
-  session?: ClientSession,
-): Promise<void> => {
-  await getTagsCollection().updateOne(
-    { _id: ensureObjectId(tagId, "tagId") },
-    { $addToSet: { variants: variant }, ...touchTimestamps() },
-    session ? { session } : {},
-  );
-};
-
 export interface ListTagsOptions {
   limit?: number;
   storyId?: string | ObjectId;

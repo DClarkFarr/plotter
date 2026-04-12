@@ -105,22 +105,6 @@ export const createCharacter = async (
   return { ...payload, _id: result.insertedId };
 };
 
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-export const findCharacterByTitle = async (
-  storyId: string | ObjectId,
-  title: string,
-  session?: ClientSession,
-): Promise<CharacterDocument | null> => {
-  return getCharactersCollection().findOne(
-    {
-      storyId: ensureObjectId(storyId, "storyId"),
-      title: { $regex: new RegExp(`^${escapeRegex(title)}$`, "i") },
-    },
-    session ? { session } : undefined,
-  );
-};
-
 export interface ListCharactersOptions {
   limit?: number;
   storyId?: string | ObjectId;
