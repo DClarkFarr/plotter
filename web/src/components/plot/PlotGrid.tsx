@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import type { Plot, Scene, Section } from "../../api/types";
 
 import type {
+  DraggableSceneData,
   EmptyRendererProps,
   SceneCardTypes,
   SceneRenderer,
@@ -14,12 +15,10 @@ import { PlotHeader } from "./SceneRenderer/PlotHeader";
 import { ColHeader } from "./ColHeader";
 import { SectionRow } from "./SectionRow";
 import { DragDropProvider } from "@dnd-kit/react";
-import { DragDropManager, Feedback } from "@dnd-kit/dom";
-import { Modifier, type DragOperation } from "@dnd-kit/abstract";
+import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
 import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
-import type { Coordinates } from "@dnd-kit/utilities";
 import { StoryFiltersBar } from "../story/StoryFiltersBar";
 import { useStoryStore } from "../../store/storyStore";
 import {
@@ -32,6 +31,7 @@ import {
   useStoryPlotsQuery,
   useStoryScenesQuery,
 } from "../../queries/story/story-queries";
+import { CustomSensitivityModifier } from "./PlotGrid/CustomSensitivityModifier";
 
 export type PlotGridProps = {
   storyId: string;
@@ -65,36 +65,6 @@ const getCellColIndex = (gridIndex: number) => {
 };
 const getCellRowIndex = (gridIndex: number) => {
   return gridIndex - 1;
-};
-
-type SensitivityOptions = {
-  xModifier: number;
-  yModifier: number;
-};
-class CustomSensitivityModifier extends Modifier {
-  constructor(manager: DragDropManager, options?: SensitivityOptions) {
-    super(manager, options);
-  }
-
-  public apply(operation: DragOperation): Coordinates {
-    // console.log("got operation", operation);
-    if (this.disabled) return operation.transform;
-
-    const { xModifier = 1, yModifier = 1 } = this.options ?? {};
-    const { transform } = operation;
-
-    return {
-      ...transform,
-      x: transform.x * xModifier,
-      y: transform.y * yModifier,
-    };
-  }
-}
-
-type DraggableSceneData = {
-  plot: Plot;
-  scene: Scene;
-  verticalIndex: number;
 };
 
 function assertIsDraggableSceneData(data: object): data is DraggableSceneData {
@@ -244,14 +214,11 @@ const PlotGridBody = ({
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
   const { data: sections = [] } = useStorySectionsQuery(storyId);
 
-  const { /* plotsFiltered, */ includedSceneIds } = useMemo(
+  const { includedSceneIds } = useMemo(
     () => applyFiltersToPlots(plots, scenes, filters, { tags, characters }),
     [plots, scenes, filters, tags, characters],
   );
-  // const filteredSceneCount = useMemo(
-  //   () => plotsFiltered.reduce((sum, plot) => sum + plot.scenes.length, 0),
-  //   [plotsFiltered],
-  // );
+
   const includedSceneIdSet = useMemo(
     () => new Set(includedSceneIds),
     [includedSceneIds],

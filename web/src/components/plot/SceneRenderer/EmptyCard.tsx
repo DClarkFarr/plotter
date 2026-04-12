@@ -13,13 +13,7 @@ import { Button } from "flowbite-react";
 import { CustomTooltip } from "../../helpers/CustomTooltip";
 
 export const EmptyCard = memo(
-  ({
-    storyId,
-    isDisabled,
-    plot,
-    sceneIndex,
-    // plotIndex,
-  }: EmptyRendererProps) => {
+  ({ storyId, isDisabled, plot, sceneIndex }: EmptyRendererProps) => {
     const theme = usePlotTheme(plot?.color);
     const createSceneMutation = useCreateSceneMutation(storyId);
     const selectScene = useSceneEditorStore((s) => s.selectScene);
@@ -36,15 +30,13 @@ export const EmptyCard = memo(
       id: `empty-${plot?.id}-${sceneIndex}`,
       accept: "scene",
       type: "droppable",
+      disabled: !plot?.id,
       data: {
         plot: plot,
         verticalIndex: sceneIndex,
       },
       collisionPriority: CollisionPriority.Normal,
     });
-
-    // TODO: put this back and make it better
-    // console.log("empty", plotIndex, sceneIndex, { isDropTarget });
 
     const themeStyles = {
       "--plot-color": theme.baseColor,
@@ -79,8 +71,6 @@ export const EmptyCard = memo(
         addSidebarView("scene");
       }
     };
-
-    // console.log("render EmptyCard", plotIndex, sceneIndex);
 
     return (
       <div
