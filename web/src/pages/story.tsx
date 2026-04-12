@@ -230,9 +230,9 @@ export function StoryPage() {
 
       <div className="plots-wrapper bg-gray-100">
         {cardDisplay === "grid" ? (
-          <PlotGrid storyId={storyId} plots={plots} />
+          <PlotGrid storyId={storyId} />
         ) : (
-          <ListView storyId={storyId} plots={plots} />
+          <ListView storyId={storyId} />
         )}
       </div>
       <CharacterModal />

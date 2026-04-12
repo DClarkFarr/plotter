@@ -30,7 +30,6 @@ export function useCreatePlotMutation(storyId: string) {
           color: input.color,
           storyId,
           horizontalIndex: input.horizontalIndex,
-          scenes: [],
         };
 
         queryClient.setQueryData<Plot[]>(

@@ -1,4 +1,4 @@
-import type { Character, Plot, Tag } from "../api/types";
+import type { Character, Plot, Scene, Tag } from "../api/types";
 import type { StoryFilter } from "../store/storyStore.types";
 
 export type FilteredPlotsResult = {
@@ -12,6 +12,7 @@ type ApplyFiltersOptions = {
 
 export const applyFiltersToPlots = (
   plots: Plot[],
+  scenes: Scene[],
   filters: StoryFilter[],
   options: ApplyFiltersOptions = {},
 ): FilteredPlotsResult => {
@@ -24,9 +25,7 @@ export const applyFiltersToPlots = (
 
   if (normalizedFilters.length === 0) {
     return {
-      includedSceneIds: plots.flatMap((plot) =>
-        plot.scenes.map((scene) => scene.id),
-      ),
+      includedSceneIds: scenes.map((scene) => scene.id),
     };
   }
 
@@ -62,7 +61,7 @@ export const applyFiltersToPlots = (
     );
   };
 
-  const matchesTagFilter = (scene: Plot["scenes"][number]) => {
+  const matchesTagFilter = (scene: Scene) => {
     if (tagFilters.length === 0) {
       return true;
     }
@@ -89,7 +88,7 @@ export const applyFiltersToPlots = (
     });
   };
 
-  const matchesCharacterFilter = (scene: Plot["scenes"][number]) => {
+  const matchesCharacterFilter = (scene: Scene) => {
     if (characterFilters.length === 0) {
       return true;
     }
@@ -104,7 +103,7 @@ export const applyFiltersToPlots = (
     });
   };
 
-  const matchesSearchFilter = (scene: Plot["scenes"][number]) => {
+  const matchesSearchFilter = (scene: Scene) => {
     if (searchFilters.length === 0) {
       return true;
     }
@@ -117,21 +116,21 @@ export const applyFiltersToPlots = (
     });
   };
 
+  const plotById = new Map(plots.map((p) => [p.id, p]));
   const includedSceneIds: string[] = [];
-  plots.forEach((plot) => {
-    if (!matchesPlotFilter(plot)) {
+  scenes.forEach((scene) => {
+    const plot = plotById.get(scene.plotId);
+    if (!plot || !matchesPlotFilter(plot)) {
       return;
     }
 
-    plot.scenes.forEach((scene) => {
-      const matches =
-        matchesTagFilter(scene) &&
-        matchesCharacterFilter(scene) &&
-        matchesSearchFilter(scene);
-      if (matches) {
-        includedSceneIds.push(scene.id);
-      }
-    });
+    const matches =
+      matchesTagFilter(scene) &&
+      matchesCharacterFilter(scene) &&
+      matchesSearchFilter(scene);
+    if (matches) {
+      includedSceneIds.push(scene.id);
+    }
   });
 
   return {

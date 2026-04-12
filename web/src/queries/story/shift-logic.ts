@@ -1,4 +1,4 @@
-import type { Plot, Section } from "../../api/types";
+import type { Scene, Section } from "../../api/types";
 
 export type MoveRangeShift = {
   rangeStart: number;
@@ -12,7 +12,7 @@ export type MoveRangeShiftProps = {
   fromPlotId: string;
   toPlotId: string;
   resource: { id: string; type: "scene" | "section" };
-  plots: Plot[];
+  scenes: Scene[];
   sections: Section[];
 };
 
@@ -27,64 +27,56 @@ const hasSectionOnIndex = (
   );
 
 const hasSceneOnPlotIndex = (
-  plots: Plot[],
+  scenes: Scene[],
   plotId: string,
   verticalIndex: number,
   excludeId?: string,
-) => {
-  const plot = plots.find((entry) => entry.id === plotId);
-  if (!plot) {
-    return false;
-  }
-
-  return plot.scenes.some(
-    (scene) => scene.verticalIndex === verticalIndex && scene.id !== excludeId,
+) =>
+  scenes.some(
+    (s) =>
+      s.plotId === plotId &&
+      s.verticalIndex === verticalIndex &&
+      s.id !== excludeId,
   );
-};
 
 const hasSceneOnStoryIndex = (
-  plots: Plot[],
+  scenes: Scene[],
   verticalIndex: number,
   excludeId?: string,
 ) =>
-  plots.some((plot) =>
-    plot.scenes.some(
-      (scene) =>
-        scene.verticalIndex === verticalIndex && scene.id !== excludeId,
-    ),
-  );
+  scenes.some((s) => s.verticalIndex === verticalIndex && s.id !== excludeId);
 
 export const shouldShiftForSceneInsert = (
-  plots: Plot[],
+  scenes: Scene[],
   sections: Section[],
   plotId: string,
   verticalIndex: number,
 ) =>
-  hasSceneOnPlotIndex(plots, plotId, verticalIndex) &&
+  hasSceneOnPlotIndex(scenes, plotId, verticalIndex) &&
   !hasSectionOnIndex(sections, verticalIndex);
 
 export const shouldShiftForSectionInsert = (
-  plots: Plot[],
+  scenes: Scene[],
   sections: Section[],
   verticalIndex: number,
 ) =>
-  hasSceneOnStoryIndex(plots, verticalIndex) ||
+  hasSceneOnStoryIndex(scenes, verticalIndex) ||
   hasSectionOnIndex(sections, verticalIndex);
 
 export const shouldShiftAfterSceneRemoval = (
-  plots: Plot[],
+  scenes: Scene[],
   sections: Section[],
   plotId: string,
   verticalIndex: number,
   removedSceneId: string,
 ) =>
-  !hasSceneOnPlotIndex(plots, plotId, verticalIndex, removedSceneId) &&
+  !hasSceneOnPlotIndex(scenes, plotId, verticalIndex, removedSceneId) &&
   !hasSectionOnIndex(sections, verticalIndex);
 
 export const shouldShiftAfterSectionRemoval = (
-  plots: Plot[],
+  scenes: Scene[],
   verticalIndex: number,
-) => !hasSceneOnStoryIndex(plots, verticalIndex);
+) => !hasSceneOnStoryIndex(scenes, verticalIndex);
 
 export const getMoveRangeShift = (
   props: MoveRangeShiftProps,
@@ -95,7 +87,7 @@ export const getMoveRangeShift = (
     fromPlotId,
     toPlotId,
     resource,
-    plots,
+    scenes,
     sections,
   } = props;
 
@@ -106,13 +98,13 @@ export const getMoveRangeShift = (
   const isTargetOccupied = () => {
     if (resource.type === "section") {
       return (
-        hasSceneOnStoryIndex(plots, toIndex) ||
+        hasSceneOnStoryIndex(scenes, toIndex) ||
         hasSectionOnIndex(sections, toIndex, resource.id)
       );
     }
 
     return (
-      hasSceneOnPlotIndex(plots, toPlotId, toIndex, resource.id) ||
+      hasSceneOnPlotIndex(scenes, toPlotId, toIndex, resource.id) ||
       hasSectionOnIndex(sections, toIndex)
     );
   };
@@ -122,7 +114,7 @@ export const getMoveRangeShift = (
       return true;
     }
 
-    const hasScene = hasSceneOnStoryIndex(plots, fromIndex, resource.id);
+    const hasScene = hasSceneOnStoryIndex(scenes, fromIndex, resource.id);
     const hasSection = hasSectionOnIndex(sections, fromIndex);
     return !hasScene && !hasSection;
   };

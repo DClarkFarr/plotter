@@ -28,10 +28,13 @@ import {
 } from "../../queries/story/story-queries";
 import { useStorySectionsQuery } from "../../queries/section/section-queries";
 import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
+import {
+  useStoryPlotsQuery,
+  useStoryScenesQuery,
+} from "../../queries/story/story-queries";
 
 export type PlotGridProps = {
   storyId: string;
-  plots: Plot[];
   renderSceneCard?: SceneRenderer<SceneRendererProps>;
   renderEmptyCard?: SceneRenderer<EmptyRendererProps>;
 };
@@ -111,7 +114,6 @@ function assertIsDraggableSceneData(data: object): data is DraggableSceneData {
 
 export const PlotGrid = ({
   storyId,
-  plots,
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
@@ -221,7 +223,6 @@ export const PlotGrid = ({
       >
         <PlotGridBody
           storyId={storyId}
-          plots={plots}
           renderSceneCard={renderSceneCard}
           renderEmptyCard={renderEmptyCard}
         />
@@ -232,10 +233,11 @@ export const PlotGrid = ({
 
 const PlotGridBody = ({
   storyId,
-  plots,
   renderSceneCard,
   renderEmptyCard,
 }: PlotGridProps) => {
+  const { data: plots = [] } = useStoryPlotsQuery(storyId);
+  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const filters = useStoryStore((state) => state.filters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
   const { data: tags = [] } = useStoryTagsQuery(storyId);
@@ -243,8 +245,8 @@ const PlotGridBody = ({
   const { data: sections = [] } = useStorySectionsQuery(storyId);
 
   const { /* plotsFiltered, */ includedSceneIds } = useMemo(
-    () => applyFiltersToPlots(plots, filters, { tags, characters }),
-    [plots, filters, tags, characters],
+    () => applyFiltersToPlots(plots, scenes, filters, { tags, characters }),
+    [plots, scenes, filters, tags, characters],
   );
   // const filteredSceneCount = useMemo(
   //   () => plotsFiltered.reduce((sum, plot) => sum + plot.scenes.length, 0),
@@ -264,7 +266,7 @@ const PlotGridBody = ({
   }, [sections]);
 
   const gridCols = getGridCols(plots);
-  const gridRows = getGridRows(plots, sections);
+  const gridRows = getGridRows(scenes, sections);
 
   const RenderSceneCard = renderSceneCard || SceneCard;
   const RenderEmptyCard = renderEmptyCard || EmptyCard;
@@ -272,6 +274,27 @@ const PlotGridBody = ({
     0,
     ...plots.map((plot) => plot.horizontalIndex),
   );
+
+  const plotsByRowIndex = useMemo(() => {
+    const map = new Map<number, Plot>();
+    for (const plot of plots) {
+      map.set(plot.horizontalIndex, plot);
+    }
+    return map;
+  }, [plots]);
+
+  const scenesByColIndex = useMemo(() => {
+    const plotMap = new Map<string, Map<number, Scene>>();
+    for (const scene of scenes) {
+      let sceneMap = plotMap.get(scene.plotId);
+      if (!sceneMap) {
+        sceneMap = new Map<number, Scene>();
+        plotMap.set(scene.plotId, sceneMap);
+      }
+      sceneMap.set(scene.verticalIndex, scene);
+    }
+    return plotMap;
+  }, [scenes]);
 
   const grid = useMemo(() => {
     const rows: GridCellTypes[][] = [];
@@ -302,38 +325,18 @@ const PlotGridBody = ({
           row.push({ type: "empty" });
           continue;
         }
-        const sceneIndex = plot.scenes.findIndex((s) => s.verticalIndex === r);
-        if (sceneIndex === -1) {
+        const hasScene = scenesByColIndex.get(plot.id)?.has(r) ?? false;
+        if (!hasScene) {
           row.push({ type: "empty" });
         } else {
-          row.push({ type: "scene", index: sceneIndex });
+          row.push({ type: "scene", index: r });
         }
       }
       rows.push(row);
     }
 
     return rows;
-  }, [plots, gridCols, gridRows, sectionsByRowIndex]);
-
-  const plotsByRowIndex = useMemo(() => {
-    const map = new Map<number, Plot>();
-    for (const plot of plots) {
-      map.set(plot.horizontalIndex, plot);
-    }
-    return map;
-  }, [plots]);
-
-  const scenesByColIndex = useMemo(() => {
-    const plotMap = new Map<string, Map<number, Scene>>();
-    for (const plot of plots) {
-      const sceneMap = new Map<number, Scene>();
-      for (const scene of plot.scenes) {
-        sceneMap.set(scene.verticalIndex, scene);
-      }
-      plotMap.set(plot.id, sceneMap);
-    }
-    return plotMap;
-  }, [plots]);
+  }, [plots, gridCols, gridRows, sectionsByRowIndex, scenesByColIndex]);
 
   return (
     <div
@@ -342,7 +345,12 @@ const PlotGridBody = ({
     >
       {hasFilters && (
         <div className="sticky top-0 z-155 pl-[140px] pr-6 py-2">
-          <StoryFiltersBar plots={plots} tags={tags} characters={characters} />
+          <StoryFiltersBar
+            plots={plots}
+            scenes={scenes}
+            tags={tags}
+            characters={characters}
+          />
         </div>
       )}
 
@@ -410,7 +418,7 @@ const PlotGridBody = ({
                         key={`col-header-${r}-${c}`}
                         storyId={storyId}
                         rowIndex={getCellRowIndex(r)}
-                        plots={plots}
+                        scenes={scenes}
                         sections={sections}
                       />
                     );
@@ -495,14 +503,11 @@ const getGridCols = (plots: Plot[]) => {
   return maxVerticalPosition;
 };
 
-const getGridRows = (plots: Plot[], sections: Section[]) => {
-  const sceneMax = plots.reduce((max, plot) => {
-    const plotMax = plot.scenes.reduce(
-      (sMax, scene) => Math.max(sMax, scene.verticalIndex),
-      0,
-    );
-    return Math.max(max, plotMax);
-  }, 0);
+const getGridRows = (scenes: Scene[], sections: Section[]) => {
+  const sceneMax = scenes.reduce(
+    (max, scene) => Math.max(max, scene.verticalIndex),
+    0,
+  );
 
   const sectionMax = sections.reduce(
     (max, section) => Math.max(max, section.verticalIndex),

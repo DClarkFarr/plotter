@@ -16,6 +16,7 @@ import { RichTextEditor } from "../forms/RichTextEditor";
 import {
   useStoryCharactersQuery,
   useStoryPlotsQuery,
+  useStoryScenesQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
 import {
@@ -30,6 +31,7 @@ import IconChevronDown from "~icons/mdi/chevron-down";
 export const SceneForm = () => {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
+  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const { data: characters = [], isLoading: isCharactersLoading } =
     useStoryCharactersQuery(storyId);
@@ -63,23 +65,8 @@ export const SceneForm = () => {
     if (!selectedSceneId) {
       return null;
     }
-
-    if (selectedPlot) {
-      return (
-        selectedPlot.scenes.find((scene) => scene.id === selectedSceneId) ??
-        null
-      );
-    }
-
-    for (const plot of plots) {
-      const match = plot.scenes.find((scene) => scene.id === selectedSceneId);
-      if (match) {
-        return match;
-      }
-    }
-
-    return null;
-  }, [plots, selectedPlot, selectedSceneId]);
+    return scenes.find((scene) => scene.id === selectedSceneId) ?? null;
+  }, [scenes, selectedSceneId]);
 
   const sortedCharacters = useMemo(
     () =>

@@ -1,33 +1,21 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { Plot, Section, ShiftedResources } from "../../api/types";
+import type { Scene, Section, ShiftedResources } from "../../api/types";
 import { shiftScenesInRange, sortScenes } from "../scene/scene-helpers";
 import { shiftSectionsInRange, sortSections } from "../section/section-helpers";
-import { useStoryPlotsQuery } from "./story-queries";
+import { useStoryScenesQuery } from "./story-queries";
 import { useStorySectionsQuery } from "../section/section-queries";
 import type { MoveRangeShift } from "./shift-logic";
 
 const applyShiftedScenes = (
-  plots: Plot[],
-  scenes: ShiftedResources["scenes"],
-) => {
-  if (scenes.length === 0) {
-    return plots;
+  current: Scene[],
+  shifted: ShiftedResources["scenes"],
+): Scene[] => {
+  if (shifted.length === 0) {
+    return current;
   }
 
-  const sceneMap = new Map(scenes.map((scene) => [scene.id, scene]));
-
-  return plots.map((plot) => {
-    const hasScene = plot.scenes.some((scene) => sceneMap.has(scene.id));
-    if (!hasScene) {
-      return plot;
-    }
-
-    const nextScenes = plot.scenes.map(
-      (scene) => sceneMap.get(scene.id) ?? scene,
-    );
-
-    return { ...plot, scenes: sortScenes(nextScenes) };
-  });
+  const sceneMap = new Map(shifted.map((scene) => [scene.id, scene]));
+  return sortScenes(current.map((scene) => sceneMap.get(scene.id) ?? scene));
 };
 
 const applyShiftedSections = (
@@ -54,19 +42,15 @@ const shouldShiftIndex = (verticalIndex: number, shift: MoveRangeShift) => {
   return verticalIndex >= shift.rangeStart && verticalIndex <= shift.rangeEnd;
 };
 
-const applyShiftRangeToPlots = (plots: Plot[], shift: MoveRangeShift) =>
-  plots.map((plot) => {
-    const hasScene = plot.scenes.some((scene) =>
-      shouldShiftIndex(scene.verticalIndex, shift),
-    );
-    if (!hasScene) {
-      return plot;
-    }
-
-    const nextScenes = shiftScenesInRange(plot.scenes, shift);
-
-    return { ...plot, scenes: sortScenes(nextScenes) };
-  });
+const applyShiftRangeToScenes = (
+  scenes: Scene[],
+  shift: MoveRangeShift,
+): Scene[] =>
+  scenes.map((scene) =>
+    shouldShiftIndex(scene.verticalIndex, shift)
+      ? { ...scene, verticalIndex: scene.verticalIndex + shift.shift }
+      : scene,
+  );
 
 const applyShiftRangeToSections = (
   sections: Section[],
@@ -94,8 +78,8 @@ export const applyShiftedResources = (
   }
 
   if (shiftedResources.scenes.length > 0) {
-    queryClient.setQueryData<Plot[]>(
-      useStoryPlotsQuery.queryKey(storyId),
+    queryClient.setQueryData<Scene[]>(
+      useStoryScenesQuery.queryKey(storyId),
       (current) =>
         current
           ? applyShiftedScenes(current, shiftedResources.scenes)
@@ -119,8 +103,8 @@ export const applyOptimisticShift = (
   storyId: string,
   shift: MoveRangeShift,
 ) => {
-  const { plots, sections } = applyOptimisticShiftToState(
-    queryClient.getQueryData<Plot[]>(useStoryPlotsQuery.queryKey(storyId)) ??
+  const { scenes, sections } = applyOptimisticShiftToState(
+    queryClient.getQueryData<Scene[]>(useStoryScenesQuery.queryKey(storyId)) ??
       [],
     queryClient.getQueryData<Section[]>(
       useStorySectionsQuery.queryKey(storyId),
@@ -128,7 +112,10 @@ export const applyOptimisticShift = (
     shift,
   );
 
-  queryClient.setQueryData<Plot[]>(useStoryPlotsQuery.queryKey(storyId), plots);
+  queryClient.setQueryData<Scene[]>(
+    useStoryScenesQuery.queryKey(storyId),
+    scenes,
+  );
 
   queryClient.setQueryData<Section[]>(
     useStorySectionsQuery.queryKey(storyId),
@@ -137,10 +124,10 @@ export const applyOptimisticShift = (
 };
 
 export const applyOptimisticShiftToState = (
-  plots: Plot[],
+  scenes: Scene[],
   sections: Section[],
   shift: MoveRangeShift,
 ) => ({
-  plots: applyShiftRangeToPlots(plots, shift),
+  scenes: applyShiftRangeToScenes(scenes, shift),
   sections: applyShiftRangeToSections(sections, shift),
 });

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
-import type { Plot } from "../../api/types";
 import {
   entryIsScene,
   orderScenesForListView,
@@ -9,6 +8,8 @@ import { ListViewScene } from "./ListViewScene";
 import { useStoryStore } from "../../store/storyStore";
 import {
   useStoryCharactersQuery,
+  useStoryPlotsQuery,
+  useStoryScenesQuery,
   useStoryTagsQuery,
 } from "../../queries/story/story-queries";
 import { StoryFiltersBar } from "./StoryFiltersBar";
@@ -19,10 +20,11 @@ import { ListViewSidebarItem } from "./ListViewSidebarItem";
 
 export type ListViewProps = {
   storyId: string;
-  plots: Plot[];
 };
 
-export const ListView = ({ storyId, plots }: ListViewProps) => {
+export const ListView = ({ storyId }: ListViewProps) => {
+  const { data: plots = [] } = useStoryPlotsQuery(storyId);
+  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
   const { data: sections = [] } = useStorySectionsQuery(storyId);
@@ -33,8 +35,8 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     (state) => state.filterVisibilityMode,
   );
   const { includedSceneIds } = useMemo(
-    () => applyFiltersToPlots(plots, filters, { tags, characters }),
-    [plots, filters, tags, characters],
+    () => applyFiltersToPlots(plots, scenes, filters, { tags, characters }),
+    [plots, scenes, filters, tags, characters],
   );
 
   const includedSceneIdSet = useMemo(
@@ -42,8 +44,8 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
     [includedSceneIds],
   );
   const orderedScenes = useMemo(
-    () => orderScenesForListView(plots, sections),
-    [plots, sections],
+    () => orderScenesForListView(plots, scenes, sections),
+    [plots, scenes, sections],
   );
 
   const isScrolling = useRef(false);
@@ -157,6 +159,7 @@ export const ListView = ({ storyId, plots }: ListViewProps) => {
           <div className="sticky top-0 z-155">
             <StoryFiltersBar
               plots={plots}
+              scenes={scenes}
               tags={tags}
               characters={characters}
             />

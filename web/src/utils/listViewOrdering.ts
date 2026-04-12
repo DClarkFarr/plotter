@@ -58,11 +58,17 @@ const compareScenes = (a: OrderedSceneEntry, b: OrderedSceneEntry) => {
   return titleComparison;
 };
 
-export const orderScenesForListView = (plots: Plot[], sections: Section[]) => {
+export const orderScenesForListView = (
+  plots: Plot[],
+  scenes: Scene[],
+  sections: Section[],
+) => {
+  const plotById = new Map(plots.map((p) => [p.id, p]));
   const entries: OrderedSceneEntry[] = [];
 
-  for (const plot of plots) {
-    for (const scene of plot.scenes) {
+  for (const scene of scenes) {
+    const plot = plotById.get(scene.plotId);
+    if (plot) {
       entries.push({ scene, plot });
     }
   }

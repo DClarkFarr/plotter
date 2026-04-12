@@ -3,6 +3,7 @@ import {
   getStory,
   listStoryCharacters,
   listStoryPlots,
+  listStoryScenes,
   listStoryTags,
 } from "../../api/stories";
 
@@ -53,3 +54,18 @@ export function useStoryPlotsQuery(storyId: string) {
 }
 
 useStoryPlotsQuery.queryKey = (storyId: string) => ["story", storyId, "plots"];
+
+export function useStoryScenesQuery(storyId: string) {
+  return useQuery({
+    queryKey: useStoryScenesQuery.queryKey(storyId),
+    queryFn: () => listStoryScenes(storyId),
+    enabled: Boolean(storyId),
+    staleTime: 30 * 1000,
+  });
+}
+
+useStoryScenesQuery.queryKey = (storyId: string) => [
+  "story",
+  storyId,
+  "scenes",
+];

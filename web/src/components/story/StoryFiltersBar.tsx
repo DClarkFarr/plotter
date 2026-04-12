@@ -3,7 +3,7 @@ import { useStoryStore } from "../../store/storyStore";
 import type { StoryFilter } from "../../store/storyStore.types";
 import IconClose from "~icons/mdi/close";
 import { applyFiltersToPlots } from "../../utils/applyFiltersToPlots";
-import type { Character, Plot, Tag } from "../../api/types";
+import type { Character, Plot, Scene, Tag } from "../../api/types";
 
 const formatFilterType = (type: StoryFilter["type"]) => {
   switch (type) {
@@ -32,11 +32,13 @@ const formatFilterValue = (filter: StoryFilter) => {
 
 export type StoryFiltersBarProps = {
   plots: Plot[];
+  scenes: Scene[];
   tags: Tag[];
   characters: Character[];
 };
 export const StoryFiltersBar = ({
   plots,
+  scenes,
   tags,
   characters,
 }: StoryFiltersBarProps) => {
@@ -46,14 +48,11 @@ export const StoryFiltersBar = ({
   const hasFilters = useStoryStore((state) => state.hasFilters());
 
   const { includedSceneIds } = useMemo(
-    () => applyFiltersToPlots(plots, filters, { tags, characters }),
-    [plots, filters, tags, characters],
+    () => applyFiltersToPlots(plots, scenes, filters, { tags, characters }),
+    [plots, scenes, filters, tags, characters],
   );
 
-  const filteredSceneCount = useMemo(
-    () => plots.reduce((sum, plot) => sum + plot.scenes.length, 0),
-    [plots],
-  );
+  const filteredSceneCount = useMemo(() => scenes.length, [scenes]);
 
   if (!hasFilters) {
     return null;
