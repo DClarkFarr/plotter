@@ -36,6 +36,7 @@ export type ChapterElement = {
   type: "chapter";
   title: string;
   actId: string;
+  content: string[];
 };
 
 export type SceneElement = {

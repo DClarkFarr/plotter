@@ -159,6 +159,7 @@ export const importOutlineForStory = async (
           storyId: story._id,
           title: element.title,
           type: "act",
+          description: element.content.join("") || "",
           verticalIndex: verticalIndex++,
         });
       } else if (element.type === "chapter") {
@@ -166,6 +167,7 @@ export const importOutlineForStory = async (
           storyId: story._id,
           title: element.title,
           type: "chapter",
+          description: element.content.join("") || "",
           verticalIndex: verticalIndex++,
         });
       } else if (element.type === "scene") {
@@ -196,12 +198,15 @@ export const importOutlineForStory = async (
         await createScene({
           plotId: plot._id,
           title: element.title,
-          description: "",
+          description: element.content.join(""),
           tags,
           tagVariants,
           pov,
           todo: [],
-          snippets: [],
+          snippets: element.snippets.map((s, i) => ({
+            label: `Unamed snippet ${i + 1}`,
+            text: s.content.join(""),
+          })),
           verticalIndex: verticalIndex++,
         });
       }

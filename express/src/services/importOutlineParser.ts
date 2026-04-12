@@ -224,6 +224,7 @@ export const parseImportOutlineDocx = async (
         id: `chapter_${chapterIndex}`,
         type: "chapter",
         title: getHeadingText(node) || `Chapter ${chapterIndex}`,
+        content: [],
         actId: currentAct?.id ?? "",
       };
       result.elements.push(chapter);
