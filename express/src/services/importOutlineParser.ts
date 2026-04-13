@@ -15,6 +15,8 @@ import type {
   Character,
   SceneElement,
   Snippet,
+  Element,
+  ElementType,
 } from "../types/importOutline";
 
 const snippetIndentThresholdTwips = 600;
@@ -179,16 +181,43 @@ export const parseImportOutlineDocx = async (
   let chapterIndex = 0;
   let sceneIndex = 0;
 
-  let currentAct: ActElement | null = null;
-  let currentChapter: ChapterElement | null = null;
-  let currentScene: SceneElement | null = null;
+  let currentElement: Element | null = null;
   let currentSnippet: Snippet | null = null;
   let currentSnippetIndent = 0;
   let snippetOrder = 0;
 
   const resetSnippet = () => {
+    if (currentSnippet) {
+      // get last snippet;
+      let saved = false;
+      for (let i = result.elements.length - 1; i--; ) {
+        const element = result.elements[i];
+        if (element && isElementType(element, "scene")) {
+          element.snippets.push(currentSnippet);
+          saved = true;
+          break;
+        } else {
+          addIssue(
+            result.issues,
+            "warning",
+            `Could not save snippet to element type ${element?.type || "null"}`,
+            "resetSnippet",
+          );
+        }
+      }
+      if (!saved) {
+        addIssue(
+          result.issues,
+          "warning",
+          `Could not save snippet. Elements length was: ${result.elements.length}`,
+          "resetSnippet",
+        );
+      }
+    }
+
     currentSnippet = null;
     currentSnippetIndent = 0;
+    snippetOrder = 0;
   };
 
   for (const node of ast.content) {
@@ -202,35 +231,25 @@ export const parseImportOutlineDocx = async (
         title: getHeadingText(node) || `Act ${actIndex}`,
         content: [],
       };
-      result.elements.push(act);
-      currentAct = act;
-      currentChapter = null;
-      currentScene = null;
+
       resetSnippet();
+      result.elements.push(act);
+      currentElement = act;
       continue;
     }
 
     if (headingLevel === CHAPTER_HEADING_SIZE) {
       chapterIndex += 1;
-      if (!currentAct) {
-        addIssue(
-          result.issues,
-          "error",
-          "Chapter appears before any act heading.",
-          getHeadingText(node),
-        );
-      }
       const chapter: ChapterElement = {
         id: `chapter_${chapterIndex}`,
         type: "chapter",
         title: getHeadingText(node) || `Chapter ${chapterIndex}`,
         content: [],
-        actId: currentAct?.id ?? "",
       };
-      result.elements.push(chapter);
-      currentChapter = chapter;
-      currentScene = null;
+
       resetSnippet();
+      result.elements.push(chapter);
+      currentElement = chapter;
       continue;
     }
 
@@ -270,20 +289,18 @@ export const parseImportOutlineDocx = async (
         }
 
         const tagKey = buildTagKey(tagEntry.name, tagEntry.variant);
-        const existing = tagMap.get(tagKey);
-        if (existing) {
-          sceneTagIds.push(existing.id);
-          continue;
+        let tag = tagMap.get(tagKey);
+        if (!tag) {
+          tag = {
+            id: `tag_${tagMap.size + 1}`,
+            name: tagEntry.name,
+            variant: tagEntry.variant,
+            color: tagEntry.color,
+          };
+          tagMap.set(tagKey, tag);
+          result.tags.push(tag);
         }
 
-        const tag: Tag = {
-          id: `tag_${tagMap.size + 1}`,
-          name: tagEntry.name,
-          variant: tagEntry.variant,
-          color: tagEntry.color,
-        };
-        tagMap.set(tagKey, tag);
-        result.tags.push(tag);
         sceneTagIds.push(tag.id);
       }
 
@@ -291,17 +308,16 @@ export const parseImportOutlineDocx = async (
         id: `scene_${sceneIndex}`,
         type: "scene",
         title: sceneTitle,
-        chapterId: currentChapter?.id ?? "",
         povCharacterId,
         tagIds: sceneTagIds,
         characterIds: sceneCharacterIds,
         snippets: [],
         content: [],
       };
-      result.elements.push(scene);
-      currentScene = scene;
+
       resetSnippet();
-      snippetOrder = 0;
+      result.elements.push(scene);
+      currentElement = scene;
       continue;
     }
 
@@ -320,7 +336,7 @@ export const parseImportOutlineDocx = async (
       continue;
     }
 
-    if (currentScene) {
+    if (isElementType(currentElement, "scene")) {
       const indentTwips = getNodeIndentTwips(node);
       const isSnippet = indentTwips >= snippetIndentThresholdTwips;
 
@@ -330,29 +346,50 @@ export const parseImportOutlineDocx = async (
 
         if (!sameIndent) {
           currentSnippet = {
-            id: `${currentScene.id}_snippet_${snippetOrder}`,
+            id: `${currentElement.id}_snippet_${snippetOrder}`,
             order: snippetOrder,
             content: [],
           };
           snippetOrder += 1;
           currentSnippetIndent = indentTwips;
-          currentScene.snippets.push(currentSnippet);
+          currentElement.snippets.push(currentSnippet);
         }
 
         currentSnippet?.content.push(html);
         continue;
+      } else if (currentSnippet) {
+        resetSnippet();
       }
-
-      resetSnippet();
-      currentScene.content.push(html);
-      continue;
     }
 
-    if (currentAct) {
-      resetSnippet();
-      currentAct.content.push(html);
+    if (currentElement) {
+      currentElement.content.push(html);
+    } else {
+      addIssue(
+        result.issues,
+        "warning",
+        `No current element, html may have been lost.`,
+        html,
+      );
     }
   }
 
   return result;
+};
+
+type ElementMap = {
+  act: ActElement;
+  chapter: ChapterElement;
+  scene: SceneElement;
+};
+type ElementTypeToElement<T extends ElementType> = ElementMap[T];
+
+export const isElementType = <T extends ElementType>(
+  element: Element | null,
+  type: T,
+): element is ElementTypeToElement<T> => {
+  if (!element) {
+    return false;
+  }
+  return element.type === type;
 };

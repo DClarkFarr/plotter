@@ -24,32 +24,33 @@ export type Snippet = {
   content: string[];
 };
 
-export type ActElement = {
+export type ElementType = "act" | "chapter" | "scene";
+
+export interface BaseElementType<T extends ElementType> {
+  type: T;
+}
+
+export interface ActElement extends BaseElementType<"act"> {
   id: string;
-  type: "act";
   title: string;
   content: string[];
-};
+}
 
-export type ChapterElement = {
+export interface ChapterElement extends BaseElementType<"chapter"> {
   id: string;
-  type: "chapter";
   title: string;
-  actId: string;
   content: string[];
-};
+}
 
-export type SceneElement = {
+export interface SceneElement extends BaseElementType<"scene"> {
   id: string;
-  type: "scene";
   title: string;
-  chapterId: string;
   povCharacterId: string | null;
   tagIds: string[];
   characterIds: string[];
   snippets: Snippet[];
   content: string[];
-};
+}
 
 export type Element = ActElement | ChapterElement | SceneElement;
 

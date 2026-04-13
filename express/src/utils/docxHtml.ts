@@ -180,6 +180,8 @@ const renderList = (node: OfficeContentNode): string => {
   const explicitItems = children.filter((child) => isListItemNode(child));
   const items = explicitItems.length > 0 ? explicitItems : children;
 
+  console.log("got list type", listType, "and items", items, "from node", node);
+
   if (items.length === 0) {
     return renderListFromItems([node], listType);
   }
