@@ -1,6 +1,6 @@
 import { Button } from "flowbite-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
 import { ImportOutlineModal } from "../components/dashboard/ImportOutlineModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
@@ -14,6 +14,9 @@ export function DashboardPage() {
   const { data = [], isLoading, isError } = useStoriesQuery();
   const navigate = useNavigate();
   const createStoryMutation = useCreateStoryMutation();
+  const [recentlyImportedId, setRecentlyImportedId] = useState<string | null>(
+    null,
+  );
   const {
     isCreateStoryOpen,
     isImportOutlineOpen,
@@ -84,6 +87,7 @@ export function DashboardPage() {
         isLoading={isLoading}
         isError={isError}
         onViewStory={onViewStory}
+        recentlyImportedId={recentlyImportedId}
       />
       <CreateStoryModal
         isOpen={isCreateStoryOpen}
@@ -95,6 +99,7 @@ export function DashboardPage() {
       <ImportOutlineModal
         isOpen={isImportOutlineOpen}
         onClose={closeImportOutline}
+        onImportComplete={setRecentlyImportedId}
       />
     </main>
   );

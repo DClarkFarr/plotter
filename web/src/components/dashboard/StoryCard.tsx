@@ -5,16 +5,17 @@ import IconArrowRight from "~icons/mdi/arrow-right";
 interface StoryCardProps {
   story: Story;
   onClick: (story: Story) => void;
+  isNew?: boolean;
 }
 
-export function StoryCard({ story, onClick }: StoryCardProps) {
+export function StoryCard({ story, onClick, isNew }: StoryCardProps) {
   const handleClick = () => {
     onClick(story);
   };
 
   return (
     <Card
-      className="card h-full cursor-pointer group/card shadow-sm"
+      className={`card h-full cursor-pointer group/card ${isNew ? "shadow-[0_0_20px_theme(colors.sky.300)]" : "shadow-sm"}`}
       onClick={handleClick}
     >
       <div className="flex h-full gap-4 justify-between">

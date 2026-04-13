@@ -55,8 +55,15 @@ export function useUpdateStoryMutation(storyId: string) {
 }
 
 export function useImportOutlineMutation() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (input: ImportOutlineInput) => importStoryOutline(input),
+    onSuccess: (_data, input) => {
+      if (input.mode === "create") {
+        queryClient.invalidateQueries({ queryKey: ["stories"] });
+      }
+    },
   });
 }
 

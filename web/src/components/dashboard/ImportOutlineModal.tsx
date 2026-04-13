@@ -15,6 +15,7 @@ export type ImportOutlineModalProps = {
   isSubmitting?: boolean;
   errorMessage?: string;
   onClose: () => void;
+  onImportComplete?: (storyId: string) => void;
 };
 
 export const ImportOutlineModal = ({
@@ -22,6 +23,7 @@ export const ImportOutlineModal = ({
   isSubmitting = false,
   errorMessage,
   onClose,
+  onImportComplete,
 }: ImportOutlineModalProps) => {
   const importMutation = useImportOutlineMutation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -121,7 +123,10 @@ export const ImportOutlineModal = ({
     setPreviewSummary(result.summary);
     setCreatedStoryId(result.storyId ?? null);
     setStep("complete");
-  }, [importMutation, selectedFile, storyName]);
+    if (result.storyId) {
+      onImportComplete?.(result.storyId);
+    }
+  }, [importMutation, selectedFile, storyName, onImportComplete]);
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="6xl" popup>
