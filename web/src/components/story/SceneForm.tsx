@@ -69,18 +69,6 @@ export const SceneForm = () => {
       : null,
   );
 
-  const [prevSelectedSceneId, setPrevSelectedSceneId] =
-    useState(selectedSceneId);
-
-  if (prevSelectedSceneId !== selectedSceneId) {
-    setPrevSelectedSceneId(selectedSceneId);
-    setSelectedScene(
-      selectedSceneId
-        ? (scenes.find((scene) => scene.id === selectedSceneId) ?? null)
-        : null,
-    );
-  }
-
   const sortedCharacters = useMemo(
     () =>
       [...characters].sort((a, b) =>
