@@ -8,6 +8,7 @@ import {
   listStoryPlotsForUser,
   listStoryScenesForUser,
   listStoryTagsForUser,
+  softDeleteStoryForUser,
   updateStoryById,
 } from "../services/storyService";
 import {
@@ -233,6 +234,22 @@ const applyStoryRoutes = () => {
 
       const stats = await getStoryStats(story._id);
       res.status(200).json({ story: toStoryResponse(story, stats) });
+    }),
+  );
+
+  storyRouter.delete(
+    "/:storyId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+
+      const deleted = await softDeleteStoryForUser(storyId, userId);
+      if (!deleted) {
+        res.status(404).json({ error: "Story not found" });
+        return;
+      }
+
+      res.status(204).send();
     }),
   );
 

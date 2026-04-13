@@ -325,6 +325,10 @@ export interface DeleteSceneResponse {
   shiftedResources?: ShiftedResources;
 }
 
+export interface DeleteStoryResponse {
+  deleted: true;
+}
+
 export interface DeleteSectionResponse {
   deleted: true;
   shiftedResources?: ShiftedResources;

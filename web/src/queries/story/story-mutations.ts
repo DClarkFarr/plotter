@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  deleteStory,
   importStoryOutline,
   shiftStoryGrid,
   updateStory,
@@ -83,6 +84,37 @@ export function useStoryGridShiftMutation(storyId: string) {
     },
     onSuccess: (response) => {
       applyShiftedResources(queryClient, storyId, response.shiftedResources);
+    },
+  });
+}
+
+export function useDeleteStoryMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteStory(storyId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["stories"] });
+      const previousStories = queryClient.getQueryData<Story[]>(["stories"]);
+      if (previousStories) {
+        queryClient.setQueryData<Story[]>(
+          ["stories"],
+          previousStories.filter((s) => s.id !== storyId),
+        );
+      }
+      return { previousStories };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previousStories) {
+        queryClient.setQueryData(["stories"], context.previousStories);
+      }
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({
+        queryKey: ["story", storyId],
+        exact: false,
+      });
+      queryClient.invalidateQueries({ queryKey: ["stories"] });
     },
   });
 }

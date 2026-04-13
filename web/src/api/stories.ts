@@ -87,6 +87,14 @@ export async function getStory(storyId: string): Promise<Story> {
   }
 }
 
+export async function deleteStory(storyId: string): Promise<void> {
+  try {
+    await apiClient.delete(`/stories/${storyId}`);
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function shiftStoryGrid(
   storyId: string,
   input: StoryGridShiftInput,

@@ -6,6 +6,7 @@ import {
   getStoryById,
   listStories,
   normalizeStoryPermissions,
+  softDeleteStoryById,
   StoryDocument,
   StoryPermission,
   updateStoryById as updateStoryByIdModel,
@@ -141,6 +142,17 @@ export const listStoryScenesForUser = async (
   await getStoryForUser(storyId, userId);
   const plotIds = await listPlotIdsByStoryId(storyId);
   return listScenesByPlotIds(plotIds);
+};
+
+export const softDeleteStoryForUser = async (
+  storyId: string | ObjectId,
+  userId: string | ObjectId,
+): Promise<boolean> => {
+  const story = await getStoryForUser(storyId, userId);
+  if (!story) {
+    return false;
+  }
+  return softDeleteStoryById(storyId);
 };
 
 export const updateStoryById = async (
