@@ -61,12 +61,25 @@ export const SceneForm = () => {
     return plots.find((plot) => plot.id === selectedPlotId) ?? null;
   }, [plots, selectedPlotId]);
 
-  const selectedScene = useMemo(() => {
-    if (!selectedSceneId) {
-      return null;
-    }
-    return scenes.find((scene) => scene.id === selectedSceneId) ?? null;
-  }, [scenes, selectedSceneId]);
+  const [selectedScene, setSelectedScene] = useState<
+    (typeof scenes)[number] | null
+  >(() =>
+    selectedSceneId
+      ? (scenes.find((scene) => scene.id === selectedSceneId) ?? null)
+      : null,
+  );
+
+  const [prevSelectedSceneId, setPrevSelectedSceneId] =
+    useState(selectedSceneId);
+
+  if (prevSelectedSceneId !== selectedSceneId) {
+    setPrevSelectedSceneId(selectedSceneId);
+    setSelectedScene(
+      selectedSceneId
+        ? (scenes.find((scene) => scene.id === selectedSceneId) ?? null)
+        : null,
+    );
+  }
 
   const sortedCharacters = useMemo(
     () =>
@@ -230,6 +243,7 @@ export const SceneForm = () => {
       idx === index ? { ...snippet, ...patch } : snippet,
     );
 
+    setSelectedScene({ ...selectedScene, snippets: next });
     debouncedSnippetsUpdate(next);
   };
 
@@ -414,9 +428,10 @@ export const SceneForm = () => {
                     <div className="px-3 py-2 flex flex-col gap-3">
                       <input
                         value={snippet.label ?? ""}
-                        onChange={(event) =>
-                          updateSnippet(index, { label: event.target.value })
-                        }
+                        onChange={(event) => {
+                          console.log("index label", event.target.value);
+                          updateSnippet(index, { label: event.target.value });
+                        }}
                         placeholder="Snippet title"
                         className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900"
                       />
