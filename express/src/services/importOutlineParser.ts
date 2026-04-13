@@ -121,11 +121,13 @@ type ParsedHeading = {
 const parseSceneHeading = (node: OfficeContentNode): ParsedHeading => {
   const runs = collectTextRuns(node);
   const headingText = getHeadingText(node);
-  const colonIndex = headingText.indexOf(":");
-  const povName =
-    colonIndex >= 0 ? headingText.slice(0, colonIndex).trim() : null;
-  const remainder =
-    colonIndex >= 0 ? headingText.slice(colonIndex + 1) : headingText;
+
+  // Match POV only if the heading starts with plain text (no brackets or colons) followed by a colon.
+  // This prevents matching colons inside [tag:variant] tokens.
+  const povMatch = headingText.match(/^([^[\]:]+):\s*(.*)/s);
+  const povName = povMatch ? povMatch[1]?.trim() : null;
+  let remainder = povMatch ? povMatch[2] || "" : headingText;
+
   const tagMatches = [...remainder.matchAll(/\[[^\]]+\]/g)];
 
   const tags = tagMatches.map((match) => {
@@ -140,14 +142,16 @@ const parseSceneHeading = (node: OfficeContentNode): ParsedHeading => {
     };
   });
 
-  const title = remainder
-    .replace(/\[[^\]]+\]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Remove each matched tag token from the remainder to produce the title.
+  let title = remainder;
+  for (const match of tagMatches) {
+    title = title.replace(match[0], " ");
+  }
+  title = title.replace(/\s+/g, " ").trim();
 
   return {
     povName: povName && povName.length > 0 ? povName : null,
-    title: title.length > 0 ? title : remainder.trim(),
+    title,
     tags,
   };
 };
