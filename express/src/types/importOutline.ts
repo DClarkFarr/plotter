@@ -60,3 +60,9 @@ export type ImportParseResult = {
   characters: Character[];
   issues: ImportIssue[];
 };
+
+export type ImportCustomizations = {
+  ignoredCharacterIds: string[];
+  characterMerges: Record<string, string>;
+  plotTagIds: string[];
+};

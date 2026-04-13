@@ -1,5 +1,8 @@
 import type { Express } from "express";
-import type { ImportParseResult } from "../types/importOutline";
+import type {
+  ImportCustomizations,
+  ImportParseResult,
+} from "../types/importOutline";
 import { parseImportOutlineDocx } from "./importOutlineParser";
 import { createStory } from "../models/stories";
 import { createPlot } from "../models/plots";
@@ -30,6 +33,7 @@ export type ImportOutlinePayload = {
   mode: ImportOutlineMode;
   file: Express.Multer.File;
   storyName?: string;
+  customizations?: ImportCustomizations | null;
 };
 
 export const importOutlineForStory = async (
@@ -107,13 +111,65 @@ export const importOutlineForStory = async (
       horizontalIndex: 0,
     });
 
-    // T010: Create tags — group parsed tags by name so variants are merged into one DB tag
+    // Resolve customizations (default to empty if not supplied)
+    const ignoredCharacterIds = new Set(
+      payload.customizations?.ignoredCharacterIds ?? [],
+    );
+    const characterMerges = payload.customizations?.characterMerges ?? {};
+    const plotTagIds = new Set(payload.customizations?.plotTagIds ?? []);
+
+    // Build set of character IDs that should not be created as DB documents:
+    // ignored IDs and merge-source IDs (aliases). Aliases get remapped after creation.
+    const characterSkipIds = new Set([
+      ...ignoredCharacterIds,
+      ...Object.keys(characterMerges),
+    ]);
+
+    // T025: Resolve eligible plot tag IDs — only null-variant tags can become plots.
+    // Build plotMap: parsed tag ID → DB Plot ObjectId.
+    const plotMap = new Map<string, ObjectId>();
+    let plotHorizontalIndex = 1; // Main plot occupies index 0
+    const eligiblePlotTagNames = new Map<string, string[]>(); // name → [ids]
+    for (const parsedTag of parsed.tags) {
+      if (plotTagIds.has(parsedTag.id)) {
+        if (parsedTag.variant !== null) {
+          // Variant tags cannot become plots — log warning and skip
+          parsed.issues.push({
+            level: "warning",
+            message: `Tag "${parsedTag.name}:${parsedTag.variant}" has a variant and cannot be converted to a plot; treated as a tag instead.`,
+            location: null,
+          });
+        } else {
+          const existing = eligiblePlotTagNames.get(parsedTag.name) ?? [];
+          existing.push(parsedTag.id);
+          eligiblePlotTagNames.set(parsedTag.name, existing);
+        }
+      }
+    }
+    for (const [name, ids] of eligiblePlotTagNames) {
+      const createdPlot = await createPlot({
+        title: name,
+        description: "",
+        color: "#6B7280",
+        storyId: story._id,
+        horizontalIndex: plotHorizontalIndex++,
+      });
+      for (const id of ids) {
+        plotMap.set(id, createdPlot._id);
+      }
+    }
+
+    // T026: Create tags — skip IDs that are in plotMap (already became plots)
     const tagIdMap = new Map<string, ObjectId>();
     const tagGroupMap = new Map<
       string,
       { color: string; variants: string[]; ids: string[] }
     >();
     for (const tag of parsed.tags) {
+      if (plotMap.has(tag.id)) {
+        // This tag is a plot — skip tag document creation
+        continue;
+      }
       const existing = tagGroupMap.get(tag.name);
       if (existing) {
         if (tag.variant && !existing.variants.includes(tag.variant)) {
@@ -141,14 +197,24 @@ export const importOutlineForStory = async (
       }
     }
 
-    // T011: Create characters — story is new, insert each parsed character directly
+    // T011+T016: Create characters — skip ignored IDs and merge-source IDs
     const charIdMap = new Map<string, ObjectId>();
     for (const character of parsed.characters) {
+      if (characterSkipIds.has(character.id)) {
+        continue;
+      }
       const created = await createCharacter({
         storyId: story._id,
         title: character.name,
       });
       charIdMap.set(character.id, created._id);
+    }
+    // Apply merge remappings: scenes referencing a merge-source ID resolve to the target
+    for (const [fromId, toId] of Object.entries(characterMerges)) {
+      const target = charIdMap.get(toId);
+      if (target) {
+        charIdMap.set(fromId, target);
+      }
     }
 
     // T008: Iterate elements in document order with shared verticalIndex counter
@@ -171,12 +237,31 @@ export const importOutlineForStory = async (
           verticalIndex: verticalIndex++,
         });
       } else if (element.type === "scene") {
-        // T012: Map tag IDs and build tagVariants
-        const tags = element.tagIds
+        // T027: Separate tagIds into plot refs and normal tag refs
+        const plotTagRefs = element.tagIds.filter((id) => plotMap.has(id));
+        const normalTagRefs = element.tagIds.filter((id) => !plotMap.has(id));
+
+        // Determine which plot this scene belongs to
+        let assignedPlotId = plot._id;
+        if (plotTagRefs.length === 1) {
+          const firstRef = plotTagRefs[0];
+          if (firstRef) assignedPlotId = plotMap.get(firstRef)!;
+        } else if (plotTagRefs.length > 1) {
+          const firstRef = plotTagRefs[0];
+          if (firstRef) assignedPlotId = plotMap.get(firstRef)!;
+          parsed.issues.push({
+            level: "warning",
+            message: `Scene "${element.title}" references multiple plot tags; assigned to the first matching plot.`,
+            location: element.id,
+          });
+        }
+
+        // T012: Map normal tag IDs and build tagVariants
+        const tags = normalTagRefs
           .map((id) => tagIdMap.get(id))
           .filter((id): id is ObjectId => id !== undefined);
 
-        const tagVariants = element.tagIds
+        const tagVariants = normalTagRefs
           .map((id) => {
             const tagDbId = tagIdMap.get(id);
             const parsedTag = parsed.tags.find((t) => t.id === id);
@@ -196,7 +281,7 @@ export const importOutlineForStory = async (
           : null;
 
         await createScene({
-          plotId: plot._id,
+          plotId: assignedPlotId,
           title: element.title,
           description: element.content.join(""),
           tags,

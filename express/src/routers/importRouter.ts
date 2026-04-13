@@ -9,6 +9,7 @@ import {
   requireString,
   requireUserId,
 } from "../utils/validators";
+import type { ImportCustomizations } from "../types/importOutline";
 
 export const importRouter = express.Router({ mergeParams: true });
 
@@ -70,11 +71,39 @@ importRouter.post(
     const storyName =
       optionalString(req.body?.storyName, "storyName") ?? req.file.originalname;
 
+    let customizations: ImportCustomizations | null = null;
+    const rawCustomizations = req.body?.customizations;
+    if (rawCustomizations) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(rawCustomizations);
+      } catch {
+        throw new ValidationError(
+          "customizations",
+          "customizations must be valid JSON",
+        );
+      }
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        !Array.isArray((parsed as ImportCustomizations).ignoredCharacterIds) ||
+        !Array.isArray((parsed as ImportCustomizations).plotTagIds) ||
+        typeof (parsed as ImportCustomizations).characterMerges !== "object"
+      ) {
+        throw new ValidationError(
+          "customizations",
+          "customizations has an invalid structure",
+        );
+      }
+      customizations = parsed as ImportCustomizations;
+    }
+
     const result = await importOutlineForStory({
       userId,
       mode: modeRaw,
       file: req.file,
       storyName,
+      customizations,
     });
 
     if (

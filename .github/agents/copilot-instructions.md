@@ -58,6 +58,7 @@ Auto-generated from all feature plans. Last updated: 2026-04-12
 - MongoDB (Atlas in production; local replica set in dev — required for transactions) (037-finish-import-db)
 - TypeScript (Node.js 20 — express/, React — web/) + Express, MongoDB (express/); TanStack Query, TanStack Router, Flowbite React, Tailwind CSS (web/) (038-soft-delete-story)
 - MongoDB — `stories` collection (038-soft-delete-story)
+- TypeScript 5 (Node.js backend, React 18 frontend) + Express + Multer (backend); Flowbite React Tabs, TanStack Query, Zustand, Tailwind CSS, unplugin-icons (frontend) (039-import-preview-ui)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -77,9 +78,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 039-import-preview-ui: Added TypeScript 5 (Node.js backend, React 18 frontend) + Express + Multer (backend); Flowbite React Tabs, TanStack Query, Zustand, Tailwind CSS, unplugin-icons (frontend)
 - 038-soft-delete-story: Added TypeScript (Node.js 20 — express/, React — web/) + Express, MongoDB (express/); TanStack Query, TanStack Router, Flowbite React, Tailwind CSS (web/)
 - 037-finish-import-db: Added TypeScript (Node.js 20) + Express, MongoDB Node.js driver 6.x, `officeparser`
-- 036-plots-scenes-endpoint-split: Added TypeScript 5.x (both express/ and web/) + Express 4, MongoDB (via driver), React 18, TanStack Query v5, TanStack Router, Zustand, dnd-ki
 
 
 <!-- MANUAL ADDITIONS START -->

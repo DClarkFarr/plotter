@@ -7,8 +7,13 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useCallback, useMemo, useState } from "react";
-import type { ApiError } from "../../api/types";
+import type {
+  ApiError,
+  ImportCustomizations,
+  ImportOutlineResponse,
+} from "../../api/types";
 import { useImportOutlineMutation } from "../../queries/story/story-mutations";
+import { ImportOutlinePreviewTabs } from "./ImportOutlinePreviewTabs";
 
 export type ImportOutlineModalProps = {
   isOpen: boolean;
@@ -28,10 +33,19 @@ export const ImportOutlineModal = ({
   const importMutation = useImportOutlineMutation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [step, setStep] = useState<"form" | "preview" | "complete">("form");
-  const [previewSummary, setPreviewSummary] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<ImportOutlineResponse | null>(
+    null,
+  );
   const [createdStoryId, setCreatedStoryId] = useState<string | null>(null);
   const [storyName, setStoryName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [customizations, setCustomizations] = useState<ImportCustomizations>(
+    () => ({
+      ignoredCharacterIds: [],
+      characterMerges: {},
+      plotTagIds: [],
+    }),
+  );
 
   const resolvedError = useMemo(() => {
     if (errorMessage) {
@@ -46,11 +60,16 @@ export const ImportOutlineModal = ({
 
   const resetState = useCallback(() => {
     setSelectedFile(null);
-    setPreviewSummary(null);
+    setPreviewData(null);
     setCreatedStoryId(null);
     setStoryName("");
     setStep("form");
     setLocalError(null);
+    setCustomizations({
+      ignoredCharacterIds: [],
+      characterMerges: {},
+      plotTagIds: [],
+    });
     importMutation.reset();
   }, [importMutation]);
 
@@ -101,7 +120,7 @@ export const ImportOutlineModal = ({
         file: selectedFile,
       });
       setStoryName(result.storyName);
-      setPreviewSummary(result.summary);
+      setPreviewData(result);
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
     },
@@ -119,14 +138,21 @@ export const ImportOutlineModal = ({
       mode: "create",
       file: selectedFile,
       ...(trimmedName ? { storyName: trimmedName } : {}),
+      customizations,
     });
-    setPreviewSummary(result.summary);
+    setPreviewData(result);
     setCreatedStoryId(result.storyId ?? null);
     setStep("complete");
     if (result.storyId) {
       onImportComplete?.(result.storyId);
     }
-  }, [importMutation, selectedFile, storyName, onImportComplete]);
+  }, [
+    importMutation,
+    selectedFile,
+    storyName,
+    customizations,
+    onImportComplete,
+  ]);
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="6xl" popup>
@@ -227,9 +253,13 @@ export const ImportOutlineModal = ({
                 disabled={importMutation.isPending}
               />
             </div>
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              Preview summary: {previewSummary ?? "TODO"}
-            </div>
+            <ImportOutlinePreviewTabs
+              characters={previewData?.characters ?? []}
+              elements={previewData?.elements ?? []}
+              tags={previewData?.tags ?? []}
+              customizations={customizations}
+              onCustomizationChange={setCustomizations}
+            />
             <div className="flex items-center justify-end gap-2">
               <Button
                 color="light"
@@ -253,7 +283,7 @@ export const ImportOutlineModal = ({
         {step === "complete" ? (
           <div className="flex flex-col gap-4">
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-              Import completed. Summary: {previewSummary ?? "TODO"}
+              Import completed. Summary: {previewData?.summary ?? ""}
               {createdStoryId ? (
                 <div className="mt-2 text-xs text-emerald-700">
                   New story id: {createdStoryId}

@@ -101,10 +101,17 @@ export interface ImportCharactersInput {
 
 export type ImportOutlineMode = "preview" | "create";
 
+export interface ImportCustomizations {
+  ignoredCharacterIds: string[];
+  characterMerges: Record<string, string>;
+  plotTagIds: string[];
+}
+
 export interface ImportOutlineInput {
   mode: ImportOutlineMode;
   file: File;
   storyName?: string;
+  customizations?: ImportCustomizations | null;
 }
 
 export interface CreateTagInput {
@@ -270,12 +277,63 @@ export interface ImportCharactersResponse {
   skippedCharacterIds: string[];
 }
 
+export interface ImportOutlineParseTag {
+  id: string;
+  name: string;
+  variant: string | null;
+  color: string | null;
+}
+
+export interface ImportOutlineParseCharacter {
+  id: string;
+  name: string;
+}
+
+export interface ImportOutlineParseIssue {
+  level: "error" | "warning";
+  message: string;
+  location?: string | null;
+}
+
+export interface ImportOutlineParseActElement {
+  id: string;
+  type: "act";
+  title: string;
+  content: string[];
+}
+
+export interface ImportOutlineParseChapterElement {
+  id: string;
+  type: "chapter";
+  title: string;
+  content: string[];
+}
+
+export interface ImportOutlineParseSceneElement {
+  id: string;
+  type: "scene";
+  title: string;
+  povCharacterId: string | null;
+  tagIds: string[];
+  characterIds: string[];
+  content: string[];
+}
+
+export type ImportOutlineParseElement =
+  | ImportOutlineParseActElement
+  | ImportOutlineParseChapterElement
+  | ImportOutlineParseSceneElement;
+
 export interface ImportOutlineResponse {
   mode: ImportOutlineMode;
   storyName: string;
   summary: string;
   message?: string | null;
   storyId?: string | null;
+  elements?: ImportOutlineParseElement[];
+  tags?: ImportOutlineParseTag[];
+  characters?: ImportOutlineParseCharacter[];
+  issues?: ImportOutlineParseIssue[];
 }
 
 export interface CharactersResponse {
