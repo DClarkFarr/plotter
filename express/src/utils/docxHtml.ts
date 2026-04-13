@@ -1,4 +1,8 @@
-import type { OfficeContentNode, TextFormatting } from "officeparser";
+import type {
+  ListMetadata,
+  OfficeContentNode,
+  TextFormatting,
+} from "officeparser";
 
 type StylePart = { key: string; value: string };
 
@@ -93,19 +97,8 @@ const renderInlineNode = (node: OfficeContentNode): string => {
   return "";
 };
 
-const listContainerTypes = new Set(["list"]);
-const listItemTypes = new Set([
-  "listItem",
-  "list-item",
-  "list_item",
-  "listitem",
-]);
-
-const isListContainerNode = (node: OfficeContentNode): boolean =>
-  listContainerTypes.has(node.type);
-
-const isListItemNode = (node: OfficeContentNode): boolean =>
-  listItemTypes.has(node.type);
+export const isListNode = (node: OfficeContentNode): boolean =>
+  node.type === "list";
 
 const resolveListContainerType = (node: OfficeContentNode): "ul" | "ol" => {
   const metadata = node.metadata as
@@ -130,72 +123,85 @@ const resolveListContainerType = (node: OfficeContentNode): "ul" | "ol" => {
   return "ul";
 };
 
-const renderListItemContent = (node: OfficeContentNode): string => {
-  if (node.children && node.children.length > 0) {
-    return node.children
-      .map((child) => {
-        if (isListContainerNode(child)) {
-          return renderList(child);
-        }
+const renderListItems = (parent: OfficeContentNode): string => {
+  const elementsBuilt: string[] = [];
+  let buildingHtml = "";
 
-        return renderInlineNode(child);
-      })
-      .filter(Boolean)
-      .join("");
+  (parent.children ?? []).forEach((child) => {
+    if (isListNode(child)) {
+      if (buildingHtml) {
+        elementsBuilt.push(`<li>${buildingHtml}</li>`);
+        buildingHtml = "";
+      }
+
+      const pm = parent.metadata as ListMetadata;
+      const cm = child.metadata as ListMetadata;
+
+      if (cm.indentation === pm.indentation) {
+        // part of same list
+        elementsBuilt.push(renderListItems(child));
+      } else {
+        // starting a sub list.
+        elementsBuilt.push(renderList(child));
+      }
+    } else {
+      buildingHtml += renderInlineNode(child);
+    }
+  });
+
+  if (buildingHtml) {
+    elementsBuilt.push(`<li>${buildingHtml}</li>`);
   }
 
-  if (node.text) {
-    return escapeHtml(node.text);
-  }
-
-  return "";
-};
-
-const renderListItem = (node: OfficeContentNode): string => {
-  const content = renderListItemContent(node);
-
-  if (!content) {
-    return "";
-  }
-
-  return `<li>${content}</li>`;
-};
-
-const renderListFromItems = (
-  items: OfficeContentNode[],
-  listType: "ul" | "ol",
-): string => {
-  const listItems = items.map((item) => renderListItem(item)).filter(Boolean);
-
-  if (listItems.length === 0) {
-    return "";
-  }
-
-  return `<${listType}>${listItems.join("")}</${listType}>`;
+  return elementsBuilt.join("");
 };
 
 const renderList = (node: OfficeContentNode): string => {
   const listType = resolveListContainerType(node);
-  const children = node.children ?? [];
-  const explicitItems = children.filter((child) => isListItemNode(child));
-  const items = explicitItems.length > 0 ? explicitItems : children;
 
-  console.log("got list type", listType, "and items", items, "from node", node);
+  return `<${listType}>${renderListItems(node)}</${listType}>`;
+};
 
-  if (items.length === 0) {
-    return renderListFromItems([node], listType);
+export const groupAstElements = (
+  elements: OfficeContentNode[],
+): OfficeContentNode[] => {
+  const grouped: OfficeContentNode[] = [];
+
+  let prevGroup: OfficeContentNode | null = null;
+  for (let i = 0; i < elements.length; i++) {
+    const element = elements[i];
+    if (!element) {
+      continue;
+    }
+
+    if (isListNode(element)) {
+      if (!prevGroup) {
+        if (!element.children) {
+          element.children = [];
+        }
+        prevGroup = element;
+      } else {
+        prevGroup.children?.push(element);
+      }
+    } else {
+      if (prevGroup) {
+        grouped.push(prevGroup);
+        prevGroup = null;
+      }
+      grouped.push(element);
+    }
   }
 
-  return renderListFromItems(items, listType);
+  if (prevGroup) {
+    grouped.push(prevGroup);
+  }
+
+  return grouped;
 };
 
 export const renderNodeToHtml = (node: OfficeContentNode): string => {
-  if (isListContainerNode(node)) {
+  if (isListNode(node)) {
     return renderList(node);
-  }
-
-  if (isListItemNode(node)) {
-    return renderListFromItems([node], resolveListContainerType(node));
   }
 
   const content = renderInlineNode(node);

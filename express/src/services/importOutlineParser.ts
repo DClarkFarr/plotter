@@ -4,7 +4,11 @@ import type {
   OfficeContentNode,
   OfficeParserAST,
 } from "officeparser";
-import { renderNodeToHtml } from "../utils/docxHtml";
+import {
+  groupAstElements,
+  isListNode,
+  renderNodeToHtml,
+} from "../utils/docxHtml";
 import { buildCharacterKey, buildTagKey } from "../utils/importNormalization";
 import type {
   ActElement,
@@ -46,17 +50,6 @@ const getParagraphIndentTwips = (node: OfficeContentNode): number => {
   const value = Number(match[1]);
   return Number.isFinite(value) ? value : 0;
 };
-
-const listNodeTypes = new Set([
-  "list",
-  "listItem",
-  "list-item",
-  "list_item",
-  "listitem",
-]);
-
-const isListNode = (node: OfficeContentNode): boolean =>
-  listNodeTypes.has(node.type);
 
 const getNodeIndentTwips = (node: OfficeContentNode): number => {
   const directIndent = getParagraphIndentTwips(node);
@@ -220,7 +213,8 @@ export const parseImportOutlineDocx = async (
     snippetOrder = 0;
   };
 
-  for (const node of ast.content) {
+  const content = groupAstElements(ast.content);
+  for (const node of content) {
     const headingLevel = getHeadingLevel(node);
 
     if (headingLevel === ACT_HEADING_SIZE) {
