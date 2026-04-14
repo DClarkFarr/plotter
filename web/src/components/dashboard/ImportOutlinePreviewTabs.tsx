@@ -362,7 +362,6 @@ const PlotsTab = ({ tags, onChangeTags, customizations }: PlotsTabProps) => {
         : { ...t, isDefaultPlot: false };
     });
 
-    console.log("udating tags", updatedTags, "from", name, "and", isChecked);
     onChangeTags(updatedTags);
   };
 
