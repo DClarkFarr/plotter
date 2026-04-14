@@ -5,12 +5,14 @@ import type {
   ImportOutlineParseElement,
   ImportOutlineParseTag,
 } from "../../api/types";
+import type { ChangeEvent } from "react";
 
 export type ImportOutlinePreviewTabsProps = {
   characters: ImportOutlineParseCharacter[];
   elements: ImportOutlineParseElement[];
   tags: ImportOutlineParseTag[];
   customizations: ImportCustomizations;
+  onChangeTags: (next: ImportOutlineParseTag[]) => void;
   onCustomizationChange: (next: ImportCustomizations) => void;
 };
 
@@ -263,6 +265,10 @@ const TagsTab = ({
   // Group by tag name
   const groups = new Map<string, ImportOutlineParseTag[]>();
   for (const tag of tags) {
+    if (tag.id === "main_plot_id") {
+      continue;
+    }
+
     const existing = groups.get(tag.name);
     if (existing) {
       existing.push(tag);
@@ -326,6 +332,84 @@ const TagsTab = ({
   );
 };
 
+const colors = [
+  "#ff6467",
+  "#ffb86a",
+  "#fee685",
+  "#a2f4fd",
+  "#bedbff",
+  "#f4a8ff",
+  "#ffa1ad",
+];
+
+type PlotsTabProps = {
+  tags: ImportOutlineParseTag[];
+  customizations: ImportCustomizations;
+  onChangeTags: (next: ImportOutlineParseTag[]) => void;
+};
+
+const PlotsTab = ({ tags, onChangeTags, customizations }: PlotsTabProps) => {
+  const plotTagIds = customizations.plotTagIds;
+  const plots = tags.filter((t) => plotTagIds.includes(t.id));
+
+  const handleToggleMainPlot = (e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.currentTarget.name;
+    const isChecked = e.currentTarget.checked;
+
+    const updatedTags = tags.map((t) => {
+      return t.id === name
+        ? { ...t, isDefaultPlot: isChecked }
+        : { ...t, isDefaultPlot: false };
+    });
+
+    console.log("udating tags", updatedTags, "from", name, "and", isChecked);
+    onChangeTags(updatedTags);
+  };
+
+  const handleChangeColor = (e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.currentTarget.name;
+    const value = e.currentTarget.value;
+
+    const updatedTags = tags.map((t): ImportOutlineParseTag => {
+      return t.id === name ? { ...t, color: value } : t;
+    });
+
+    onChangeTags(updatedTags);
+  };
+
+  return (
+    <ul className="flex flex-col divide-y divide-slate-300">
+      {plots.map((plot, pi) => (
+        <li key={plot.id} className="py-2">
+          <div className="flex items-center gap-4">
+            <div>
+              <input
+                type="color"
+                name={plot.id}
+                value={plot.color ?? colors[pi] ?? ""}
+                onChange={handleChangeColor}
+              />
+            </div>
+            <div>{plot.name}</div>
+            <div className="ml-auto">
+              <label>
+                <input
+                  className="mr-2 inline-block"
+                  type="checkbox"
+                  name={plot.id}
+                  onChange={handleToggleMainPlot}
+                  checked={plot.isDefaultPlot}
+                />
+                <span>Make Default Plot</span>
+              </label>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 // ─── Root component ───────────────────────────────────────────────────────────
 
 export const ImportOutlinePreviewTabs = ({
@@ -333,6 +417,7 @@ export const ImportOutlinePreviewTabs = ({
   elements,
   tags,
   customizations,
+  onChangeTags,
   onCustomizationChange,
 }: ImportOutlinePreviewTabsProps) => {
   return (
@@ -347,11 +432,18 @@ export const ImportOutlinePreviewTabs = ({
       <TabItem title="Elements">
         <ElementsTab elements={elements} characters={characters} tags={tags} />
       </TabItem>
-      <TabItem title="Tags & Plots">
+      <TabItem title="Tags">
         <TagsTab
           tags={tags}
           customizations={customizations}
           onCustomizationChange={onCustomizationChange}
+        />
+      </TabItem>
+      <TabItem title="Plots">
+        <PlotsTab
+          tags={tags}
+          customizations={customizations}
+          onChangeTags={onChangeTags}
         />
       </TabItem>
     </Tabs>

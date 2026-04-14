@@ -282,6 +282,7 @@ export interface ImportOutlineParseTag {
   name: string;
   variant: string | null;
   color: string | null;
+  isDefaultPlot: boolean | undefined;
 }
 
 export interface ImportOutlineParseCharacter {

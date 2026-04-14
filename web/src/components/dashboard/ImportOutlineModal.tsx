@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ApiError,
   ImportCustomizations,
+  ImportOutlineParseTag,
   ImportOutlineResponse,
 } from "../../api/types";
 import { useImportOutlineMutation } from "../../queries/story/story-mutations";
@@ -23,6 +24,13 @@ export type ImportOutlineModalProps = {
   onImportComplete?: (storyId: string) => void;
 };
 
+const defaultPlotTag: ImportOutlineParseTag = {
+  id: "main_plot_id",
+  name: "Main",
+  color: "#729cfd",
+  variant: null,
+  isDefaultPlot: true,
+};
 export const ImportOutlineModal = ({
   isOpen,
   isSubmitting = false,
@@ -43,7 +51,7 @@ export const ImportOutlineModal = ({
     () => ({
       ignoredCharacterIds: [],
       characterMerges: {},
-      plotTagIds: [],
+      plotTagIds: ["main_plot_id"],
     }),
   );
 
@@ -68,7 +76,7 @@ export const ImportOutlineModal = ({
     setCustomizations({
       ignoredCharacterIds: [],
       characterMerges: {},
-      plotTagIds: [],
+      plotTagIds: ["main_plot_id"],
     });
     importMutation.reset();
   }, [importMutation]);
@@ -120,7 +128,15 @@ export const ImportOutlineModal = ({
         file: selectedFile,
       });
       setStoryName(result.storyName);
-      setPreviewData(result);
+      setPreviewData({
+        ...result,
+        tags: [{ ...defaultPlotTag }, ...(result?.tags ?? [])],
+      });
+      setCustomizations({
+        ignoredCharacterIds: [],
+        characterMerges: {},
+        plotTagIds: ["main_plot_id"],
+      });
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
     },
@@ -153,6 +169,18 @@ export const ImportOutlineModal = ({
     customizations,
     onImportComplete,
   ]);
+
+  const onChangeTags = (toSet: ImportOutlineParseTag[]) => {
+    setPreviewData((prev) => {
+      if (prev) {
+        return {
+          ...prev,
+          tags: toSet,
+        };
+      }
+      return prev;
+    });
+  };
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="6xl" popup>
@@ -258,6 +286,7 @@ export const ImportOutlineModal = ({
               elements={previewData?.elements ?? []}
               tags={previewData?.tags ?? []}
               customizations={customizations}
+              onChangeTags={onChangeTags}
               onCustomizationChange={setCustomizations}
             />
             <div className="flex items-center justify-end gap-2">
