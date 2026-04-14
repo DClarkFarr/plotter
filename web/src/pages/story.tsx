@@ -95,7 +95,7 @@ export function StoryPage() {
             </span>
 
             <div className="button-group">
-              <CustomTooltip content="Grid view">
+              <CustomTooltip placement="bottom" content="Grid view">
                 <button
                   type="button"
                   onClick={() => setCardDisplay("grid")}
@@ -108,7 +108,7 @@ export function StoryPage() {
                   <IconViewGrid className="text-sm" />
                 </button>
               </CustomTooltip>
-              <CustomTooltip content="List view">
+              <CustomTooltip placement="bottom" content="List view">
                 <button
                   type="button"
                   onClick={() => setCardDisplay("list")}
@@ -157,6 +157,7 @@ export function StoryPage() {
                 onOpenCustomText={() => setIsCustomTextOpen(true)}
               />
               <CustomTooltip
+                placement="bottom"
                 content={
                   filterVisibilityMode === "hide"
                     ? "Hide filtered scenes"
@@ -188,7 +189,7 @@ export function StoryPage() {
               Assets
             </span>
             <div className="button-group">
-              <CustomTooltip content="Manage characters">
+              <CustomTooltip placement="bottom" content="Manage characters">
                 <button
                   type="button"
                   onClick={() => {
@@ -200,7 +201,7 @@ export function StoryPage() {
                   <IconAccountGroup className="text-sm" />
                 </button>
               </CustomTooltip>
-              <CustomTooltip content="Manage tags">
+              <CustomTooltip placement="bottom" content="Manage tags">
                 <button
                   type="button"
                   onClick={() => {

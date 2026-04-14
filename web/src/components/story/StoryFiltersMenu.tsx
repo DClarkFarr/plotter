@@ -132,7 +132,7 @@ export const StoryFiltersMenu = ({
 
   return (
     <div className="relative" ref={containerRef}>
-      <CustomTooltip content="Filter Scenes" className="whitespace-nowrap">
+      <CustomTooltip content="Filter Scenes" placement="bottom">
         <button
           type="button"
           className="rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600 flex items-center gap-2"
