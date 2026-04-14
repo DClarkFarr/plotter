@@ -2,9 +2,11 @@ import { Button, TextInput } from "flowbite-react";
 import { useState, type KeyboardEvent } from "react";
 import { alert } from "../../utils/alert";
 import type { Tag } from "../../api/types";
+import { ColorPaletteDropdown } from "../ui/ColorPaletteDropdown";
 
 export type CreateTagFormProps = {
   title?: string;
+  storyId?: string | null;
   onCreateTag: (name: string, color: string) => Promise<Tag>;
   isCreating?: boolean;
   initialColor?: string;
@@ -13,6 +15,7 @@ export type CreateTagFormProps = {
 
 export const CreateTagForm = ({
   title = "Add Tag",
+  storyId = null,
   onCreateTag,
   isCreating,
   initialColor = "#64748b",
@@ -55,12 +58,10 @@ export const CreateTagForm = ({
         {title}
       </p>
       <div className="mt-2 flex items-center">
-        <input
-          type="color"
+        <ColorPaletteDropdown
+          storyId={storyId}
           value={tagColor}
-          onChange={(event) => setTagColor(event.target.value)}
-          className="h-10 w-12 rounded-lg border border-slate-200 bg-white"
-          aria-label="Tag color"
+          onChange={setTagColor}
         />
         <TextInput
           value={tagName}

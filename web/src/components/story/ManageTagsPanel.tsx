@@ -171,6 +171,7 @@ export function ManageTagsPanel() {
 
       <div className="mb-4">
         <CreateTagForm
+          storyId={storyId}
           onCreateTag={handleCreateTag}
           isCreating={createTagMutation.isPending}
         />

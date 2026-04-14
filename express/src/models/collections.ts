@@ -16,4 +16,5 @@ export const COLLECTIONS = {
   sessions: "sessions",
   passwordResets: "passwordResets",
   authAttempts: "authAttempts",
+  colors: "colors",
 } as const;

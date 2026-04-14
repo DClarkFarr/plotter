@@ -10,6 +10,7 @@ import { SceneFormLoading } from "../story/SceneFormLoading";
 import { SectionForm } from "../story/SectionForm";
 import { ManageCharactersPanel } from "../story/ManageCharactersPanel";
 import { ManageTagsPanel } from "../story/ManageTagsPanel";
+import { ColorPalettePanel } from "../story/ColorPalettePanel";
 
 export function DashboardLayout() {
   useAuthRedirect();
@@ -49,8 +50,8 @@ export function DashboardLayout() {
         )}
         {currentView === "section" && <SectionForm key={selectedSectionId} />}
         {currentView === "character" && <ManageCharactersPanel />}
-
         {currentView === "tag" && <ManageTagsPanel />}
+        {currentView === "palette" && <ColorPalettePanel />}
       </DashboardSidebar>
     </div>
   );

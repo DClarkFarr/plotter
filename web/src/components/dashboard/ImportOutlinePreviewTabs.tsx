@@ -6,6 +6,8 @@ import type {
   ImportOutlineParseTag,
   ImportPlotCustomization,
 } from "../../api/types";
+import { ColorPaletteDropdown } from "../ui/ColorPaletteDropdown";
+import { DEFAULT_PALETTE_COLORS } from "../../types/color";
 
 export type ImportOutlinePreviewTabsProps = {
   characters: ImportOutlineParseCharacter[];
@@ -286,23 +288,15 @@ const TagsTab = ({
         : nextPlots;
       onCustomizationChange({ ...customizations, plots: finalPlots });
     } else {
-      // Add new plot entry with a default colour from the palette
-      const paletteColors = [
-        "#ff6467",
-        "#ffb86a",
-        "#fee685",
-        "#a2f4fd",
-        "#bedbff",
-        "#f4a8ff",
-        "#ffa1ad",
-      ];
       const idx = customizations.plots.filter(
         (p) => p.id !== "main_plot_id",
       ).length;
       const newEntry: ImportPlotCustomization = {
         id: tag.id,
         name: tag.name,
-        color: paletteColors[idx % paletteColors.length] ?? "#729cfd",
+        color:
+          DEFAULT_PALETTE_COLORS[idx % DEFAULT_PALETTE_COLORS.length] ??
+          "#729cfd",
         isDefaultPlot: false,
         ignored: false,
       };
@@ -418,12 +412,10 @@ const PlotsTab = ({ customizations, onCustomizationChange }: PlotsTabProps) => {
             .filter(Boolean)
             .join(" ")}
         >
-          <input
-            type="color"
-            aria-label={`Color for ${plot.name}`}
+          <ColorPaletteDropdown
+            storyId={null}
             value={plot.color}
-            disabled={plot.ignored}
-            onChange={(e) => handleChangeColor(plot.id, e.currentTarget.value)}
+            onChange={(color) => handleChangeColor(plot.id, color)}
           />
           <span className="flex-1 text-slate-800">{plot.name}</span>
           <label className="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600 select-none">

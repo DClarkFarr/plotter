@@ -1,6 +1,7 @@
 import express from "express";
 import { authRouter } from "./authRouter";
 import { characterRouter } from "./characterRouter";
+import { colorRouter } from "./colorRouter";
 import { importRouter } from "./importRouter";
 import { sceneRouter } from "./sceneRouter";
 import { sectionRouter } from "./sectionRouter";
@@ -17,6 +18,7 @@ apiRouter.use(express.urlencoded({ extended: true }));
 applyNestedRouter(apiRouter, "/auth", authRouter);
 applyNestedRouter(apiRouter, "/imports", importRouter);
 applyNestedRouter(apiRouter, "/stories", storyRouter);
+applyNestedRouter(apiRouter, "/stories", colorRouter);
 applyNestedRouter(apiRouter, "/stories", characterRouter);
 applyNestedRouter(apiRouter, "/stories", sceneRouter);
 applyNestedRouter(apiRouter, "/stories", sectionRouter);

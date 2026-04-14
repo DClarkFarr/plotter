@@ -14,6 +14,7 @@ import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
 import IconAccountGroup from "~icons/mdi/account-group";
 import IconTag from "~icons/mdi/tag";
+import IconPalette from "~icons/mdi/palette";
 import IconEyeRemove from "~icons/mdi/eye-remove";
 import IconEyeMinus from "~icons/mdi/eye-minus";
 import { CustomTooltip } from "../components/helpers/CustomTooltip";
@@ -211,6 +212,18 @@ export function StoryPage() {
                   className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
                 >
                   <IconTag className="text-sm" />
+                </button>
+              </CustomTooltip>
+              <CustomTooltip placement="bottom" content="Color palette">
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSidebarView("palette");
+                    openSidebar();
+                  }}
+                  className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
+                >
+                  <IconPalette className="text-sm" />
                 </button>
               </CustomTooltip>
             </div>

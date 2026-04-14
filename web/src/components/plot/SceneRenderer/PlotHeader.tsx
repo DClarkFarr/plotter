@@ -3,6 +3,7 @@ import { Button, Textarea, TextInput } from "flowbite-react";
 import type { Plot } from "../../../api/types";
 import { useDebounce } from "../../../utils/useDebounce";
 import { usePlotTheme } from "../../../hooks/usePlotTheme";
+import { ColorPaletteDropdown } from "../../ui/ColorPaletteDropdown";
 
 import IconMoveRight from "~icons/mdi/arrow-right-thick";
 import IconMoveLeft from "~icons/mdi/arrow-left-thick";
@@ -88,8 +89,8 @@ export const PlotHeader = memo(
       setDraftDescription(event.target.value);
       onSaveDebounced();
     };
-    const onChangeColor = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setDraftColor(event.target.value);
+    const onChangeColor = (color: string) => {
+      setDraftColor(color);
       onSaveDebounced();
     };
 
@@ -126,11 +127,10 @@ export const PlotHeader = memo(
             />
 
             <label className="flex items-center gap-2">
-              <input
-                type="color"
+              <ColorPaletteDropdown
+                storyId={storyId}
                 value={draftColor}
                 onChange={onChangeColor}
-                className=""
               />
               <span>Plot Color</span>
             </label>
