@@ -83,17 +83,32 @@ importRouter.post(
           "customizations must be valid JSON",
         );
       }
+      const p = parsed as ImportCustomizations;
       if (
         typeof parsed !== "object" ||
         parsed === null ||
-        !Array.isArray((parsed as ImportCustomizations).ignoredCharacterIds) ||
-        !Array.isArray((parsed as ImportCustomizations).plotTagIds) ||
-        typeof (parsed as ImportCustomizations).characterMerges !== "object"
+        !Array.isArray(p.ignoredCharacterIds) ||
+        !Array.isArray(p.plots) ||
+        typeof p.characterMerges !== "object"
       ) {
         throw new ValidationError(
           "customizations",
           "customizations has an invalid structure",
         );
+      }
+      for (const entry of p.plots) {
+        if (
+          typeof entry.id !== "string" ||
+          typeof entry.name !== "string" ||
+          typeof entry.color !== "string" ||
+          typeof entry.isDefaultPlot !== "boolean" ||
+          typeof entry.ignored !== "boolean"
+        ) {
+          throw new ValidationError(
+            "customizations",
+            "customizations.plots contains an entry with an invalid structure",
+          );
+        }
       }
       customizations = parsed as ImportCustomizations;
     }

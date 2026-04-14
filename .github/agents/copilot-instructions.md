@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-12
+Auto-generated from all feature plans. Last updated: 2026-04-13
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -59,6 +59,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-12
 - TypeScript (Node.js 20 — express/, React — web/) + Express, MongoDB (express/); TanStack Query, TanStack Router, Flowbite React, Tailwind CSS (web/) (038-soft-delete-story)
 - MongoDB — `stories` collection (038-soft-delete-story)
 - TypeScript 5 (Node.js backend, React 18 frontend) + Express + Multer (backend); Flowbite React Tabs, TanStack Query, Zustand, Tailwind CSS, unplugin-icons (frontend) (039-import-preview-ui)
+- TypeScript (Node.js 20 backend, React 18 frontend) + Express + MongoDB (backend); React + TanStack Query + Flowbite React + Tailwind CSS (frontend) (040-fix-plots-import-submit)
+- MongoDB (via existing `createPlot` model function) (040-fix-plots-import-submit)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -78,9 +80,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 040-fix-plots-import-submit: Added TypeScript (Node.js 20 backend, React 18 frontend) + Express + MongoDB (backend); React + TanStack Query + Flowbite React + Tailwind CSS (frontend)
 - 039-import-preview-ui: Added TypeScript 5 (Node.js backend, React 18 frontend) + Express + Multer (backend); Flowbite React Tabs, TanStack Query, Zustand, Tailwind CSS, unplugin-icons (frontend)
 - 038-soft-delete-story: Added TypeScript (Node.js 20 — express/, React — web/) + Express, MongoDB (express/); TanStack Query, TanStack Router, Flowbite React, Tailwind CSS (web/)
-- 037-finish-import-db: Added TypeScript (Node.js 20) + Express, MongoDB Node.js driver 6.x, `officeparser`
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -4,15 +4,14 @@ import type {
   ImportOutlineParseCharacter,
   ImportOutlineParseElement,
   ImportOutlineParseTag,
+  ImportPlotCustomization,
 } from "../../api/types";
-import type { ChangeEvent } from "react";
 
 export type ImportOutlinePreviewTabsProps = {
   characters: ImportOutlineParseCharacter[];
   elements: ImportOutlineParseElement[];
   tags: ImportOutlineParseTag[];
   customizations: ImportCustomizations;
-  onChangeTags: (next: ImportOutlineParseTag[]) => void;
   onCustomizationChange: (next: ImportCustomizations) => void;
 };
 
@@ -260,15 +259,11 @@ const TagsTab = ({
     );
   }
 
-  const { plotTagIds } = customizations;
+  const plotIds = new Set(customizations.plots.map((p) => p.id));
 
-  // Group by tag name
+  // Group by tag name (excluding main_plot_id which is always in customizations)
   const groups = new Map<string, ImportOutlineParseTag[]>();
   for (const tag of tags) {
-    if (tag.id === "main_plot_id") {
-      continue;
-    }
-
     const existing = groups.get(tag.name);
     if (existing) {
       existing.push(tag);
@@ -277,12 +272,45 @@ const TagsTab = ({
     }
   }
 
-  const togglePlot = (tagId: string) => {
-    const isPlot = plotTagIds.includes(tagId);
-    const nextPlotTagIds = isPlot
-      ? plotTagIds.filter((x) => x !== tagId)
-      : [...plotTagIds, tagId];
-    onCustomizationChange({ ...customizations, plotTagIds: nextPlotTagIds });
+  const togglePlot = (tag: ImportOutlineParseTag) => {
+    const isPlot = plotIds.has(tag.id);
+    if (isPlot) {
+      // Remove this plot entry; if it was default, restore Main as default
+      const removed = customizations.plots.find((p) => p.id === tag.id);
+      const wasDefault = removed?.isDefaultPlot ?? false;
+      const nextPlots = customizations.plots.filter((p) => p.id !== tag.id);
+      const finalPlots = wasDefault
+        ? nextPlots.map((p) =>
+            p.id === "main_plot_id" ? { ...p, isDefaultPlot: true } : p,
+          )
+        : nextPlots;
+      onCustomizationChange({ ...customizations, plots: finalPlots });
+    } else {
+      // Add new plot entry with a default colour from the palette
+      const paletteColors = [
+        "#ff6467",
+        "#ffb86a",
+        "#fee685",
+        "#a2f4fd",
+        "#bedbff",
+        "#f4a8ff",
+        "#ffa1ad",
+      ];
+      const idx = customizations.plots.filter(
+        (p) => p.id !== "main_plot_id",
+      ).length;
+      const newEntry: ImportPlotCustomization = {
+        id: tag.id,
+        name: tag.name,
+        color: paletteColors[idx % paletteColors.length] ?? "#729cfd",
+        isDefaultPlot: false,
+        ignored: false,
+      };
+      onCustomizationChange({
+        ...customizations,
+        plots: [...customizations.plots, newEntry],
+      });
+    }
   };
 
   return (
@@ -291,7 +319,7 @@ const TagsTab = ({
         const nullVariantEntry = group.find((t) => t.variant === null);
         const variantEntries = group.filter((t) => t.variant !== null);
         const isPlot = nullVariantEntry
-          ? plotTagIds.includes(nullVariantEntry.id)
+          ? plotIds.has(nullVariantEntry.id)
           : false;
 
         return (
@@ -316,7 +344,7 @@ const TagsTab = ({
                       type="checkbox"
                       className="rounded border-slate-300 text-slate-700"
                       checked={isPlot}
-                      onChange={() => togglePlot(nullVariantEntry.id)}
+                      onChange={() => togglePlot(nullVariantEntry)}
                     />
                     Convert to plot
                   </label>
@@ -332,77 +360,91 @@ const TagsTab = ({
   );
 };
 
-const colors = [
-  "#ff6467",
-  "#ffb86a",
-  "#fee685",
-  "#a2f4fd",
-  "#bedbff",
-  "#f4a8ff",
-  "#ffa1ad",
-];
-
 type PlotsTabProps = {
-  tags: ImportOutlineParseTag[];
   customizations: ImportCustomizations;
-  onChangeTags: (next: ImportOutlineParseTag[]) => void;
+  onCustomizationChange: (next: ImportCustomizations) => void;
 };
 
-const PlotsTab = ({ tags, onChangeTags, customizations }: PlotsTabProps) => {
-  const plotTagIds = customizations.plotTagIds;
-  const plots = tags.filter((t) => plotTagIds.includes(t.id));
+const PlotsTab = ({ customizations, onCustomizationChange }: PlotsTabProps) => {
+  const { plots } = customizations;
 
-  const handleToggleMainPlot = (e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.currentTarget.name;
-    const isChecked = e.currentTarget.checked;
-
-    const updatedTags = tags.map((t) => {
-      return t.id === name
-        ? { ...t, isDefaultPlot: isChecked }
-        : { ...t, isDefaultPlot: false };
+  const handleChangeColor = (id: string, color: string) => {
+    onCustomizationChange({
+      ...customizations,
+      plots: plots.map((p) => (p.id === id ? { ...p, color } : p)),
     });
-
-    onChangeTags(updatedTags);
   };
 
-  const handleChangeColor = (e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.currentTarget.name;
-    const value = e.currentTarget.value;
-
-    const updatedTags = tags.map((t): ImportOutlineParseTag => {
-      return t.id === name ? { ...t, color: value } : t;
+  const handleToggleDefault = (id: string) => {
+    onCustomizationChange({
+      ...customizations,
+      plots: plots.map((p) => ({ ...p, isDefaultPlot: p.id === id })),
     });
-
-    onChangeTags(updatedTags);
   };
+
+  const handleToggleIgnore = (id: string) => {
+    const entry = plots.find((p) => p.id === id);
+    const wasDefault = entry?.isDefaultPlot ?? false;
+    const nextPlots = plots.map((p) =>
+      p.id === id ? { ...p, ignored: !p.ignored } : p,
+    );
+    // If we just ignored the default, restore Main as default
+    const finalPlots =
+      wasDefault && !entry?.ignored
+        ? nextPlots.map((p) =>
+            p.id === "main_plot_id" ? { ...p, isDefaultPlot: true } : p,
+          )
+        : nextPlots;
+    onCustomizationChange({ ...customizations, plots: finalPlots });
+  };
+
+  if (plots.length === 0) {
+    return (
+      <p className="text-sm text-slate-500">
+        No plots configured. Convert tags to plots in the Tags tab.
+      </p>
+    );
+  }
 
   return (
-    <ul className="flex flex-col divide-y divide-slate-300">
-      {plots.map((plot, pi) => (
-        <li key={plot.id} className="py-2">
-          <div className="flex items-center gap-4">
-            <div>
-              <input
-                type="color"
-                name={plot.id}
-                value={plot.color ?? colors[pi] ?? ""}
-                onChange={handleChangeColor}
-              />
-            </div>
-            <div>{plot.name}</div>
-            <div className="ml-auto">
-              <label>
-                <input
-                  className="mr-2 inline-block"
-                  type="checkbox"
-                  name={plot.id}
-                  onChange={handleToggleMainPlot}
-                  checked={plot.isDefaultPlot}
-                />
-                <span>Make Default Plot</span>
-              </label>
-            </div>
-          </div>
+    <ul className="flex flex-col divide-y divide-slate-200">
+      {plots.map((plot) => (
+        <li
+          key={plot.id}
+          className={[
+            "flex items-center gap-4 py-2 text-sm",
+            plot.ignored ? "opacity-40" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <input
+            type="color"
+            aria-label={`Color for ${plot.name}`}
+            value={plot.color}
+            disabled={plot.ignored}
+            onChange={(e) => handleChangeColor(plot.id, e.currentTarget.value)}
+          />
+          <span className="flex-1 text-slate-800">{plot.name}</span>
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600 select-none">
+            <input
+              type="checkbox"
+              className="rounded border-slate-300 text-slate-700"
+              checked={plot.isDefaultPlot && !plot.ignored}
+              disabled={plot.ignored}
+              onChange={() => handleToggleDefault(plot.id)}
+            />
+            Make Default Plot
+          </label>
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs text-slate-600 select-none">
+            <input
+              type="checkbox"
+              className="rounded border-slate-300 text-slate-700"
+              checked={plot.ignored}
+              onChange={() => handleToggleIgnore(plot.id)}
+            />
+            Ignore
+          </label>
         </li>
       ))}
     </ul>
@@ -416,7 +458,6 @@ export const ImportOutlinePreviewTabs = ({
   elements,
   tags,
   customizations,
-  onChangeTags,
   onCustomizationChange,
 }: ImportOutlinePreviewTabsProps) => {
   return (
@@ -440,9 +481,8 @@ export const ImportOutlinePreviewTabs = ({
       </TabItem>
       <TabItem title="Plots">
         <PlotsTab
-          tags={tags}
           customizations={customizations}
-          onChangeTags={onChangeTags}
+          onCustomizationChange={onCustomizationChange}
         />
       </TabItem>
     </Tabs>

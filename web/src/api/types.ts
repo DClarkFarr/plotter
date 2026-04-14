@@ -101,10 +101,18 @@ export interface ImportCharactersInput {
 
 export type ImportOutlineMode = "preview" | "create";
 
+export interface ImportPlotCustomization {
+  id: string;
+  name: string;
+  color: string;
+  isDefaultPlot: boolean;
+  ignored: boolean;
+}
+
 export interface ImportCustomizations {
   ignoredCharacterIds: string[];
   characterMerges: Record<string, string>;
-  plotTagIds: string[];
+  plots: ImportPlotCustomization[];
 }
 
 export interface ImportOutlineInput {

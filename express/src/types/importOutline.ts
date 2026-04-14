@@ -61,8 +61,16 @@ export type ImportParseResult = {
   issues: ImportIssue[];
 };
 
+export type ImportPlotCustomization = {
+  id: string;
+  name: string;
+  color: string;
+  isDefaultPlot: boolean;
+  ignored: boolean;
+};
+
 export type ImportCustomizations = {
   ignoredCharacterIds: string[];
   characterMerges: Record<string, string>;
-  plotTagIds: string[];
+  plots: ImportPlotCustomization[];
 };

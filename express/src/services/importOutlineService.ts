@@ -103,20 +103,72 @@ export const importOutlineForStory = async (
     });
     createdStoryId = story._id;
 
-    const plot = await createPlot({
-      title: "Main",
-      description: "",
-      color: "#6B7280",
-      storyId: story._id,
-      horizontalIndex: 0,
-    });
-
     // Resolve customizations (default to empty if not supplied)
     const ignoredCharacterIds = new Set(
       payload.customizations?.ignoredCharacterIds ?? [],
     );
     const characterMerges = payload.customizations?.characterMerges ?? {};
-    const plotTagIds = new Set(payload.customizations?.plotTagIds ?? []);
+    const plotCustomizations = payload.customizations?.plots ?? [];
+
+    // Build ordered, non-ignored plot list.
+    // The entry with isDefaultPlot:true (and not ignored) gets horizontalIndex 0.
+    // If none is marked as default, the first non-ignored entry gets index 0.
+    // If all are ignored, fall back to a hardcoded Main plot.
+    const activePlots = plotCustomizations.filter((p) => !p.ignored);
+    const defaultPlotEntry =
+      activePlots.find((p) => p.isDefaultPlot) ?? activePlots[0] ?? null;
+    const orderedPlots =
+      defaultPlotEntry !== null
+        ? [
+            defaultPlotEntry,
+            ...activePlots.filter((p) => p !== defaultPlotEntry),
+          ]
+        : [];
+
+    if (orderedPlots.length === 0) {
+      // Fallback: ensure every story has at least one plot
+      orderedPlots.push({
+        id: "main_plot_id",
+        name: "Main",
+        color: "#729cfd",
+        isDefaultPlot: true,
+        ignored: false,
+      });
+    }
+
+    // Build plotMap: parsed tag ID → DB Plot ObjectId
+    // "main_plot_id" maps to the first created plot (horizontalIndex 0).
+    const plotMap = new Map<string, ObjectId>();
+    let defaultPlotDbId: ObjectId | null = null;
+    for (let i = 0; i < orderedPlots.length; i++) {
+      const entry = orderedPlots[i]!;
+      const createdPlot = await createPlot({
+        title: entry.name,
+        description: "",
+        color: entry.color,
+        storyId: story._id,
+        horizontalIndex: i,
+      });
+      plotMap.set(entry.id, createdPlot._id);
+      if (i === 0) {
+        defaultPlotDbId = createdPlot._id;
+      }
+      // For tag-converted plots, also map the tag ID from parsed.tags by name match
+      // so scene assignment (plotTagRefs) still resolves correctly.
+      for (const parsedTag of parsed.tags) {
+        if (
+          parsedTag.id !== "main_plot_id" &&
+          parsedTag.name === entry.name &&
+          parsedTag.variant === null &&
+          !plotMap.has(parsedTag.id)
+        ) {
+          plotMap.set(parsedTag.id, createdPlot._id);
+        }
+      }
+    }
+
+    // The "main" DB plot reference used for scenes without a plot tag
+    const plot = { _id: defaultPlotDbId! };
 
     // Build set of character IDs that should not be created as DB documents:
     // ignored IDs and merge-source IDs (aliases). Aliases get remapped after creation.
@@ -124,40 +176,6 @@ export const importOutlineForStory = async (
       ...ignoredCharacterIds,
       ...Object.keys(characterMerges),
     ]);
-
-    // T025: Resolve eligible plot tag IDs — only null-variant tags can become plots.
-    // Build plotMap: parsed tag ID → DB Plot ObjectId.
-    const plotMap = new Map<string, ObjectId>();
-    let plotHorizontalIndex = 1; // Main plot occupies index 0
-    const eligiblePlotTagNames = new Map<string, string[]>(); // name → [ids]
-    for (const parsedTag of parsed.tags) {
-      if (plotTagIds.has(parsedTag.id)) {
-        if (parsedTag.variant !== null) {
-          // Variant tags cannot become plots — log warning and skip
-          parsed.issues.push({
-            level: "warning",
-            message: `Tag "${parsedTag.name}:${parsedTag.variant}" has a variant and cannot be converted to a plot; treated as a tag instead.`,
-            location: null,
-          });
-        } else {
-          const existing = eligiblePlotTagNames.get(parsedTag.name) ?? [];
-          existing.push(parsedTag.id);
-          eligiblePlotTagNames.set(parsedTag.name, existing);
-        }
-      }
-    }
-    for (const [name, ids] of eligiblePlotTagNames) {
-      const createdPlot = await createPlot({
-        title: name,
-        description: "",
-        color: "#6B7280",
-        storyId: story._id,
-        horizontalIndex: plotHorizontalIndex++,
-      });
-      for (const id of ids) {
-        plotMap.set(id, createdPlot._id);
-      }
-    }
 
     // T026: Create tags — skip IDs that are in plotMap (already became plots)
     const tagIdMap = new Map<string, ObjectId>();
