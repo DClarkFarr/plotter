@@ -406,7 +406,7 @@ export interface MessageResponse {
 }
 
 export interface ApiErrorResponse {
-  error: string;
+  message: string;
 }
 
 // ─── Error Class ──────────────────────────────────────────────────────────────
@@ -430,7 +430,7 @@ export function toApiError(err: unknown): ApiError {
     const axiosErr = err as AxiosError<ApiErrorResponse>;
     const status = axiosErr.response?.status ?? 0;
     const message =
-      axiosErr.response?.data?.error ?? axiosErr.message ?? "Network error";
+      axiosErr.response?.data?.message ?? axiosErr.message ?? "Network error";
     return new ApiError(status, message);
   }
   if (err instanceof ApiError) {

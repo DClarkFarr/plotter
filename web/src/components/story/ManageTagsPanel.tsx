@@ -71,6 +71,18 @@ export function ManageTagsPanel() {
     }
   };
 
+  const handleColorChange = async (tagId: string, nextValue: string) => {
+    try {
+      await updateTag({ tagId, color: nextValue });
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+      return false;
+    }
+  };
+
   const handleCreateTag = (name: string, color: string) =>
     createTagMutation.mutateAsync({ name, color });
 
@@ -197,6 +209,7 @@ export function ManageTagsPanel() {
               onDelete={handleDelete}
               onAddVariant={handleAddVariant}
               onDeleteVariant={handleDeleteVariant}
+              onChangeColor={handleColorChange}
               isDeleting={isDeleting === tag.id}
               isUpdatingVariant={isUpdatingVariant === tag.id}
               isAddingVariant={isAddingVariant === tag.id}

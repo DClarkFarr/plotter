@@ -7,7 +7,7 @@ import IconPencil from "~icons/mdi/pencil";
 import IconImport from "~icons/mdi/import";
 import { useStoryCharactersQuery } from "../../queries/story/story-queries";
 import { useDeleteCharacterMutation } from "../../queries/character/character-mutations";
-import type { Character } from "../../api/types";
+import { type Character } from "../../api/types";
 import { CharacterAvatar } from "./CharacterAvatar";
 import { CharacterCardPopover } from "../character/CharacterCardPopover";
 import { alert } from "../../utils/alert";
@@ -17,14 +17,20 @@ import { ImportCharactersModal } from "./ImportCharactersModal";
 
 export function ManageCharactersPanel() {
   const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
-  const charactersQuery = useStoryCharactersQuery(storyId);
-  const characters = charactersQuery.data ?? [];
+  const {
+    data: charactersRaw,
+    isLoading,
+    error,
+  } = useStoryCharactersQuery(storyId);
   const deleteCharacter = useDeleteCharacterMutation();
   const [query, setQuery] = useState("");
   const [isImportOpen, setIsImportOpen] = useState(false);
   const openCreate = useCharacterModalStore((state) => state.openCreate);
   const openEdit = useCharacterModalStore((state) => state.openEdit);
 
+  const characters = useMemo(() => {
+    return charactersRaw || [];
+  }, [charactersRaw]);
   const sortedCharacters = useMemo(
     () =>
       [...characters].sort((a, b) =>
@@ -80,11 +86,11 @@ export function ManageCharactersPanel() {
     }
   };
 
-  if (charactersQuery.isLoading) {
+  if (isLoading) {
     return <div className="text-sm text-slate-500">Loading characters...</div>;
   }
 
-  if (charactersQuery.error) {
+  if (error) {
     return (
       <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
         Unable to load characters. Please try again.
