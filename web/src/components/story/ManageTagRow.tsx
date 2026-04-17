@@ -72,7 +72,7 @@ export const ManageTagRow = ({
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-lg">
         <div
-          className="h-4 w-4 rounded-full border border-black"
+          className="h-7 w-7 rounded-full border border-black"
           style={{ backgroundColor: tag.color }}
         ></div>
         <TextInput
