@@ -219,3 +219,41 @@ export const deletePlotById = async (
 
   return result.deletedCount === 1;
 };
+
+export const duplicatePlotsByStory = async (
+  sourceStoryId: string | ObjectId,
+  targetStoryId: string | ObjectId,
+  session?: ClientSession,
+): Promise<Map<string, ObjectId>> => {
+  const collection = getPlotsCollection();
+  const sid = ensureObjectId(sourceStoryId, "sourceStoryId");
+  const tid = ensureObjectId(targetStoryId, "targetStoryId");
+
+  const sourcePlots = await collection
+    .find({ storyId: sid })
+    .sort({ horizontalIndex: 1 })
+    .toArray();
+
+  const idMap = new Map<string, ObjectId>();
+
+  if (sourcePlots.length === 0) {
+    return idMap;
+  }
+
+  const docs: PlotDocument[] = sourcePlots.map((plot) => {
+    const newId = new ObjectId();
+    idMap.set(plot._id.toHexString(), newId);
+    return {
+      _id: newId,
+      title: plot.title,
+      description: plot.description,
+      color: plot.color,
+      storyId: tid,
+      horizontalIndex: plot.horizontalIndex,
+      ...createTimestamps(),
+    };
+  });
+
+  await collection.insertMany(docs, session ? { session } : {});
+  return idMap;
+};

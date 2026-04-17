@@ -4,8 +4,13 @@ import { useCallback, useMemo, useState } from "react";
 import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
 import { ImportOutlineModal } from "../components/dashboard/ImportOutlineModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
-import { useCreateStoryMutation, useStoriesQuery } from "../hooks/useStories";
+import {
+  useCreateStoryMutation,
+  useDuplicateStoryMutation,
+  useStoriesQuery,
+} from "../hooks/useStories";
 import { useDashboardStore } from "../store/dashboardStore";
+import { alert } from "../utils/alert";
 import IconPlus from "~icons/mdi/plus";
 import IconImport from "~icons/mdi/file-upload-outline";
 import type { Story } from "../api/types";
@@ -14,12 +19,14 @@ export function DashboardPage() {
   const { data = [], isLoading, isError } = useStoriesQuery();
   const navigate = useNavigate();
   const createStoryMutation = useCreateStoryMutation();
+  const duplicateStoryMutation = useDuplicateStoryMutation();
   const [recentlyImportedId, setRecentlyImportedId] = useState<string | null>(
     null,
   );
   const {
     isCreateStoryOpen,
     isImportOutlineOpen,
+    duplicatingStoryIds,
     openCreateStory,
     closeCreateStory,
     openImportOutline,
@@ -51,6 +58,23 @@ export function DashboardPage() {
       },
     );
   };
+
+  const handleDuplicate = useCallback(
+    (story: Story) => {
+      duplicateStoryMutation.mutate(story.id, {
+        onSuccess: (newStory) => {
+          setRecentlyImportedId(newStory.id);
+          alert.success("story created");
+        },
+        onError: (err) => {
+          const message =
+            err instanceof Error ? err.message : "Unable to duplicate story";
+          alert.error(message);
+        },
+      });
+    },
+    [duplicateStoryMutation],
+  );
 
   const onViewStory = useCallback(
     (story: Story) => {
@@ -88,6 +112,8 @@ export function DashboardPage() {
         isError={isError}
         onViewStory={onViewStory}
         recentlyImportedId={recentlyImportedId}
+        duplicatingStoryIds={duplicatingStoryIds}
+        onDuplicateStory={handleDuplicate}
       />
       <CreateStoryModal
         isOpen={isCreateStoryOpen}

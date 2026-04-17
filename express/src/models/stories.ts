@@ -199,6 +199,35 @@ export const softDeleteStoryById = async (
   return result.matchedCount === 1;
 };
 
+export const duplicateStory = async (
+  sourceId: string | ObjectId,
+  ownerId: string | ObjectId,
+  session?: ClientSession,
+): Promise<StoryDocument> => {
+  const collection = getStoriesCollection();
+  const source = await collection.findOne({
+    _id: ensureObjectId(sourceId, "sourceId"),
+    deletedAt: { $exists: false },
+  });
+
+  if (!source) {
+    throw new Error("Source story not found");
+  }
+
+  const payload: ModelInsertInput<StoryDefinition> = {
+    title: `Copy of ${source.title}`,
+    description: source.description,
+    users: [{ userId: ensureObjectId(ownerId, "ownerId"), role: "owner" }],
+    ...createTimestamps(),
+  };
+
+  const result = await collection.insertOne(
+    payload as unknown as StoryDocument,
+    session ? { session } : {},
+  );
+  return { ...payload, _id: result.insertedId };
+};
+
 export const restoreStoryById = async (
   id: string | ObjectId,
 ): Promise<boolean> => {

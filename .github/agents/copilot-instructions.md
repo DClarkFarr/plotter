@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-13
+Auto-generated from all feature plans. Last updated: 2026-04-16
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -63,6 +63,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-13
 - MongoDB (via existing `createPlot` model function) (040-fix-plots-import-submit)
 - TypeScript 5 (Node.js 20 backend, React 18 frontend) + Express, Mongoose/MongoDB (backend); TanStack Query, Zustand, Flowbite React, Tailwind CSS, dnd-kit/core + dnd-kit/sortable, unplugin-icons (frontend) (041-color-palette)
 - MongoDB — new `colors` collection (041-color-palette)
+- TypeScript 5 (backend: Node.js 20 / Express; frontend: React 18 / Vite) + Express 4, MongoDB Node.js driver 6, TanStack Query v5, Zustand 4, Flowbite React, Tailwind CSS, unplugin-icons (MDI), react-toastify (042-duplicate-story-card)
+- MongoDB (replica set required for transactions) (042-duplicate-story-card)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -82,9 +84,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 042-duplicate-story-card: Added TypeScript 5 (backend: Node.js 20 / Express; frontend: React 18 / Vite) + Express 4, MongoDB Node.js driver 6, TanStack Query v5, Zustand 4, Flowbite React, Tailwind CSS, unplugin-icons (MDI), react-toastify
 - 041-color-palette: Added TypeScript 5 (Node.js 20 backend, React 18 frontend) + Express, Mongoose/MongoDB (backend); TanStack Query, Zustand, Flowbite React, Tailwind CSS, dnd-kit/core + dnd-kit/sortable, unplugin-icons (frontend)
 - 040-fix-plots-import-submit: Added TypeScript (Node.js 20 backend, React 18 frontend) + Express + MongoDB (backend); React + TanStack Query + Flowbite React + Tailwind CSS (frontend)
-- 039-import-preview-ui: Added TypeScript 5 (Node.js backend, React 18 frontend) + Express + Multer (backend); Flowbite React Tabs, TanStack Query, Zustand, Tailwind CSS, unplugin-icons (frontend)
 
 
 <!-- MANUAL ADDITIONS START -->

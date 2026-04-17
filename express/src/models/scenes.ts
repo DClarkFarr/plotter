@@ -557,3 +557,89 @@ export const getScenesByPlotIdAndVerticalIndexRange = async (
     sceneInSpot,
   };
 };
+
+export const duplicateScenesByPlots = async (
+  sourcePlotIds: Array<string | ObjectId>,
+  plotMap: Map<string, ObjectId>,
+  tagMap: Map<string, ObjectId>,
+  charMap: Map<string, ObjectId>,
+  session?: ClientSession,
+): Promise<SceneDocument[]> => {
+  if (sourcePlotIds.length === 0) {
+    return [];
+  }
+
+  const collection = getScenesCollection();
+  const uniqueSourceIds = sourcePlotIds.map((id) =>
+    ensureObjectId(id, "plotId"),
+  );
+
+  const sourceScenes = await collection
+    .find(activeSceneFilter({ plotId: { $in: uniqueSourceIds } }))
+    .toArray();
+
+  if (sourceScenes.length === 0) {
+    return [];
+  }
+
+  const inserted: SceneDocument[] = [];
+
+  const docs: ModelInsertInput<SceneDefinition>[] = sourceScenes.map(
+    (scene) => {
+      const newPlotId = plotMap.get(scene.plotId.toHexString());
+      if (!newPlotId) {
+        throw new Error(
+          `Plot mapping missing for plotId ${scene.plotId.toHexString()}`,
+        );
+      }
+
+      const remappedTags = scene.tags
+        .map((tagId) => tagMap.get(tagId.toHexString()))
+        .filter((id): id is ObjectId => id !== undefined);
+
+      const remappedTagVariants = scene.tagVariants
+        ?.map((tv) => {
+          const newTagId = tagMap.get(tv.tagId.toHexString());
+          return newTagId ? { tagId: newTagId, variant: tv.variant } : null;
+        })
+        .filter(
+          (tv): tv is { tagId: ObjectId; variant: string } => tv !== null,
+        );
+
+      const remappedPov =
+        scene.pov != null
+          ? (charMap.get(scene.pov.toHexString()) ?? null)
+          : (scene.pov ?? null);
+
+      const doc: ModelInsertInput<SceneDefinition> = {
+        title: scene.title,
+        description: scene.description,
+        plotId: newPlotId,
+        tags: remappedTags,
+        todo: scene.todo,
+        snippets: scene.snippets,
+        verticalIndex: scene.verticalIndex,
+        deletedAt: null,
+        ...createTimestamps(),
+      };
+
+      if (remappedTagVariants && remappedTagVariants.length > 0) {
+        doc.tagVariants = remappedTagVariants;
+      }
+
+      if (remappedPov !== undefined) {
+        doc.pov = remappedPov;
+      }
+
+      inserted.push({ ...doc, _id: new ObjectId() } as SceneDocument);
+      return { ...doc, _id: inserted[inserted.length - 1]!._id };
+    },
+  );
+
+  await collection.insertMany(
+    docs as unknown as SceneDocument[],
+    session ? { session } : {},
+  );
+
+  return inserted;
+};

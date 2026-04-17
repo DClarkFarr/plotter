@@ -1,14 +1,23 @@
-import { Badge, Card } from "flowbite-react";
+import { Badge, Card, Dropdown, DropdownItem } from "flowbite-react";
 import type { Story } from "../../api/types";
 import IconArrowRight from "~icons/mdi/arrow-right";
+import IconDotsHorizontal from "~icons/mdi/dots-horizontal";
 
 interface StoryCardProps {
   story: Story;
   onClick: (story: Story) => void;
   isNew?: boolean;
+  onDuplicate?: (story: Story) => void;
+  isDuplicating?: boolean;
 }
 
-export function StoryCard({ story, onClick, isNew }: StoryCardProps) {
+export function StoryCard({
+  story,
+  onClick,
+  isNew,
+  onDuplicate,
+  isDuplicating,
+}: StoryCardProps) {
   const handleClick = () => {
     onClick(story);
   };
@@ -40,7 +49,33 @@ export function StoryCard({ story, onClick, isNew }: StoryCardProps) {
             <Badge color="light">{story.stats.tags} tags</Badge>
           </div>
         </div>
-        <div className="self-center">
+        <div className="self-center flex items-center gap-1">
+          {onDuplicate && (
+            <div onClick={(e) => e.stopPropagation()} className="relative">
+              <Dropdown
+                className="w-[150px]"
+                label=""
+                renderTrigger={() => (
+                  <button
+                    type="button"
+                    disabled={isDuplicating}
+                    className="flex items-center justify-center rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
+                    aria-label="Story actions"
+                  >
+                    <IconDotsHorizontal className="text-xl" />
+                  </button>
+                )}
+                placement="bottom-end"
+              >
+                <DropdownItem
+                  onClick={() => onDuplicate(story)}
+                  disabled={isDuplicating}
+                >
+                  Duplicate story
+                </DropdownItem>
+              </Dropdown>
+            </div>
+          )}
           <IconArrowRight className="text-2xl opacity-50 group-hover/card:opacity-100 transition-[opacity] duration-[300ms]" />
         </div>
       </div>

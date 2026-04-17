@@ -232,3 +232,45 @@ export const shiftSectionsInVerticalIndexRange = async (
     .sort({ verticalIndex: 1 })
     .toArray();
 };
+
+export const duplicateSectionsByStory = async (
+  sourceStoryId: string | ObjectId,
+  targetStoryId: string | ObjectId,
+  session?: ClientSession,
+): Promise<SectionDocument[]> => {
+  const collection = getSectionsCollection();
+  const sid = ensureObjectId(sourceStoryId, "sourceStoryId");
+  const tid = ensureObjectId(targetStoryId, "targetStoryId");
+
+  const sourceSections = await collection
+    .find({ storyId: sid })
+    .sort({ verticalIndex: 1 })
+    .toArray();
+
+  if (sourceSections.length === 0) {
+    return [];
+  }
+
+  const docs: ModelInsertInput<SectionDefinition>[] = sourceSections.map(
+    (section) => {
+      const doc: ModelInsertInput<SectionDefinition> = {
+        storyId: tid,
+        title: section.title,
+        verticalIndex: section.verticalIndex,
+        type: section.type,
+        ...createTimestamps(),
+      };
+      if (section.description !== undefined) {
+        doc.description = section.description;
+      }
+      return doc;
+    },
+  );
+
+  await collection.insertMany(
+    docs as unknown as SectionDocument[],
+    session ? { session } : {},
+  );
+
+  return collection.find({ storyId: tid }).sort({ verticalIndex: 1 }).toArray();
+};

@@ -1,4 +1,5 @@
 import type { Story } from "../../api/types";
+import { DuplicatingCard } from "./DuplicatingCard";
 import { StoryCard } from "./StoryCard";
 
 interface StoryGridProps {
@@ -7,6 +8,8 @@ interface StoryGridProps {
   isError: boolean;
   onViewStory: (story: Story) => void;
   recentlyImportedId?: string | null;
+  duplicatingStoryIds?: Set<string>;
+  onDuplicateStory?: (story: Story) => void;
 }
 
 export function StoryGrid({
@@ -15,6 +18,8 @@ export function StoryGrid({
   isError,
   onViewStory,
   recentlyImportedId,
+  duplicatingStoryIds,
+  onDuplicateStory,
 }: StoryGridProps) {
   if (isLoading) {
     return (
@@ -37,7 +42,10 @@ export function StoryGrid({
     );
   }
 
-  if (stories.length === 0) {
+  const activeDuplicatingIds = duplicatingStoryIds ?? new Set<string>();
+  const hasCards = stories.length > 0 || activeDuplicatingIds.size > 0;
+
+  if (!hasCards) {
     return (
       <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
         No stories yet. Create your first story to get started.
@@ -53,7 +61,12 @@ export function StoryGrid({
           story={story}
           onClick={onViewStory}
           isNew={recentlyImportedId === story.id}
+          onDuplicate={onDuplicateStory}
+          isDuplicating={activeDuplicatingIds.has(story.id)}
         />
+      ))}
+      {Array.from(activeDuplicatingIds).map((id) => (
+        <DuplicatingCard key={`duplicating-${id}`} />
       ))}
     </div>
   );

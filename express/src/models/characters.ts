@@ -234,3 +234,47 @@ export const deleteCharacterById = async (
 
   return result.deletedCount === 1;
 };
+
+export const duplicateCharactersByStory = async (
+  sourceStoryId: string | ObjectId,
+  targetStoryId: string | ObjectId,
+  session?: ClientSession,
+): Promise<Map<string, ObjectId>> => {
+  const collection = getCharactersCollection();
+  const sid = ensureObjectId(sourceStoryId, "sourceStoryId");
+  const tid = ensureObjectId(targetStoryId, "targetStoryId");
+
+  const sourceChars = await collection.find({ storyId: sid }).toArray();
+  const idMap = new Map<string, ObjectId>();
+
+  if (sourceChars.length === 0) {
+    return idMap;
+  }
+
+  const docs: ModelInsertInput<CharacterDefinition>[] = sourceChars.map(
+    (char) => {
+      const newId = new ObjectId();
+      idMap.set(char._id.toHexString(), newId);
+      const doc: ModelInsertInput<CharacterDefinition> = {
+        _id: newId,
+        storyId: tid,
+        title: char.title,
+        ...createTimestamps(),
+      };
+      if (char.description !== undefined) doc.description = char.description;
+      if (char.imageUrl !== undefined) doc.imageUrl = char.imageUrl;
+      if (char.characteristics !== undefined)
+        doc.characteristics = char.characteristics;
+      if (char.customCharacteristics !== undefined)
+        doc.customCharacteristics = char.customCharacteristics;
+      if (char.lists !== undefined) doc.lists = char.lists;
+      return doc;
+    },
+  );
+
+  await collection.insertMany(
+    docs as unknown as CharacterDocument[],
+    session ? { session } : {},
+  );
+  return idMap;
+};

@@ -185,3 +185,40 @@ export const deleteTagById = async (
 
   return result.deletedCount === 1;
 };
+
+export const duplicateTagsByStory = async (
+  sourceStoryId: string | ObjectId,
+  targetStoryId: string | ObjectId,
+  session?: ClientSession,
+): Promise<Map<string, ObjectId>> => {
+  const collection = getTagsCollection();
+  const sid = ensureObjectId(sourceStoryId, "sourceStoryId");
+  const tid = ensureObjectId(targetStoryId, "targetStoryId");
+
+  const sourceTags = await collection.find({ storyId: sid }).toArray();
+  const idMap = new Map<string, ObjectId>();
+
+  if (sourceTags.length === 0) {
+    return idMap;
+  }
+
+  const docs: ModelInsertInput<TagDefinition>[] = sourceTags.map((tag) => {
+    const newId = new ObjectId();
+    idMap.set(tag._id.toHexString(), newId);
+    return {
+      _id: newId,
+      name: tag.name,
+      color: tag.color,
+      variant: tag.variant,
+      variants: tag.variants,
+      storyId: tid,
+      ...createTimestamps(),
+    };
+  });
+
+  await collection.insertMany(
+    docs as unknown as TagDocument[],
+    session ? { session } : {},
+  );
+  return idMap;
+};

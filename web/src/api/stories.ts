@@ -492,3 +492,14 @@ export async function updateStory(
     throw toApiError(err);
   }
 }
+
+export async function duplicateStory(storyId: string): Promise<Story> {
+  try {
+    const { data } = await apiClient.post<StoryResponse>(
+      `/stories/${storyId}/duplicate`,
+    );
+    return data.story;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}

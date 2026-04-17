@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { ClientSession, Collection, ObjectId } from "mongodb";
 import { COLLECTIONS, getCollection } from "./collections";
 import {
   BaseModelBlueprint,
@@ -130,4 +130,37 @@ export const updateColor = async (
   );
 
   return result ?? null;
+};
+
+export const duplicateColorsByStory = async (
+  sourceStoryId: string | ObjectId,
+  targetStoryId: string | ObjectId,
+  session?: ClientSession,
+): Promise<void> => {
+  const collection = getColorsCollection();
+  const sid = ensureObjectId(sourceStoryId, "sourceStoryId");
+  const tid = ensureObjectId(targetStoryId, "targetStoryId");
+
+  const sourceColors = await collection
+    .find({ resourceType: "story", resourceId: sid })
+    .sort({ sortOrder: 1 })
+    .toArray();
+
+  if (sourceColors.length === 0) {
+    return;
+  }
+
+  const docs: ModelInsertInput<ColorDefinition>[] = sourceColors.map((c) => ({
+    resourceType: "story" as ColorResourceType,
+    resourceId: tid,
+    color: c.color,
+    sortOrder: c.sortOrder,
+    ignored: c.ignored,
+    ...createTimestamps(),
+  }));
+
+  await collection.insertMany(
+    docs as unknown as ColorDocument[],
+    session ? { session } : {},
+  );
 };
