@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useStoryColors } from "../../hooks/useStoryColors";
 import { useClickOutside } from "../../hooks/useClickOutside";
 
@@ -16,7 +16,9 @@ export function ColorPaletteDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const { data: colors = [] } = useStoryColors(storyId ?? "");
 
-  const close = useCallback(() => setIsOpen(false), []);
+  const close = useCallback(() => {
+    setIsOpen(false);
+  }, []);
   const { containerRef } = useClickOutside<HTMLDivElement>({
     onClickOutside: close,
   });
@@ -34,7 +36,10 @@ export function ColorPaletteDropdown({
 
   const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
-    setIsOpen(false);
+  };
+
+  const onClickPrevent = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -74,7 +79,10 @@ export function ColorPaletteDropdown({
           )}
 
           {/* Custom color picker */}
-          <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-500">
+          <label
+            onClick={onClickPrevent}
+            className="flex cursor-pointer items-center gap-2 text-xs text-slate-500"
+          >
             <input
               type="color"
               value={value}
