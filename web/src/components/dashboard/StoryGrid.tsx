@@ -10,6 +10,8 @@ interface StoryGridProps {
   recentlyImportedId?: string | null;
   duplicatingStoryIds?: Set<string>;
   onDuplicateStory?: (story: Story) => void;
+  exportingStoryIds?: Set<string>;
+  onExportStory?: (story: Story) => void;
 }
 
 export function StoryGrid({
@@ -20,6 +22,8 @@ export function StoryGrid({
   recentlyImportedId,
   duplicatingStoryIds,
   onDuplicateStory,
+  exportingStoryIds,
+  onExportStory,
 }: StoryGridProps) {
   if (isLoading) {
     return (
@@ -43,6 +47,7 @@ export function StoryGrid({
   }
 
   const activeDuplicatingIds = duplicatingStoryIds ?? new Set<string>();
+  const activeExportingIds = exportingStoryIds ?? new Set<string>();
   const hasCards = stories.length > 0 || activeDuplicatingIds.size > 0;
 
   if (!hasCards) {
@@ -63,6 +68,8 @@ export function StoryGrid({
           isNew={recentlyImportedId === story.id}
           onDuplicate={onDuplicateStory}
           isDuplicating={activeDuplicatingIds.has(story.id)}
+          onExport={onExportStory}
+          isExporting={activeExportingIds.has(story.id)}
         />
       ))}
       {Array.from(activeDuplicatingIds).map((id) => (

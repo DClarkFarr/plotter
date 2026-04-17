@@ -1,15 +1,18 @@
 import { Button } from "flowbite-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import { CreateStoryModal } from "../components/dashboard/CreateStoryModal";
 import { ImportOutlineModal } from "../components/dashboard/ImportOutlineModal";
 import { StoryGrid } from "../components/dashboard/StoryGrid";
 import {
   useCreateStoryMutation,
   useDuplicateStoryMutation,
+  useExportStoryMutation,
   useStoriesQuery,
 } from "../hooks/useStories";
 import { useDashboardStore } from "../store/dashboardStore";
+import { computeExportToastDuration } from "../api/stories";
 import { alert } from "../utils/alert";
 import IconPlus from "~icons/mdi/plus";
 import IconImport from "~icons/mdi/file-upload-outline";
@@ -20,13 +23,16 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const createStoryMutation = useCreateStoryMutation();
   const duplicateStoryMutation = useDuplicateStoryMutation();
+  const exportStoryMutation = useExportStoryMutation();
   const [recentlyImportedId, setRecentlyImportedId] = useState<string | null>(
     null,
   );
+  const exportToastIds = useRef<Map<string, string | number>>(new Map());
   const {
     isCreateStoryOpen,
     isImportOutlineOpen,
     duplicatingStoryIds,
+    exportingStoryIds,
     openCreateStory,
     closeCreateStory,
     openImportOutline,
@@ -76,6 +82,52 @@ export function DashboardPage() {
     [duplicateStoryMutation],
   );
 
+  const handleExport = useCallback(
+    (story: Story) => {
+      const duration = computeExportToastDuration(story.stats.scenes);
+      const toastId = toast.info("Preparing your export\u2026", {
+        autoClose: duration,
+        isLoading: false,
+      });
+      exportToastIds.current.set(story.id, toastId);
+
+      exportStoryMutation.mutate(story.id, {
+        onSuccess: (blob) => {
+          const toastRef = exportToastIds.current.get(story.id);
+          if (toastRef !== undefined) {
+            toast.dismiss(toastRef);
+            exportToastIds.current.delete(story.id);
+          }
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `${story.title}.docx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        onError: (err) => {
+          const toastRef = exportToastIds.current.get(story.id);
+          const message = err instanceof Error ? err.message : "Export failed";
+          if (toastRef !== undefined) {
+            toast.update(toastRef, {
+              render: message,
+              type: "error",
+              autoClose: 4000,
+              isLoading: false,
+            });
+            exportToastIds.current.delete(story.id);
+          } else {
+            alert.error(message);
+          }
+        },
+      });
+    },
+    [exportStoryMutation],
+  );
+
   const onViewStory = useCallback(
     (story: Story) => {
       navigate({
@@ -114,6 +166,8 @@ export function DashboardPage() {
         recentlyImportedId={recentlyImportedId}
         duplicatingStoryIds={duplicatingStoryIds}
         onDuplicateStory={handleDuplicate}
+        exportingStoryIds={exportingStoryIds}
+        onExportStory={handleExport}
       />
       <CreateStoryModal
         isOpen={isCreateStoryOpen}

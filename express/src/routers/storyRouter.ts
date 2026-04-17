@@ -26,6 +26,7 @@ import {
 } from "../services/plotService";
 import { shiftStoryGrid } from "../services/storyGridService";
 import { duplicateStoryForOwner } from "../services/storyDuplicateService";
+import { exportStoryToDocx } from "../services/storyExportService";
 import {
   optionalNumber,
   optionalString,
@@ -253,6 +254,30 @@ const applyStoryRoutes = () => {
       const newStory = await duplicateStoryForOwner(storyId, userId);
       const stats = await getStoryStats(newStory._id);
       res.status(201).json({ story: toStoryResponse(newStory, stats) });
+    }),
+  );
+
+  storyRouter.post(
+    "/:storyId/export/docx",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+
+      const story = await getStoryForUser(storyId, userId);
+      if (!story) {
+        res.status(404).json({ error: "Story not found" });
+        return;
+      }
+
+      const { buffer, filename } = await exportStoryToDocx(storyId);
+
+      res.set({
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": buffer.length,
+      });
+      res.send(buffer);
     }),
   );
 

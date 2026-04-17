@@ -503,3 +503,27 @@ export async function duplicateStory(storyId: string): Promise<Story> {
     throw toApiError(err);
   }
 }
+
+export async function exportStoryDocx(storyId: string): Promise<Blob> {
+  try {
+    const { data } = await apiClient.post<Blob>(
+      `/stories/${storyId}/export/docx`,
+      undefined,
+      { responseType: "blob" },
+    );
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+const EXPORT_BASE_MS = 5_000;
+const EXPORT_PER_SCENE_MS = 300;
+const EXPORT_MAX_MS = 60_000;
+
+export function computeExportToastDuration(sceneCount: number): number {
+  return Math.min(
+    EXPORT_BASE_MS + sceneCount * EXPORT_PER_SCENE_MS,
+    EXPORT_MAX_MS,
+  );
+}

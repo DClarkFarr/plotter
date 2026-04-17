@@ -9,6 +9,8 @@ interface StoryCardProps {
   isNew?: boolean;
   onDuplicate?: (story: Story) => void;
   isDuplicating?: boolean;
+  onExport?: (story: Story) => void;
+  isExporting?: boolean;
 }
 
 export function StoryCard({
@@ -17,6 +19,8 @@ export function StoryCard({
   isNew,
   onDuplicate,
   isDuplicating,
+  onExport,
+  isExporting,
 }: StoryCardProps) {
   const handleClick = () => {
     onClick(story);
@@ -50,15 +54,15 @@ export function StoryCard({
           </div>
         </div>
         <div className="self-center flex items-center gap-1">
-          {onDuplicate && (
+          {(onDuplicate || onExport) && (
             <div onClick={(e) => e.stopPropagation()} className="relative">
               <Dropdown
-                className="w-[150px]"
+                className="w-[160px]"
                 label=""
                 renderTrigger={() => (
                   <button
                     type="button"
-                    disabled={isDuplicating}
+                    disabled={isDuplicating || isExporting}
                     className="flex items-center justify-center rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
                     aria-label="Story actions"
                   >
@@ -67,12 +71,22 @@ export function StoryCard({
                 )}
                 placement="bottom-end"
               >
-                <DropdownItem
-                  onClick={() => onDuplicate(story)}
-                  disabled={isDuplicating}
-                >
-                  Duplicate story
-                </DropdownItem>
+                {onExport && (
+                  <DropdownItem
+                    onClick={() => onExport(story)}
+                    disabled={isExporting}
+                  >
+                    Export to .docx
+                  </DropdownItem>
+                )}
+                {onDuplicate && (
+                  <DropdownItem
+                    onClick={() => onDuplicate(story)}
+                    disabled={isDuplicating}
+                  >
+                    Duplicate story
+                  </DropdownItem>
+                )}
               </Dropdown>
             </div>
           )}

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createStory,
   duplicateStory,
+  exportStoryDocx,
   listStories,
   type CreateStoryInput,
 } from "../api/stories";
@@ -41,6 +42,24 @@ export function useDuplicateStoryMutation() {
     },
     onError: (_error, storyId) => {
       removeDuplicatingId(storyId);
+    },
+  });
+}
+
+export function useExportStoryMutation() {
+  const { addExportingId, removeExportingId } = useDashboardStore();
+
+  return useMutation({
+    mutationFn: (storyId: string) => exportStoryDocx(storyId),
+    onMutate: (storyId) => {
+      addExportingId(storyId);
+    },
+    onSuccess: (blob, storyId) => {
+      removeExportingId(storyId);
+      return blob;
+    },
+    onError: (_error, storyId) => {
+      removeExportingId(storyId);
     },
   });
 }
