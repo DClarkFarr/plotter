@@ -128,6 +128,11 @@ export const SceneTodoList = ({
         <input
           value={newItem}
           onChange={(event) => setNewItem(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              handleAdd();
+            }
+          }}
           placeholder="Add todo item"
           className="flex-1 rounded-lg border bg-slate-100 border-slate-200 hover:bg-slate-200 focus:bg-slate-200 hover:border-slate-300 focus:border-slate-300 px-3 py-2 text-sm"
         />

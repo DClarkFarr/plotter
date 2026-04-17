@@ -1,3 +1,4 @@
+import { forwardRef, useImperativeHandle } from "react";
 import {
   Editor,
   EditorContent,
@@ -30,11 +31,14 @@ export type RichTextEditorProps = {
   isSimpleMode?: boolean;
 };
 
-export const RichTextEditor = ({
-  value,
-  onChange,
-  isSimpleMode = false,
-}: RichTextEditorProps) => {
+export type RichTextEditorHandle = {
+  focus: () => void;
+};
+
+export const RichTextEditor = forwardRef<
+  RichTextEditorHandle,
+  RichTextEditorProps
+>(({ value, onChange, isSimpleMode = false }, ref) => {
   const editor = useEditor({
     extensions: [StarterKit],
     content: value,
@@ -43,13 +47,23 @@ export const RichTextEditor = ({
     },
   });
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        editor?.commands.focus("end");
+      },
+    }),
+    [editor],
+  );
+
   return (
     <div className="">
       {editor && <MenuBar editor={editor} isSimpleMode={isSimpleMode} />}
       <EditorContent editor={editor} />
     </div>
   );
-};
+});
 
 export const MenuBar = ({
   editor,
@@ -292,7 +306,10 @@ export const MenuBar = ({
       )}
       {!isSimpleMode && (
         <ButtonGroup className="button-group">
-          <CustomTooltip content="Horizontal rule" className="whitespace-nowrap">
+          <CustomTooltip
+            content="Horizontal rule"
+            className="whitespace-nowrap"
+          >
             <Button
               color="gray"
               outline

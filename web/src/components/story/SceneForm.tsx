@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 
@@ -12,7 +12,10 @@ import { useDebounce } from "../../utils/useDebounce";
 import type { SceneSnippet, SceneTodoItem } from "../../api/types";
 
 import IconLabelMultiple from "~icons/mdi/label-multiple";
-import { RichTextEditor } from "../forms/RichTextEditor";
+import {
+  RichTextEditor,
+  type RichTextEditorHandle,
+} from "../forms/RichTextEditor";
 import {
   useStoryCharactersQuery,
   useStoryPlotsQuery,
@@ -53,6 +56,10 @@ export const SceneForm = () => {
   const [expandedSnippetIndex, setExpandedSnippetIndex] = useState<
     number | null
   >(null);
+
+  const descriptionEditorRef = useRef<RichTextEditorHandle>(null);
+  const newSnippetEditorRef = useRef<RichTextEditorHandle>(null);
+  const snippetEditorRefs = useRef<(RichTextEditorHandle | null)[]>([]);
 
   const selectedPlot = useMemo(() => {
     if (!selectedPlotId) {
@@ -360,6 +367,12 @@ export const SceneForm = () => {
         <input
           value={draftTitle}
           onChange={(event) => handleTitleChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Tab" && !event.shiftKey) {
+              event.preventDefault();
+              descriptionEditorRef.current?.focus();
+            }
+          }}
           className="w-full text-xl font-semibold text-slate-900 rounded-md px-2 -mx-2 py-1 transition-colors bg-slate-100 focus:bg-slate-200 hover:bg-slate-200 focus:outline-none"
         />
         <div className="mt-4">
@@ -382,6 +395,7 @@ export const SceneForm = () => {
           Description
         </p>
         <RichTextEditor
+          ref={descriptionEditorRef}
           value={descriptionHtml}
           onChange={handleDescriptionChange}
           isSimpleMode
@@ -486,11 +500,20 @@ export const SceneForm = () => {
                           console.log("index label", event.target.value);
                           updateSnippet(index, { label: event.target.value });
                         }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Tab" && !event.shiftKey) {
+                            event.preventDefault();
+                            snippetEditorRefs.current[index]?.focus();
+                          }
+                        }}
                         placeholder="Snippet title"
                         className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900"
                       />
                       <RichTextEditor
                         key={`snippet-editor-${index}`}
+                        ref={(el) => {
+                          snippetEditorRefs.current[index] = el;
+                        }}
                         value={snippet.text ?? ""}
                         onChange={(value) =>
                           updateSnippet(index, { text: value })
@@ -587,6 +610,12 @@ export const SceneForm = () => {
               <input
                 value={newSnippetLabel}
                 onChange={(event) => setNewSnippetLabel(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Tab" && !event.shiftKey) {
+                    event.preventDefault();
+                    newSnippetEditorRef.current?.focus();
+                  }
+                }}
                 placeholder="Snippet title"
                 className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900"
               />
@@ -597,6 +626,7 @@ export const SceneForm = () => {
               </label>
               <div className="mt-2">
                 <RichTextEditor
+                  ref={newSnippetEditorRef}
                   value={newSnippetText}
                   onChange={setNewSnippetText}
                 />

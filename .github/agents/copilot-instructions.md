@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-16
+Auto-generated from all feature plans. Last updated: 2026-04-17
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -67,6 +67,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-16
 - MongoDB (replica set required for transactions) (042-duplicate-story-card)
 - TypeScript 5 (backend: Node.js 18+, frontend: React 18) (043-export-story-docx)
 - MongoDB (read-only during export — no writes) (043-export-story-docx)
+- TypeScript 5.x + React 18, TipTap (`@tiptap/react`, `@tiptap/starter-kit`), dnd-ki (044-scene-form-keyboard-ux)
+- N/A — no data model changes (044-scene-form-keyboard-ux)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -86,9 +88,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 044-scene-form-keyboard-ux: Added TypeScript 5.x + React 18, TipTap (`@tiptap/react`, `@tiptap/starter-kit`), dnd-ki
 - 043-export-story-docx: Added TypeScript 5 (backend: Node.js 18+, frontend: React 18)
 - 042-duplicate-story-card: Added TypeScript 5 (backend: Node.js 20 / Express; frontend: React 18 / Vite) + Express 4, MongoDB Node.js driver 6, TanStack Query v5, Zustand 4, Flowbite React, Tailwind CSS, unplugin-icons (MDI), react-toastify
-- 041-color-palette: Added TypeScript 5 (Node.js 20 backend, React 18 frontend) + Express, Mongoose/MongoDB (backend); TanStack Query, Zustand, Flowbite React, Tailwind CSS, dnd-kit/core + dnd-kit/sortable, unplugin-icons (frontend)
 
 
 <!-- MANUAL ADDITIONS START -->
