@@ -151,6 +151,16 @@ export const SceneForm = () => {
       (entry) => entry.tagId !== tagId,
     );
 
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            tags: nextTags,
+            tagVariants: nextVariants,
+          }
+        : prev,
+    );
+
     updateSceneMutation.mutate({
       sceneId: selectedScene.id,
       tags: nextTags,
@@ -173,6 +183,16 @@ export const SceneForm = () => {
     );
     nextVariants.push({ tagId, variant });
 
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            tags: nextTags,
+            tagVariants: nextVariants,
+          }
+        : prev,
+    );
+
     updateSceneMutation.mutate({
       sceneId: selectedScene.id,
       tags: nextTags,
@@ -189,6 +209,15 @@ export const SceneForm = () => {
       return;
     }
 
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            pov: characterId,
+          }
+        : prev,
+    );
+
     updateSceneMutation.mutate({ sceneId: selectedScene.id, pov: characterId });
   };
 
@@ -200,6 +229,15 @@ export const SceneForm = () => {
       idx === index ? { ...item, isDone: !item.isDone } : item,
     );
 
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            todo: next,
+          }
+        : prev,
+    );
+
     updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
@@ -207,6 +245,15 @@ export const SceneForm = () => {
     if (!selectedScene) {
       return;
     }
+
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            todo: next,
+          }
+        : prev,
+    );
     updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
@@ -215,6 +262,15 @@ export const SceneForm = () => {
       return;
     }
     const next = [...selectedScene.todo, { text, isDone: false }];
+
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            todo: next,
+          }
+        : prev,
+    );
     updateSceneMutation.mutate({ sceneId: selectedScene.id, todo: next });
   };
 
@@ -269,6 +325,16 @@ export const SceneForm = () => {
     const next = [...snippets, { label, text }];
     updateSceneMutation.mutate({ sceneId: selectedScene.id, snippets: next });
     setExpandedSnippetIndex(next.length - 1);
+
+    setSelectedScene((prev) =>
+      prev
+        ? {
+            ...prev,
+            snippets: next,
+          }
+        : prev,
+    );
+
     setIsAddSnippetModalOpen(false);
   };
 
