@@ -1,4 +1,11 @@
-import { Document, HeadingLevel, Paragraph, TextRun, Packer } from "docx";
+import {
+  CheckBox,
+  Document,
+  HeadingLevel,
+  Paragraph,
+  TextRun,
+  Packer,
+} from "docx";
 import { ObjectId } from "mongodb";
 import { listPlots } from "../models/plots";
 import { listScenesByPlotIds } from "../models/scenes";
@@ -168,6 +175,24 @@ const buildDocxParagraphs = (
       // Scene description
       if (scene.description) {
         paragraphs.push(...htmlToDocxParagraphs(scene.description));
+      }
+
+      // Todo items
+      if (scene.todo && scene.todo.length > 0) {
+        paragraphs.push(new Paragraph({ children: [] }));
+        for (const item of scene.todo) {
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new CheckBox({ checked: item.isDone }),
+                new TextRun({
+                  text: `  ${item.text}`,
+                  ...(item.isDone ? { strike: true, color: "888888" } : {}),
+                }),
+              ],
+            }),
+          );
+        }
       }
 
       // Snippets

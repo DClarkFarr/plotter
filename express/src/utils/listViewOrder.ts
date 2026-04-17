@@ -14,6 +14,7 @@ export interface SceneForOrder {
   plotId: ObjectId;
   tags: ObjectId[];
   tagVariants?: Array<{ tagId: ObjectId; variant: string }>;
+  todo: Array<{ text: string; isDone: boolean }>;
   snippets: Array<{ label: string; text: string }>;
   verticalIndex: number;
   pov?: ObjectId | null;
