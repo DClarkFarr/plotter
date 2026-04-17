@@ -3,6 +3,7 @@ import type { CreatePlotInput, Plot, UpdatePlotInput } from "../../api/types";
 import { createPlot, updatePlot } from "../../api/stories";
 import { useStoryPlotsQuery } from "../story/story-queries";
 import { shiftPlotsForInsert, sortPlots } from "./plot-helpers";
+import { stripEmptyKeys } from "../../utils/object";
 
 export function useCreatePlotMutation(storyId: string) {
   const queryClient = useQueryClient();
@@ -73,11 +74,7 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: UpdatePlotInput) =>
-      updatePlot(storyId, plotId, {
-        ...input,
-        description: input.description || undefined,
-      }),
+    mutationFn: (input: UpdatePlotInput) => updatePlot(storyId, plotId, input),
     onMutate: async (input) => {
       await queryClient.cancelQueries({
         queryKey: ["story", storyId, "plots"],
@@ -92,9 +89,12 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
             ? previous
             : shiftPlotsForInsert(previous, plotId, input.horizontalIndex);
 
-        const optimistic = shifted.map((plot) =>
-          plot.id === plotId ? { ...plot, ...input } : plot,
-        );
+        const optimistic = shifted.map((plot) => {
+          // TODO: strip undefined from object
+          return plot.id === plotId
+            ? { ...plot, ...stripEmptyKeys(input) }
+            : plot;
+        });
 
         queryClient.setQueryData<Plot[]>(
           useStoryPlotsQuery.queryKey(storyId),

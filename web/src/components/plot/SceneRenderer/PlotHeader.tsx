@@ -51,20 +51,29 @@ export const PlotHeader = memo(
       onClickOutside,
     });
 
-    const onSaveDebounced = useDebounce(() => {
-      const trimmedTitle = draftTitle.trim();
-      if (!trimmedTitle) {
-        setError("Title is required.");
-        return;
-      }
+    const onSaveDebounced = useDebounce(
+      (
+        toSet: Partial<{ title: string; description: string; color: string }>,
+      ) => {
+        const trimmedTitle = toSet.title?.trim();
+        if (!trimmedTitle && !draftTitle.trim()) {
+          setError("Title is required.");
+          return;
+        }
 
-      setError(null);
-      updateMutation.mutate({
-        title: trimmedTitle,
-        description: draftDescription.trim(),
-        color: draftColor,
-      });
-    }, 500);
+        setError(null);
+
+        updateMutation.mutate({
+          title: toSet.title !== undefined ? toSet.title.trim() : undefined,
+          description:
+            toSet.description !== undefined
+              ? toSet.description.trim()
+              : undefined,
+          color: toSet.color,
+        });
+      },
+      500,
+    );
 
     const handleEdit = () => {
       setError(null);
@@ -80,18 +89,25 @@ export const PlotHeader = memo(
 
     const onChangeTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
       setDraftTitle(event.target.value);
-      onSaveDebounced();
+      console.log("setting draft title", event.target.value);
+      onSaveDebounced({
+        title: event.target.value,
+      });
     };
 
     const onChangeDescription = (
       event: React.ChangeEvent<HTMLTextAreaElement>,
     ) => {
       setDraftDescription(event.target.value);
-      onSaveDebounced();
+      onSaveDebounced({
+        description: event.target.value,
+      });
     };
     const onChangeColor = (color: string) => {
       setDraftColor(color);
-      onSaveDebounced();
+      onSaveDebounced({
+        color,
+      });
     };
 
     if (isEditing) {
