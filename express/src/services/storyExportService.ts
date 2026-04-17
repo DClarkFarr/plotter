@@ -156,23 +156,27 @@ const buildDocxParagraphs = (
       }
 
       // Snippets
-      for (const snippet of scene.snippets) {
-        // Snippet label
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: snippet.label.toUpperCase(),
-                color: "888888",
-                size: 18,
-                allCaps: true,
-              }),
-            ],
-          }),
-        );
-        // Snippet body in monospace
-        if (snippet.text) {
-          paragraphs.push(...htmlToDocxParagraphs(snippet.text, "Courier New"));
+      if (scene.snippets) {
+        for (const snippet of scene.snippets) {
+          // Snippet label
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: snippet.label.toUpperCase(),
+                  color: "888888",
+                  size: 18,
+                  allCaps: true,
+                }),
+              ],
+            }),
+          );
+          // Snippet body in monospace
+          if (snippet.text) {
+            paragraphs.push(
+              ...htmlToDocxParagraphs(snippet.text, "Courier New"),
+            );
+          }
         }
       }
 

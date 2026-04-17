@@ -425,10 +425,25 @@ export class ApiError extends Error {
 
 // ─── Axios Error Normaliser ───────────────────────────────────────────────────
 
-export function toApiError(err: unknown): ApiError {
+export async function toApiError(err: unknown): Promise<ApiError> {
   if (axios.isAxiosError(err)) {
     const axiosErr = err as AxiosError<ApiErrorResponse>;
     const status = axiosErr.response?.status ?? 0;
+
+    if (axiosErr.response?.data instanceof Blob) {
+      const text = await axiosErr.response?.data;
+      try {
+        const json = JSON.parse(text as unknown as string);
+        if (json?.message) {
+          return new ApiError(
+            status,
+            json?.message ?? axiosErr.message ?? "Network error",
+          );
+        }
+      } catch {
+        // nothing
+      }
+    }
     const message =
       axiosErr.response?.data?.message ?? axiosErr.message ?? "Network error";
     return new ApiError(status, message);
