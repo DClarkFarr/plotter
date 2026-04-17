@@ -1,11 +1,4 @@
-import {
-  Document,
-  HeadingLevel,
-  Paragraph,
-  TextRun,
-  AlignmentType,
-  Packer,
-} from "docx";
+import { Document, HeadingLevel, Paragraph, TextRun, Packer } from "docx";
 import { ObjectId } from "mongodb";
 import { listPlots } from "../models/plots";
 import { listScenesByPlotIds } from "../models/scenes";
@@ -16,6 +9,7 @@ import { getStoryById } from "../models/stories";
 import {
   orderForExport,
   sanitizeFilename,
+  SceneForOrder,
   type ListViewEntry,
   type PlotForOrder,
 } from "../utils/listViewOrder";
@@ -28,8 +22,10 @@ import {
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface TagInfo {
+  id: string;
   name: string;
   color: string;
+  variants: string[];
 }
 
 interface CharacterInfo {
@@ -81,29 +77,8 @@ const buildDocxParagraphs = (
     } else {
       const { scene, plot } = entry;
 
-      // Scene title — H3
-      paragraphs.push(
-        new Paragraph({
-          heading: HeadingLevel.HEADING_3,
-          children: [new TextRun({ text: scene.title })],
-        }),
-      );
-
-      // Plot label — muted, all caps, small
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: plot.title.toUpperCase(),
-              color: "888888",
-              size: 18,
-              allCaps: true,
-            }),
-          ],
-        }),
-      );
-
       // POV character
+      let povPrefix: TextRun | undefined;
       if (scene.pov) {
         const charInfo = context.characterMap.get(
           scene.pov instanceof ObjectId
@@ -111,20 +86,58 @@ const buildDocxParagraphs = (
             : String(scene.pov),
         );
         if (charInfo) {
-          paragraphs.push(
-            new Paragraph({
-              children: [
-                new TextRun({ text: "POV: ", color: "555555" }),
-                new TextRun({ text: charInfo.name, color: "555555" }),
-              ],
-            }),
-          );
+          povPrefix = new TextRun({ text: charInfo.name });
         }
       }
 
+      paragraphs.push(new Paragraph({ children: [] }));
+      paragraphs.push(new Paragraph({ children: [] }));
+
+      const bgHex = plot.color.replace(/^#/, "");
+
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "|",
+              color: bgHex,
+              shading: { fill: bgHex },
+            }),
+            new TextRun({
+              text: " ",
+            }),
+            new TextRun({
+              text:
+                plot.title.toUpperCase() +
+                (plot.title.trim().length > 0 ? ": " : ""),
+              color: "888888",
+              size: 18,
+              allCaps: true,
+            }),
+          ],
+        }),
+      );
+      // Scene title — H3
+      paragraphs.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [povPrefix, new TextRun({ text: scene.title })].filter(
+            Boolean,
+          ) as TextRun[],
+        }),
+      );
+
+      // Plot label — muted, all caps, small
+      const labels: TextRun[] = [];
+
+      function formatTagToText(tag: TagInfo, scene: SceneForOrder) {
+        const variant = scene.tagVariants?.find(
+          (v) => v.tagId.toHexString() === tag.id,
+        );
+        return `[${tag.name}${variant ? `:${variant.variant}` : ""}]`;
+      }
       // Tags row
       if (scene.tags.length > 0) {
-        const tagRuns: TextRun[] = [];
         for (const tagId of scene.tags) {
           const tagIdStr =
             tagId instanceof ObjectId ? tagId.toHexString() : String(tagId);
@@ -134,20 +147,22 @@ const buildDocxParagraphs = (
           const bgHex = tagInfo.color.replace(/^#/, "");
           const textHex = contrastColor(tagInfo.color);
 
-          if (tagRuns.length > 0) {
-            tagRuns.push(new TextRun({ text: " " }));
+          if (labels.length > 0) {
+            labels.push(new TextRun({ text: " " }));
           }
-          tagRuns.push(
+          labels.push(
             new TextRun({
-              text: ` ${tagInfo.name} `,
+              text: formatTagToText(tagInfo, scene),
               color: textHex,
               shading: { fill: bgHex },
             }),
           );
         }
-        if (tagRuns.length > 0) {
-          paragraphs.push(new Paragraph({ children: tagRuns }));
-        }
+      }
+
+      paragraphs.push(new Paragraph({ children: labels }));
+      if (labels.length) {
+        paragraphs.push(new Paragraph({ children: [] }));
       }
 
       // Scene description
@@ -159,8 +174,12 @@ const buildDocxParagraphs = (
       if (scene.snippets) {
         for (const snippet of scene.snippets) {
           // Snippet label
+          paragraphs.push(new Paragraph({ children: [] }));
           paragraphs.push(
             new Paragraph({
+              indent: {
+                left: `0.5in`,
+              },
               children: [
                 new TextRun({
                   text: snippet.label.toUpperCase(),
@@ -174,7 +193,7 @@ const buildDocxParagraphs = (
           // Snippet body in monospace
           if (snippet.text) {
             paragraphs.push(
-              ...htmlToDocxParagraphs(snippet.text, "Courier New"),
+              ...htmlToDocxParagraphs(snippet.text, "Courier New", true),
             );
           }
         }
@@ -218,7 +237,15 @@ export const exportStoryToDocx = async (
     // Build lookup maps
     const plotMap = new Map(plots.map((p) => [p._id.toHexString(), p]));
     const tagMap = new Map<string, TagInfo>(
-      tags.map((t) => [t._id.toHexString(), { name: t.name, color: t.color }]),
+      tags.map((t) => [
+        t._id.toHexString(),
+        {
+          id: t._id.toHexString(),
+          name: t.name,
+          color: t.color,
+          variants: t.variants,
+        },
+      ]),
     );
     const characterMap = new Map<string, CharacterInfo>(
       characters.map((c) => [c._id.toHexString(), { name: c.title }]),

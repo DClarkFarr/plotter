@@ -140,6 +140,7 @@ const blockToParagraph = (
   listLevel: number,
   listRef: "bullet" | "ordered" | undefined,
   fontOverride?: string,
+  isSnippet?: boolean,
 ): Paragraph => {
   const runs: TextRun[] = [];
   for (const child of node.childNodes) {
@@ -147,6 +148,7 @@ const blockToParagraph = (
   }
 
   return new Paragraph({
+    indent: isSnippet ? { left: `0.5in` } : {},
     children: runs,
     ...(listRef !== undefined
       ? { numbering: { reference: listRef, level: listLevel } }
@@ -164,13 +166,17 @@ const nodesToParagraphs = (
   listRef: "bullet" | "ordered" | undefined,
   paragraphs: Paragraph[],
   fontOverride?: string,
+  isSnippet?: boolean,
 ): void => {
   for (const node of nodes) {
     if (node instanceof TextNode) {
       const text = node.rawText.trim();
       if (text) {
         paragraphs.push(
-          new Paragraph({ children: [makeTextRun(text, inherited)] }),
+          new Paragraph({
+            indent: isSnippet ? { left: `0.5in` } : {},
+            children: [makeTextRun(text, inherited)],
+          }),
         );
       }
       continue;
@@ -180,17 +186,25 @@ const nodesToParagraphs = (
 
     if (tag === "p") {
       paragraphs.push(
-        blockToParagraph(node, inherited, listDepth, undefined, fontOverride),
+        blockToParagraph(
+          node,
+          inherited,
+          listDepth,
+          undefined,
+          fontOverride,
+          isSnippet,
+        ),
       );
     } else if (tag === "ul" || tag === "ol") {
       const ref: "bullet" | "ordered" = tag === "ul" ? "bullet" : "ordered";
       nodesToParagraphs(
         node.childNodes as (HTMLElement | TextNode)[],
         inherited,
-        listDepth,
+        listDepth + (isSnippet ? 1 : 0),
         ref,
         paragraphs,
         fontOverride,
+        // isSnippet,
       );
     } else if (tag === "li") {
       const inlineNodes: (HTMLElement | TextNode)[] = [];
@@ -210,7 +224,14 @@ const nodesToParagraphs = (
         childNodes: inlineNodes,
       } as unknown as HTMLElement;
       paragraphs.push(
-        blockToParagraph(fakeNode, inherited, listDepth, listRef, fontOverride),
+        blockToParagraph(
+          fakeNode,
+          inherited,
+          listDepth,
+          listRef,
+          fontOverride,
+          isSnippet,
+        ),
       );
 
       for (const nested of nestedLists) {
@@ -223,6 +244,7 @@ const nodesToParagraphs = (
           nestedRef,
           paragraphs,
           fontOverride,
+          isSnippet,
         );
       }
     } else if (/^h[1-6]$/.test(tag)) {
@@ -243,7 +265,13 @@ const nodesToParagraphs = (
       for (const child of node.childNodes) {
         collectRuns(child as HTMLElement | TextNode, inherited, runs);
       }
-      paragraphs.push(new Paragraph({ heading, children: runs }));
+      paragraphs.push(
+        new Paragraph({
+          heading,
+          children: runs,
+          indent: isSnippet ? { left: `0.5in` } : {},
+        }),
+      );
     } else {
       nodesToParagraphs(
         node.childNodes as (HTMLElement | TextNode)[],
@@ -252,6 +280,7 @@ const nodesToParagraphs = (
         listRef,
         paragraphs,
         fontOverride,
+        isSnippet,
       );
     }
   }
@@ -268,6 +297,7 @@ const nodesToParagraphs = (
 export const htmlToDocxParagraphs = (
   html: string | null | undefined,
   fontOverride?: string,
+  isSnippet?: boolean,
 ): Paragraph[] => {
   if (!html || !html.trim()) {
     return [new Paragraph("")];
@@ -282,6 +312,7 @@ export const htmlToDocxParagraphs = (
     undefined,
     paragraphs,
     fontOverride,
+    isSnippet,
   );
 
   return paragraphs.length > 0 ? paragraphs : [new Paragraph("")];
