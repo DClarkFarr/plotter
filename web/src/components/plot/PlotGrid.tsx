@@ -16,8 +16,11 @@ import { SectionRow } from "./SectionRow";
 import { DragDropProvider } from "@dnd-kit/react";
 import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
+import { useSectionEditorStore } from "../../store/sectionEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
+import { useUpdateSectionMutation } from "../../queries/section/section-mutations";
 import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
+import { SectionDropZone } from "./SceneRenderer/SectionDropZone";
 import { StoryFiltersBar } from "../story/StoryFiltersBar";
 import { useStoryStore } from "../../store/storyStore";
 import {
@@ -93,6 +96,15 @@ export const PlotGrid = ({
     (state) => state.stopDraggingScene,
   );
 
+  const startDraggingSection = useSectionEditorStore(
+    (state) => state.startDraggingSection,
+  );
+  const stopDraggingSection = useSectionEditorStore(
+    (state) => state.stopDraggingSection,
+  );
+
+  const { mutate: moveSection } = useUpdateSectionMutation(storyId);
+
   const { moveSingleCardWithinPlot } =
     MoveSceneMutations.useMoveSingleWithinPlot();
 
@@ -137,6 +149,13 @@ export const PlotGrid = ({
             feedback.dropAnimation = undefined;
           }
 
+          const source = event.operation.source;
+          if (source?.type === "section") {
+            const { section } = source.data as { section: Section };
+            startDraggingSection(section);
+            return;
+          }
+
           const data = event.operation.source?.data;
           if (!data || !assertIsDraggableSceneData(data)) {
             console.warn("Invalid drag data", { data });
@@ -152,6 +171,19 @@ export const PlotGrid = ({
           const { target, source } = event.operation;
 
           stopDraggingScene();
+          stopDraggingSection();
+
+          if (
+            source?.type === "section" &&
+            target?.type === "section-droppable"
+          ) {
+            const { verticalIndex } = target.data as { verticalIndex: number };
+            const { section } = source.data as { section: Section };
+            if (section.verticalIndex !== verticalIndex) {
+              moveSection({ sectionId: section.id, verticalIndex });
+            }
+            return;
+          }
 
           if (
             target &&
@@ -205,6 +237,10 @@ const PlotGridBody = ({
 }: PlotGridProps) => {
   const filters = useStoryStore((state) => state.filters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
+
+  const draggingSection = useSectionEditorStore(
+    (state) => state.draggingSection,
+  );
 
   const { data: plots = [] } = useStoryPlotsQuery(storyId);
   const { data: scenes = [] } = useStoryScenesQuery(storyId);
@@ -350,8 +386,25 @@ const PlotGridBody = ({
           style={{ "--grid-cols": gridCols }}
         >
           {grid.map((row, r) => {
+            const rowVerticalIndex = row[0].verticalIndex;
             return (
               <React.Fragment key={`row-${r}`}>
+                {rowVerticalIndex !== -1 && (
+                  <>
+                    <div
+                      className="nbsp"
+                      key={`section-dz-nbsp-${rowVerticalIndex}`}
+                    />
+                    <SectionDropZone
+                      key={`section-dz-${rowVerticalIndex}`}
+                      verticalIndex={rowVerticalIndex}
+                      draggingSection={draggingSection}
+                      hasSectionAtRow={sectionsHorizontalIndexMap.has(
+                        rowVerticalIndex,
+                      )}
+                    />
+                  </>
+                )}
                 {row.map((cell) => {
                   if (
                     cell.type === "col-header" ||

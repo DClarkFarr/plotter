@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Section } from "../api/types";
 
 export type SectionEditorState = {
   selectedSectionId: string | null;
@@ -6,6 +7,10 @@ export type SectionEditorState = {
   selectSection: (sectionId: string) => void;
   clearSelection: () => void;
   setSaving: (isSaving: boolean) => void;
+
+  draggingSection: Section | null;
+  startDraggingSection: (section: Section) => void;
+  stopDraggingSection: () => void;
 };
 
 export const useSectionEditorStore = create<SectionEditorState>((set) => ({
@@ -14,4 +19,8 @@ export const useSectionEditorStore = create<SectionEditorState>((set) => ({
   selectSection: (sectionId) => set({ selectedSectionId: sectionId }),
   clearSelection: () => set({ selectedSectionId: null }),
   setSaving: (isSaving) => set({ isSaving }),
+
+  draggingSection: null,
+  startDraggingSection: (section) => set({ draggingSection: section }),
+  stopDraggingSection: () => set({ draggingSection: null }),
 }));
