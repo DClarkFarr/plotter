@@ -4,7 +4,6 @@ import type { Plot, Scene, Section } from "../../api/types";
 import type {
   DraggableSceneData,
   EmptyRendererProps,
-  SceneCardTypes,
   SceneRenderer,
   SceneRendererProps,
 } from "./plot.types";
@@ -39,32 +38,30 @@ export type PlotGridProps = {
   renderEmptyCard?: SceneRenderer<EmptyRendererProps>;
 };
 
-type GridCellTypes =
-  | SceneCardTypes
+type GridCellType =
+  | { type: "scene" }
   | {
       type: "plot";
-      index: number;
+    }
+  | {
+      type: "section";
+    }
+  | {
+      type: "empty";
     }
   | {
       type: "corner";
     }
   | {
       type: "col-header";
-      index: number;
-    }
-  | {
-      type: "section";
-      section: Section;
     }
   | {
       type: "section-spacer";
     };
 
-const getCellColIndex = (gridIndex: number) => {
-  return gridIndex - 1;
-};
-const getCellRowIndex = (gridIndex: number) => {
-  return gridIndex - 1;
+type GridCellVariant<T extends GridCellType = GridCellType> = T & {
+  horizontalIndex: number;
+  verticalIndex: number;
 };
 
 function assertIsDraggableSceneData(data: object): data is DraggableSceneData {
@@ -265,40 +262,58 @@ const PlotGridBody = ({
   }, [scenes]);
 
   const grid = useMemo(() => {
-    const rows: GridCellTypes[][] = [];
-    const topRow: GridCellTypes[] = [{ type: "corner" }];
-    for (let c = 1; c < gridCols + 1; c++) {
-      topRow.push({ type: "plot", index: c });
+    const rows: GridCellVariant[][] = [];
+    const topRow: GridCellVariant[] = [
+      { type: "corner", horizontalIndex: -1, verticalIndex: -1 },
+    ];
+    for (let c = 0; c < gridCols; c++) {
+      topRow.push({
+        type: "plot",
+        horizontalIndex: c,
+        verticalIndex: 0,
+      });
     }
     rows.push(topRow);
 
     for (let r = 0; r < gridRows; r++) {
-      const row: GridCellTypes[] = [{ type: "col-header", index: r }];
+      const row: GridCellVariant[] = [
+        { type: "col-header", horizontalIndex: -1, verticalIndex: r },
+      ];
 
       const section = sectionsHorizontalIndexMap.get(r);
       if (section) {
-        row.push({ type: "section", section });
+        row.push({
+          type: "section",
+          horizontalIndex: 0,
+          verticalIndex: r,
+        });
         for (let c = 2; c < gridCols + 1; c++) {
-          row.push({ type: "section-spacer" });
+          row.push({
+            type: "section-spacer",
+            horizontalIndex: c,
+            verticalIndex: r,
+          });
         }
         rows.push(row);
         continue;
       }
 
-      for (let c = 1; c < gridCols + 1; c++) {
-        const plot = plots.find(
-          (p) => p.horizontalIndex === getCellColIndex(c),
-        );
+      for (let c = 0; c < gridCols; c++) {
+        const plot = plots.find((p) => p.horizontalIndex === c);
         if (!plot) {
-          row.push({ type: "empty" });
+          row.push({ type: "empty", horizontalIndex: c, verticalIndex: r });
           continue;
         }
-        const hasScene =
+        const currentScene =
           scenesPlotIdVerticalIndexMap.get(plot.id)?.has(r) ?? false;
-        if (!hasScene) {
-          row.push({ type: "empty" });
+        if (currentScene) {
+          row.push({
+            type: "scene",
+            horizontalIndex: c,
+            verticalIndex: r,
+          });
         } else {
-          row.push({ type: "scene", index: r });
+          row.push({ type: "empty", horizontalIndex: c, verticalIndex: r });
         }
       }
       rows.push(row);
@@ -337,7 +352,7 @@ const PlotGridBody = ({
           {grid.map((row, r) => {
             return (
               <React.Fragment key={`row-${r}`}>
-                {row.map((cell, c) => {
+                {row.map((cell) => {
                   if (
                     cell.type === "col-header" ||
                     cell.type === "corner" ||
@@ -348,122 +363,140 @@ const PlotGridBody = ({
                     return (
                       <div
                         className="nbsp"
-                        key={`nbsp-${r}-${c}`}
-                        data-r={r}
-                        data-c={c}
+                        key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
+                        data-r={cell.verticalIndex}
+                        data-c={cell.horizontalIndex}
                       ></div>
                     );
                   } else {
                     return (
                       <SceneActionsCard
-                        key={`actions-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
+                        key={`actions-${cell.horizontalIndex}-${cell.verticalIndex}`}
                         storyId={storyId}
-                        plot={plotsHorizontalIndexMap.get(getCellColIndex(c))}
-                        plotIndex={getCellColIndex(c)}
-                        sceneIndex={getCellRowIndex(r)}
+                        plot={plotsHorizontalIndexMap.get(cell.horizontalIndex)}
+                        plotIndex={cell.horizontalIndex}
+                        sceneIndex={cell.verticalIndex}
                         nextScene={scenesPlotIdVerticalIndexMap
                           .get(
-                            plotsHorizontalIndexMap.get(getCellColIndex(c))
+                            plotsHorizontalIndexMap.get(cell.horizontalIndex)
                               ?.id || "",
                           )
-                          ?.get(getCellRowIndex(r))}
+                          ?.get(cell.verticalIndex + 1)}
                         prevScene={scenesPlotIdVerticalIndexMap
                           .get(
-                            plotsHorizontalIndexMap.get(getCellColIndex(c))
+                            plotsHorizontalIndexMap.get(cell.horizontalIndex)
                               ?.id || "",
                           )
-                          ?.get(getCellRowIndex(r) - 1)}
+                          ?.get(cell.verticalIndex - 1)}
                         isDisabled={
-                          !plotsHorizontalIndexMap.get(getCellColIndex(c))
+                          !plotsHorizontalIndexMap.get(cell.horizontalIndex)
                         }
                       />
                     );
                   }
                 })}
 
-                {row.map((cell, c) => {
+                {row.map((cell) => {
                   if (cell.type === "corner") {
                     return (
                       <div
-                        key={`corner-${r}-${c}`}
+                        key={`corner-${cell.verticalIndex}-${cell.horizontalIndex}`}
                         className="corner"
-                        data-row={r}
-                        data-col={c}
+                        data-row={cell.verticalIndex}
+                        data-col={cell.horizontalIndex}
                       ></div>
                     );
                   } else if (cell.type === "col-header") {
                     return (
                       <ColHeader
-                        key={`col-header-${r}-${c}`}
+                        key={`col-header-${cell.verticalIndex}-${cell.horizontalIndex}`}
                         storyId={storyId}
-                        rowIndex={getCellRowIndex(r)}
+                        rowIndex={cell.verticalIndex}
                         scenes={scenes}
                         sections={sections}
                       />
                     );
                   } else if (cell.type === "section") {
-                    return (
-                      <SectionRow
-                        key={`section-${cell.section.id}`}
-                        section={cell.section}
-                      />
+                    const section = sectionsHorizontalIndexMap.get(
+                      cell.verticalIndex,
                     );
+                    if (section) {
+                      return (
+                        <SectionRow
+                          key={`section-${section?.id}`}
+                          section={section}
+                        />
+                      );
+                    }
+                    return <div>Section not found: {cell.verticalIndex}</div>;
                   } else if (cell.type === "section-spacer") {
                     return null;
                   } else if (cell.type === "empty") {
                     const plot = plotsHorizontalIndexMap.get(
-                      getCellColIndex(c),
+                      cell.horizontalIndex,
                     );
                     return (
                       <RenderEmptyCard
-                        key={`empty-${getCellColIndex(c)}-${getCellRowIndex(r)}`}
+                        key={`empty-${cell.horizontalIndex}-${cell.verticalIndex}`}
                         storyId={storyId}
-                        sceneIndex={getCellRowIndex(r)}
-                        plotIndex={getCellColIndex(c)}
+                        sceneIndex={cell.verticalIndex}
+                        plotIndex={cell.horizontalIndex}
                         plot={plot}
                         isDisabled={!plot}
                       />
                     );
                   } else if (cell.type === "scene") {
                     const plot = plotsHorizontalIndexMap.get(
-                      getCellColIndex(c),
+                      cell.horizontalIndex,
                     );
 
                     const scene = scenesPlotIdVerticalIndexMap
                       .get(plot?.id || "")
-                      ?.get(getCellRowIndex(r));
+                      ?.get(cell.verticalIndex);
                     const isFilterExcluded =
                       hasFilters &&
                       !!scene &&
                       !includedSceneIdSet.has(scene.id);
+
+                    if (!plot) {
+                      return <div>Plot not found: {cell.horizontalIndex}</div>;
+                    }
+                    if (!scene) {
+                      return (
+                        <div>
+                          Scene not found: {cell.verticalIndex} in plot{" "}
+                          {plot.id}
+                        </div>
+                      );
+                    }
                     return (
                       <RenderSceneCard
-                        key={`scene-${scene!.id}`}
-                        sceneIndex={getCellRowIndex(r)}
-                        plotIndex={getCellColIndex(c)}
-                        scene={scene!}
-                        plot={plot!}
+                        key={`scene-${scene.id}`}
+                        sceneIndex={cell.verticalIndex}
+                        plotIndex={cell.horizontalIndex}
+                        scene={scene}
+                        plot={plot}
                         isFilterExcluded={isFilterExcluded}
                       />
                     );
                   } else if (cell.type === "plot") {
                     const plot = plotsHorizontalIndexMap.get(
-                      getCellColIndex(c),
+                      cell.horizontalIndex,
                     );
                     return plot ? (
                       <PlotHeader
-                        key={`plot-header-${r}-${c}`}
+                        key={`plot-header-${cell.horizontalIndex}-${cell.verticalIndex}`}
                         storyId={storyId}
                         plot={plot}
-                        plotIndex={getCellColIndex(c)}
+                        plotIndex={cell.horizontalIndex}
                         maxHorizontalIndex={maxHorizontalIndex}
                       />
                     ) : (
                       <PlotHeaderCreate
-                        key={`plot-header-${r}-${c}`}
+                        key={`plot-header-${cell.horizontalIndex}-${cell.verticalIndex}`}
                         storyId={storyId}
                         plot={plot}
-                        plotIndex={getCellColIndex(c)}
+                        plotIndex={cell.horizontalIndex}
                       />
                     );
                   }
