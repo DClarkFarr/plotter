@@ -384,6 +384,26 @@ export async function updateSection(
   }
 }
 
+export interface MoveSectionInput {
+  toIndex: number;
+}
+
+export async function moveSection(
+  storyId: string,
+  sectionId: string,
+  input: MoveSectionInput,
+): Promise<SectionResponse> {
+  try {
+    const { data } = await apiClient.post<SectionResponse>(
+      `/stories/${storyId}/sections/${sectionId}/move-section`,
+      input,
+    );
+    return data;
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function deleteSection(
   storyId: string,
   sectionId: string,

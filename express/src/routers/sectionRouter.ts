@@ -4,6 +4,7 @@ import {
   createSectionForStory,
   deleteSectionForStory,
   listSectionsForStory,
+  moveSectionForStory,
   updateSectionForStory,
 } from "../services/sectionService";
 import { getStoryForUser } from "../services/storyService";
@@ -178,6 +179,40 @@ const applySectionRoutes = () => {
       if (updated.shiftedResources) {
         payload.shiftedResources = toShiftedResourcesResponse(
           updated.shiftedResources,
+        );
+      }
+
+      res.status(200).json(payload);
+    }),
+  );
+
+  sectionRouter.post(
+    "/:storyId/sections/:sectionId/move-section",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const sectionId = assertparamIsString(req.params.sectionId, "sectionId");
+
+      await getStoryForUser(storyId, userId);
+
+      const toIndex = requireNumber(req.body?.toIndex, "toIndex");
+
+      const result = await moveSectionForStory(storyId, sectionId, toIndex);
+      if (!result.section) {
+        res.status(404).json({ error: "Section not found" });
+        return;
+      }
+
+      const payload: {
+        section: ReturnType<typeof toSectionResponse>;
+        shiftedResources?: ReturnType<typeof toShiftedResourcesResponse>;
+      } = {
+        section: toSectionResponse(result.section),
+      };
+
+      if (result.shiftedResources) {
+        payload.shiftedResources = toShiftedResourcesResponse(
+          result.shiftedResources,
         );
       }
 

@@ -5,7 +5,12 @@ import type {
   Section,
   UpdateSectionInput,
 } from "../../api/types";
-import { createSection, deleteSection, updateSection } from "../../api/stories";
+import {
+  createSection,
+  deleteSection,
+  moveSection,
+  updateSection,
+} from "../../api/stories";
 import { useStorySectionsQuery } from "./section-queries";
 import { sortSections } from "./section-helpers";
 import {
@@ -257,6 +262,117 @@ export function useUpdateSectionMutation(storyId: string) {
           );
           const hasSection = next.some((entry) => entry.id === section.id);
           return sortSections(hasSection ? next : [...next, section]);
+        },
+      );
+      applyShiftedResources(queryClient, storyId, response.shiftedResources);
+    },
+  });
+}
+
+type MoveSectionPayload = {
+  sectionId: string;
+  toIndex: number;
+};
+
+export function useMoveSectionMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: MoveSectionPayload) =>
+      moveSection(storyId, input.sectionId, { toIndex: input.toIndex }),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: useStorySectionsQuery.queryKey(storyId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: useStoryScenesQuery.queryKey(storyId),
+      });
+
+      const previousSections = queryClient.getQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+      );
+      const previousScenes = queryClient.getQueryData<Scene[]>(
+        useStoryScenesQuery.queryKey(storyId),
+      );
+
+      if (!previousSections) {
+        return {
+          previous: { sections: previousSections, scenes: previousScenes },
+        };
+      }
+
+      const target = previousSections.find(
+        (section) => section.id === input.sectionId,
+      );
+      if (!target || target.verticalIndex === input.toIndex) {
+        return {
+          previous: { sections: previousSections, scenes: previousScenes },
+        };
+      }
+
+      const fromIndex = target.verticalIndex;
+      const toIndex = input.toIndex;
+
+      // Moving down (from < to): shift [from+1, to] by -1
+      // Moving up   (from > to): shift [to, from-1] by +1
+      const rangeStart = fromIndex < toIndex ? fromIndex + 1 : toIndex;
+      const rangeEnd = fromIndex < toIndex ? toIndex : fromIndex - 1;
+      const shift = fromIndex < toIndex ? -1 : 1;
+
+      const shifted = applyOptimisticShiftToState(
+        previousScenes ?? [],
+        previousSections,
+        { rangeStart, rangeEnd, shift },
+      );
+
+      const nextSections = sortSections(
+        shifted.sections.map((section) =>
+          section.id === input.sectionId
+            ? { ...section, verticalIndex: toIndex }
+            : section,
+        ),
+      );
+
+      queryClient.setQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+        nextSections,
+      );
+
+      if (previousScenes) {
+        queryClient.setQueryData<Scene[]>(
+          useStoryScenesQuery.queryKey(storyId),
+          shifted.scenes,
+        );
+      }
+
+      return {
+        previous: { sections: previousSections, scenes: previousScenes },
+      };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous?.sections) {
+        queryClient.setQueryData(
+          useStorySectionsQuery.queryKey(storyId),
+          context.previous.sections,
+        );
+      }
+      if (context?.previous?.scenes) {
+        queryClient.setQueryData(
+          useStoryScenesQuery.queryKey(storyId),
+          context.previous.scenes,
+        );
+      }
+    },
+    onSuccess: (response) => {
+      const section = response.section;
+      queryClient.setQueryData<Section[]>(
+        useStorySectionsQuery.queryKey(storyId),
+        (current) => {
+          if (!current) return [section];
+          const next = current.map((entry) =>
+            entry.id === section.id ? section : entry,
+          );
+          return sortSections(next);
         },
       );
       applyShiftedResources(queryClient, storyId, response.shiftedResources);

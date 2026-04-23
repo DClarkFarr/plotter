@@ -186,6 +186,49 @@ export const updateSectionForStory = async (
   };
 };
 
+export const moveSectionForStory = async (
+  storyId: string | ObjectId,
+  sectionId: string | ObjectId,
+  toIndex: number,
+): Promise<{
+  section: SectionDocument | null;
+  shiftedResources: ShiftedResources | undefined;
+}> => {
+  if (toIndex < 0) {
+    throw new Error("toIndex must be >= 0");
+  }
+
+  const storyObjectId = ensureObjectId(storyId, "storyId");
+  const current = await getSectionForStory(storyObjectId, sectionId);
+  if (!current) {
+    return { section: null, shiftedResources: undefined };
+  }
+
+  const fromIndex = current.verticalIndex;
+  if (fromIndex === toIndex) {
+    return { section: current, shiftedResources: undefined };
+  }
+
+  // Moving down (from < to): shift [from+1, to] by -1 (those rows close the gap)
+  // Moving up (from > to):   shift [to, from-1] by +1 (those rows open space at to)
+  const rangeStart = fromIndex < toIndex ? fromIndex + 1 : toIndex;
+  const rangeEnd = fromIndex < toIndex ? toIndex : fromIndex - 1;
+  const shift = fromIndex < toIndex ? -1 : 1;
+
+  const shiftedResources = await shiftGridInVerticalIndexRange(
+    storyObjectId,
+    rangeStart,
+    rangeEnd,
+    shift,
+  );
+
+  const section = await updateSectionByIdModel(sectionId, {
+    verticalIndex: toIndex,
+  });
+
+  return { section, shiftedResources };
+};
+
 export const deleteSectionForStory = async (
   storyId: string | ObjectId,
   sectionId: string | ObjectId,

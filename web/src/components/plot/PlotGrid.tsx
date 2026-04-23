@@ -18,7 +18,7 @@ import { Feedback } from "@dnd-kit/dom";
 import { useSceneEditorStore } from "../../store/sceneEditorStore";
 import { useSectionEditorStore } from "../../store/sectionEditorStore";
 import { MoveSceneMutations } from "../../queries/scene/scene-mutations";
-import { useUpdateSectionMutation } from "../../queries/section/section-mutations";
+import { useMoveSectionMutation } from "../../queries/section/section-mutations";
 import { SceneActionsCard } from "./SceneRenderer/SceneActionsCard";
 import { SectionDropZone } from "./SceneRenderer/SectionDropZone";
 import { StoryFiltersBar } from "../story/StoryFiltersBar";
@@ -103,7 +103,7 @@ export const PlotGrid = ({
     (state) => state.stopDraggingSection,
   );
 
-  const { mutate: moveSection } = useUpdateSectionMutation(storyId);
+  const { mutate: moveSection } = useMoveSectionMutation(storyId);
 
   const { moveSingleCardWithinPlot } =
     MoveSceneMutations.useMoveSingleWithinPlot();
@@ -180,7 +180,7 @@ export const PlotGrid = ({
             const { verticalIndex } = target.data as { verticalIndex: number };
             const { section } = source.data as { section: Section };
             if (section.verticalIndex !== verticalIndex) {
-              moveSection({ sectionId: section.id, verticalIndex });
+              moveSection({ sectionId: section.id, toIndex: verticalIndex });
             }
             return;
           }
