@@ -362,6 +362,8 @@ const applySceneRoutes = () => {
 
       const changedResources = await moveSingleCardWithinPlot(shiftData);
 
+      console.log(changedResources);
+
       const payload: {
         scene?: ReturnType<typeof toSceneResponse> | null;
         shiftedResources?: ReturnType<typeof toShiftedResourcesResponse>;

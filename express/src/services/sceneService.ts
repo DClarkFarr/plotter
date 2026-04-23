@@ -360,7 +360,6 @@ export const moveSingleCardWithinPlot = async (
     toPlotId,
     resource: { id: sceneId, type: "scene" },
   });
-  console.log("got shift", shift);
   if (shift) {
     const { scenes: shiftedScenes, sections: shiftedSections } =
       await shiftGridInVerticalIndexRange(
