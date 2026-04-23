@@ -191,6 +191,7 @@ export const shiftSectionsInVerticalIndexRange = async (
   rangeStart: number | undefined,
   rangeEnd: number | undefined,
   shift: number,
+  excludeSectionId?: ObjectId,
 ): Promise<SectionDocument[]> => {
   if ((rangeStart && rangeEnd && rangeStart > rangeEnd) || shift === 0) {
     return [] as SectionDocument[];
@@ -220,6 +221,7 @@ export const shiftSectionsInVerticalIndexRange = async (
     {
       storyId,
       verticalIndex: verticalIndexFilter,
+      ...(excludeSectionId ? { _id: { $ne: excludeSectionId } } : {}),
     },
     { $inc: { verticalIndex: shift } },
   );
@@ -228,6 +230,7 @@ export const shiftSectionsInVerticalIndexRange = async (
     .find({
       storyId,
       verticalIndex: updatedIndexFilter,
+      ...(excludeSectionId ? { _id: { $ne: excludeSectionId } } : {}),
     })
     .sort({ verticalIndex: 1 })
     .toArray();

@@ -4,7 +4,6 @@ import {
   CreateSectionInput,
   deleteSectionById,
   getSectionById,
-  getSectionByVerticalIndex,
   listSectionsByStoryId,
   SectionDocument,
   SectionType,
@@ -12,7 +11,6 @@ import {
   UpdateSectionInput,
 } from "../models/sections";
 import { getStoryById } from "../models/stories";
-import { listPlotIdsByStoryId } from "../models/plots";
 import { ensureObjectId } from "../models/types";
 import {
   ShiftedResources,
@@ -21,7 +19,6 @@ import {
   shiftGridDownwardFromIndex,
   shiftGridInVerticalIndexRange,
   shiftGridUpwardFromIndex,
-  getMoveRangeShift,
 } from "../utils/plotGridUtils";
 
 const assertStoryExists = async (storyId: string | ObjectId): Promise<void> => {
@@ -144,45 +141,11 @@ export const updateSectionForStory = async (
     nextUpdates.description = updates.description;
   }
 
-  const targetIndex = updates.verticalIndex;
-  let shiftedResources: ShiftedResources | undefined;
-  if (targetIndex !== undefined && targetIndex !== current.verticalIndex) {
-    const occupied = await getSectionByVerticalIndex(
-      storyObjectId,
-      targetIndex,
-    );
-    if (occupied && occupied._id.toHexString() !== current._id.toHexString()) {
-      throw new Error("Section verticalIndex is already occupied");
-    }
-
-    const plotIds = await listPlotIdsByStoryId(storyObjectId);
-    const fallbackPlotId = plotIds[0];
-    if (!fallbackPlotId) {
-      throw new Error("Story must have at least one plot");
-    }
-
-    const shift = await getMoveRangeShift({
-      fromIndex: current.verticalIndex,
-      toIndex: targetIndex,
-      fromPlotId: fallbackPlotId,
-      toPlotId: fallbackPlotId,
-      resource: { id: current._id, type: "chapter" },
-    });
-    if (shift) {
-      shiftedResources = await shiftGridInVerticalIndexRange(
-        storyObjectId,
-        shift.rangeStart,
-        shift.rangeEnd,
-        shift.shift,
-      );
-    }
-  }
-
   const section = await updateSectionByIdModel(sectionId, nextUpdates);
 
   return {
     section,
-    shiftedResources,
+    shiftedResources: undefined,
   };
 };
 
@@ -215,18 +178,33 @@ export const moveSectionForStory = async (
   const rangeEnd = fromIndex < toIndex ? toIndex : fromIndex - 1;
   const shift = fromIndex < toIndex ? -1 : 1;
 
-  const shiftedResources = await shiftGridInVerticalIndexRange(
-    storyObjectId,
-    rangeStart,
-    rangeEnd,
-    shift,
-  );
+  const { scenes: shiftedScenes, sections: shiftedSections } =
+    await shiftGridInVerticalIndexRange(
+      storyObjectId,
+      rangeStart,
+      rangeEnd,
+      shift,
+      current._id,
+    );
 
   const section = await updateSectionByIdModel(sectionId, {
     verticalIndex: toIndex,
   });
 
-  return { section, shiftedResources };
+  const scenesToUpdate = [...shiftedScenes];
+  const sectionsToUpdate = [...shiftedSections];
+  if (section) {
+    sectionsToUpdate.push(section);
+  }
+
+  const shiftedResources: ShiftedResources | undefined =
+    scenesToUpdate.length || sectionsToUpdate.length
+      ? { scenes: scenesToUpdate, sections: sectionsToUpdate }
+      : undefined;
+
+  return shiftedResources
+    ? { section, shiftedResources }
+    : { section, shiftedResources: undefined };
 };
 
 export const deleteSectionForStory = async (

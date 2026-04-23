@@ -147,6 +147,7 @@ export const shiftGridInVerticalIndexRange = async (
   rangeStart: number | undefined,
   rangeEnd: number | undefined,
   shift: number,
+  excludeSectionId?: ObjectId,
 ): Promise<GridShiftResult> => {
   if ((rangeStart && rangeEnd && rangeStart > rangeEnd) || shift === 0) {
     return { scenes: [], sections: [] };
@@ -170,6 +171,7 @@ export const shiftGridInVerticalIndexRange = async (
     rangeStart,
     rangeEnd,
     shift,
+    excludeSectionId,
   );
 
   return { scenes, sections };
