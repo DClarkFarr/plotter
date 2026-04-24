@@ -26,7 +26,7 @@ const startServer = async () => {
   app.api.use("/api", apiRouter);
   app.api.use("/uploads", uploadRouter);
   app.api.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-  app.api.use("/", webRouter);
+  app.api.use(webRouter);
 
   app.listen();
 };
