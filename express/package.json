@@ -2,12 +2,12 @@
   "name": "plotter-express",
   "version": "1.0.0",
   "description": "Express router app for plotter project",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "start": "ts-node src/server.ts",
     "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
     "build": "tsc",
-    "serve": "node dist/server.js",
+    "serve": "node dist/src/server.js",
     "check:model-imports": "ts-node scripts/check-model-imports.ts"
   },
   "keywords": [],
