@@ -15,9 +15,11 @@ export const SectionDropZone = memo(
     draggingSection,
     hasSectionAtRow,
   }: SectionDropZoneProps) => {
+    const isNextSpot = draggingSection?.verticalIndex === verticalIndex - 1;
     const isDisabled =
       !draggingSection ||
       draggingSection.verticalIndex === verticalIndex ||
+      isNextSpot ||
       hasSectionAtRow;
 
     const { isDropTarget, ref } = useDroppable({

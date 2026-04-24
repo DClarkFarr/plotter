@@ -180,7 +180,14 @@ export const PlotGrid = ({
             const { verticalIndex } = target.data as { verticalIndex: number };
             const { section } = source.data as { section: Section };
             if (section.verticalIndex !== verticalIndex) {
-              moveSection({ sectionId: section.id, toIndex: verticalIndex });
+              // the dropzone is above the cells.
+              // So when moving next, the UI is misleading. Move down by one so
+              // the change ends up working.
+              const adjustment = verticalIndex > section.verticalIndex ? -1 : 0;
+              moveSection({
+                sectionId: section.id,
+                toIndex: verticalIndex + adjustment,
+              });
             }
             return;
           }
