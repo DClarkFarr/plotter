@@ -1,4 +1,5 @@
 export type ImportIssueLevel = "error" | "warning";
+export type ImportOutlineType = "legacy" | "modern";
 
 export type ImportIssue = {
   level: ImportIssueLevel;

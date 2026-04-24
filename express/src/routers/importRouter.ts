@@ -9,7 +9,10 @@ import {
   requireString,
   requireUserId,
 } from "../utils/validators";
-import type { ImportCustomizations } from "../types/importOutline";
+import type {
+  ImportCustomizations,
+  ImportOutlineType,
+} from "../types/importOutline";
 
 export const importRouter = express.Router({ mergeParams: true });
 
@@ -68,6 +71,18 @@ importRouter.post(
       throw new ValidationError("file", "file is required");
     }
 
+    const importTypeRaw = optionalString(req.body?.importType, "importType");
+    const importType: ImportOutlineType = importTypeRaw
+      ? (importTypeRaw as ImportOutlineType)
+      : "legacy";
+
+    if (importType !== "legacy" && importType !== "modern") {
+      throw new ValidationError(
+        "importType",
+        "importType must be legacy or modern",
+      );
+    }
+
     const storyName =
       optionalString(req.body?.storyName, "storyName") ?? req.file.originalname;
 
@@ -116,6 +131,7 @@ importRouter.post(
     const result = await importOutlineForStory({
       userId,
       mode: modeRaw,
+      importType,
       file: req.file,
       storyName,
       customizations,

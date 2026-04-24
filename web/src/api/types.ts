@@ -100,6 +100,7 @@ export interface ImportCharactersInput {
 }
 
 export type ImportOutlineMode = "preview" | "create";
+export type ImportOutlineType = "legacy" | "modern";
 
 export interface ImportPlotCustomization {
   id: string;
@@ -117,6 +118,7 @@ export interface ImportCustomizations {
 
 export interface ImportOutlineInput {
   mode: ImportOutlineMode;
+  importType?: ImportOutlineType;
   file: File;
   storyName?: string;
   customizations?: ImportCustomizations | null;

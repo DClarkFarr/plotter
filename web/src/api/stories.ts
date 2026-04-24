@@ -156,6 +156,9 @@ export async function importStoryOutline(
     const formData = new FormData();
     formData.append("file", input.file);
     formData.append("mode", input.mode);
+    if (input.importType) {
+      formData.append("importType", input.importType);
+    }
     if (input.storyName) {
       formData.append("storyName", input.storyName);
     }

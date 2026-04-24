@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type {
   ImportCustomizations,
+  ImportOutlineType,
   ImportParseResult,
 } from "../types/importOutline";
 import { parseImportOutlineDocx } from "./importOutlineParser";
@@ -31,6 +32,7 @@ export type ImportOutlineResult = {
 export type ImportOutlinePayload = {
   userId: string;
   mode: ImportOutlineMode;
+  importType?: ImportOutlineType;
   file: Express.Multer.File;
   storyName?: string;
   customizations?: ImportCustomizations | null;
@@ -39,7 +41,10 @@ export type ImportOutlinePayload = {
 export const importOutlineForStory = async (
   payload: ImportOutlinePayload,
 ): Promise<ImportOutlineResult> => {
-  const parsed = await parseImportOutlineDocx(payload.file.buffer);
+  const parsed = await parseImportOutlineDocx(
+    payload.file.buffer,
+    payload.importType ?? "legacy",
+  );
   const summary = buildImportSummary(parsed);
   const hasErrorIssues = parsed.issues.some((issue) => issue.level === "error");
 

@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ApiError,
   ImportCustomizations,
+  ImportOutlineType,
   ImportOutlineResponse,
 } from "../../api/types";
 import { useImportOutlineMutation } from "../../queries/story/story-mutations";
@@ -47,6 +48,7 @@ export const ImportOutlineModal = ({
   const [createdStoryId, setCreatedStoryId] = useState<string | null>(null);
   const [storyName, setStoryName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [importType, setImportType] = useState<ImportOutlineType>("legacy");
   const [customizations, setCustomizations] = useState<ImportCustomizations>(
     () => ({
       ignoredCharacterIds: [],
@@ -73,6 +75,7 @@ export const ImportOutlineModal = ({
     setStoryName("");
     setStep("form");
     setLocalError(null);
+    setImportType("legacy");
     setCustomizations({
       ignoredCharacterIds: [],
       characterMerges: {},
@@ -125,6 +128,7 @@ export const ImportOutlineModal = ({
       setLocalError(null);
       const result = await importMutation.mutateAsync({
         mode: "preview",
+        importType,
         file: selectedFile,
       });
       setStoryName(result.storyName);
@@ -137,7 +141,7 @@ export const ImportOutlineModal = ({
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
     },
-    [importMutation, selectedFile],
+    [importMutation, importType, selectedFile],
   );
 
   const handleApprove = useCallback(async () => {
@@ -149,6 +153,7 @@ export const ImportOutlineModal = ({
     const trimmedName = storyName.trim();
     const result = await importMutation.mutateAsync({
       mode: "create",
+      importType,
       file: selectedFile,
       ...(trimmedName ? { storyName: trimmedName } : {}),
       customizations,
@@ -163,6 +168,7 @@ export const ImportOutlineModal = ({
     importMutation,
     selectedFile,
     storyName,
+    importType,
     customizations,
     onImportComplete,
   ]);
@@ -174,51 +180,91 @@ export const ImportOutlineModal = ({
         {step === "form" ? (
           <>
             <div className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="import-outline-type">Import type</Label>
+                <select
+                  id="import-outline-type"
+                  className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700"
+                  value={importType}
+                  onChange={(event) =>
+                    setImportType(event.target.value as ImportOutlineType)
+                  }
+                  disabled={importMutation.isPending}
+                >
+                  <option value="legacy">Legacy outline</option>
+                  <option value="modern">Modern outline</option>
+                </select>
+              </div>
               <p className="text-sm text-slate-600">
                 Upload a .docx outline to preview what will be created.
               </p>
             </div>
             <div className="space-y-4 text-sm text-slate-600">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                  Heading map
-                </p>
-                <ul className="list-disc space-y-1 pl-5">
-                  <li>H1 headings become act separators.</li>
-                  <li>H2 headings become chapter breaks.</li>
-                  <li>H4 headings become scenes.</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                  Sections
-                </p>
-                <p>
-                  Indent a paragraph block to group it into a section under the
-                  nearest heading.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                  POV syntax
-                </p>
-                <p>
-                  Use <span className="font-semibold">POV: Character Name</span>
-                  to mark a scene POV.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                  Tag syntax
-                </p>
-                <p>
-                  Use{" "}
-                  <span className="font-semibold">
-                    Tags: #tag-one, #tag-two
-                  </span>
-                  to attach scene tags.
-                </p>
-              </div>
+              {importType === "legacy" ? (
+                <>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Heading map
+                    </p>
+                    <ul className="list-disc space-y-1 pl-5">
+                      <li>H1 headings become act separators.</li>
+                      <li>H2 headings become chapter breaks.</li>
+                      <li>H4 headings become scenes.</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      POV syntax
+                    </p>
+                    <p>
+                      Use{" "}
+                      <span className="font-semibold">POV: Character Name</span>
+                      to mark a scene POV.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Tag syntax
+                    </p>
+                    <p>
+                      Use{" "}
+                      <span className="font-semibold">
+                        Tags: #tag-one, #tag-two
+                      </span>
+                      to attach scene tags.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Modern heading map
+                    </p>
+                    <ul className="list-disc space-y-1 pl-5">
+                      <li>H1 headings become act separators.</li>
+                      <li>H2 headings become chapter breaks.</li>
+                      <li>H4 lines starting with | define plot context.</li>
+                      <li>Scene heading follows the plot marker line.</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Tags and snippets
+                    </p>
+                    <p>
+                      Put tags on the line after scene heading using bracket
+                      tokens like <span className="font-semibold">[Tag]</span>{" "}
+                      or <span className="font-semibold">[Tag:Variant]</span>.
+                    </p>
+                    <p>
+                      Snippets use a title line ending with : (for example{" "}
+                      <span className="font-semibold">Draft:</span>) followed by
+                      an indented snippet block.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </>
         ) : null}
