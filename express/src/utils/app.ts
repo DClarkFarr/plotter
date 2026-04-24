@@ -96,7 +96,16 @@ class App {
   }
 
   public async setupDatabase(): Promise<void> {
-    const mongoUrl = env.MONGO_URL;
+    const mongoUrlRaw = env.MONGO_URL;
+    /**
+     * Example
+     * mongodb://root:<your instance password>@127.0.0.1:8000
+     *
+     * The password may have special characters that need to be URL-encoded. For example, if the password is "myP@ssw0rd!", the connection string should be:
+     * mongodb://root:myP%40ssw0rd%21@
+     */
+
+    const mongoUrl = `mongodb://${encodeURIComponent(mongoUrlRaw.replace(/^mongodb:\/\//, ""))}`;
 
     if (!mongoUrl) {
       throw new Error("MONGO_URL is not configured.");
