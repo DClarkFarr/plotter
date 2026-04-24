@@ -9,6 +9,6 @@ const publicDir = path.resolve(process.cwd(), "..", "web", "dist");
 
 webRouter.use(express.static(publicDir));
 
-webRouter.get("/", (req, res) => {
+webRouter.get("*", (req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));
 });
