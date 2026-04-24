@@ -104,6 +104,7 @@ const buildDocxParagraphs = (
 
       paragraphs.push(
         new Paragraph({
+          heading: HeadingLevel.HEADING_4,
           children: [
             new TextRun({
               text: "|",
@@ -198,19 +199,17 @@ const buildDocxParagraphs = (
       // Snippets
       if (scene.snippets) {
         for (const snippet of scene.snippets) {
+          const snippetLabel = snippet.label?.trim() || "Snippet";
           // Snippet label
           paragraphs.push(new Paragraph({ children: [] }));
           paragraphs.push(
             new Paragraph({
-              indent: {
-                left: `0.5in`,
-              },
+              heading: HeadingLevel.HEADING_5,
               children: [
                 new TextRun({
-                  text: snippet.label.toUpperCase(),
+                  text: `${snippetLabel}:`,
                   color: "888888",
                   size: 18,
-                  allCaps: true,
                 }),
               ],
             }),

@@ -73,13 +73,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Implement modern parser entry point in `express/src/services/importOutlineModernParser.ts`
-- [ ] T014 [US3] Parse plot marker before scene (`|` line as H4 preceding scene heading) in `express/src/services/importOutlineModernParser.ts`
-- [ ] T015 [US3] Parse tags from the row after scene heading in `express/src/services/importOutlineModernParser.ts`
-- [ ] T016 [US3] Parse snippets from H5 title ending with `:` + subsequent indented block in `express/src/services/importOutlineModernParser.ts`
-- [ ] T017 [US3] Add malformed-modern warnings/fallback behavior for missing sequence anchors in `express/src/services/importOutlineModernParser.ts`
-- [ ] T018 [US3] Dispatch `modern` mode to new parser in `express/src/services/importOutlineParser.ts`
-- [ ] T019 [US3] Update export formatting markers (plot heading H4, snippet heading H5 with trailing `:`) in `express/src/services/storyExportService.ts`
+- [x] T013 [US3] Implement modern parser entry point in `express/src/services/importOutlineModernParser.ts`
+- [x] T014 [US3] Parse plot marker before scene (`|` line as H4 preceding scene heading) in `express/src/services/importOutlineModernParser.ts`
+- [x] T015 [US3] Parse tags from the row after scene heading in `express/src/services/importOutlineModernParser.ts`
+- [x] T016 [US3] Parse snippets from H5 title ending with `:` + subsequent indented block in `express/src/services/importOutlineModernParser.ts`
+- [x] T017 [US3] Add malformed-modern warnings/fallback behavior for missing sequence anchors in `express/src/services/importOutlineModernParser.ts`
+- [x] T018 [US3] Dispatch `modern` mode to new parser in `express/src/services/importOutlineParser.ts`
+- [x] T019 [US3] Update export formatting markers (plot heading H4, snippet heading H5 with trailing `:`) in `express/src/services/storyExportService.ts`
 - [ ] T020 [US3] Validate export->modern-import round trip manually and document procedure in `specs/046-import-outline-versions/quickstart.md`
 
 **Checkpoint**: US3 is fully functional and modern round-trip behavior is validated.
