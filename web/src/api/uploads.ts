@@ -34,6 +34,6 @@ export async function uploadCharacterImage(
 
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }

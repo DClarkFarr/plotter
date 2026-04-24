@@ -13,7 +13,7 @@ export async function getStoryColors(storyId: string): Promise<StoryColor[]> {
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -29,6 +29,6 @@ export async function updateStoryColor(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }

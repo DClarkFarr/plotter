@@ -23,7 +23,7 @@ export async function signup(input: SignupInput): Promise<AuthUser> {
     );
     return data.user;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -42,7 +42,7 @@ export async function login(input: LoginInput): Promise<AuthUser> {
     );
     return data.user;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -50,7 +50,7 @@ export async function logout(): Promise<void> {
   try {
     await apiClient.post("/auth/logout");
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -70,7 +70,7 @@ export async function resetPasswordRequest(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -81,6 +81,6 @@ export async function getMe(): Promise<AuthUser> {
     const { data } = await apiClient.get<AuthUserResponse>("/auth/me");
     return data.user;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }

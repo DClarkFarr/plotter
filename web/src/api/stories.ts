@@ -65,7 +65,7 @@ export async function listStories(): Promise<Story[]> {
     const { data } = await apiClient.get<StoriesResponse>("/stories");
     return data.stories;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -74,7 +74,7 @@ export async function createStory(input: CreateStoryInput): Promise<Story> {
     const { data } = await apiClient.post<StoryResponse>("/stories", input);
     return data.story;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -83,7 +83,7 @@ export async function getStory(storyId: string): Promise<Story> {
     const { data } = await apiClient.get<StoryResponse>(`/stories/${storyId}`);
     return data.story;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -91,7 +91,7 @@ export async function deleteStory(storyId: string): Promise<void> {
   try {
     await apiClient.delete(`/stories/${storyId}`);
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -106,7 +106,7 @@ export async function shiftStoryGrid(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -117,7 +117,7 @@ export async function listStoryTags(storyId: string): Promise<Tag[]> {
     );
     return data.tags;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -131,7 +131,7 @@ export async function importStoryTags(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -145,7 +145,7 @@ export async function importStoryCharacters(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -176,7 +176,7 @@ export async function importStoryOutline(
 
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -189,7 +189,7 @@ export async function listStoryCharacters(
     );
     return data.characters;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -204,7 +204,7 @@ export async function createTag(
     );
     return data.tag;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -212,7 +212,7 @@ export async function deleteTag(storyId: string, tagId: string): Promise<void> {
   try {
     await apiClient.delete<void>(`/stories/${storyId}/tags/${tagId}`);
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -228,7 +228,7 @@ export async function updateTag(
     );
     return data.tag;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -244,7 +244,7 @@ export async function addTagVariant(
     );
     return data.tag;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -260,7 +260,7 @@ export async function deleteTagVariant(
     );
     return data.tag;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -275,7 +275,7 @@ export async function createCharacter(
     );
     return data.character;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -291,7 +291,7 @@ export async function updateCharacter(
     );
     return data.character;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -304,7 +304,7 @@ export async function deleteCharacter(
       `/stories/${storyId}/characters/${characterId}`,
     );
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -315,7 +315,7 @@ export async function listStoryPlots(storyId: string): Promise<Plot[]> {
     );
     return data.plots;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -326,7 +326,7 @@ export async function listStoryScenes(storyId: string): Promise<Scene[]> {
     );
     return data.scenes;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -337,7 +337,7 @@ export async function listStorySections(storyId: string): Promise<Section[]> {
     );
     return data.sections;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -352,7 +352,7 @@ export async function createPlot(
     );
     return data.plot;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -367,7 +367,7 @@ export async function createSection(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -383,7 +383,7 @@ export async function updateSection(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -403,7 +403,7 @@ export async function moveSection(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -417,7 +417,7 @@ export async function deleteSection(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -433,7 +433,7 @@ export async function updatePlot(
     );
     return data.plot;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -449,7 +449,7 @@ export async function createScene(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -463,7 +463,7 @@ export async function deleteScene(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -479,7 +479,7 @@ export async function updateScene(
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -497,7 +497,7 @@ export async function moveSingleSceneWithinPlot(
       )
       .then((res) => res.data);
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -512,7 +512,7 @@ export async function updateStory(
     );
     return data.story;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -523,7 +523,7 @@ export async function duplicateStory(storyId: string): Promise<Story> {
     );
     return data.story;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
@@ -536,7 +536,7 @@ export async function exportStoryDocx(storyId: string): Promise<Blob> {
     );
     return data;
   } catch (err) {
-    throw toApiError(err);
+    throw await toApiError(err);
   }
 }
 
