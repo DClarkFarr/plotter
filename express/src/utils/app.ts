@@ -90,20 +90,30 @@ class App {
       MODE: process.env.MODE,
       PORT: process.env.PORT,
       MONGO_URL: process.env.MONGO_URL,
+      MONGO_USER: process.env.MONGO_USER,
+      MONGO_DB: process.env.MONGO_DB,
+      MONGO_PW: process.env.MONGO_PW,
       SESSION_SECRET: process.env.SESSION_SECRET,
       SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME,
     });
   }
 
   public async setupDatabase(): Promise<void> {
-    const mongoUrl = env.MONGO_URL;
+    const mongoUrl = this.resolveMongoUrl();
     /**
-     * Example
+     * Example via URL
      * mongodb://username:password@127.0.0.1:27017/your_database_name
+     *
+     * Example via parts (host defaults to 127.0.0.1:27017)
+     * MONGO_USER=your_username
+     * MONGO_DB=your_database_name
+     * MONGO_PW=your_password
      */
 
     if (!mongoUrl) {
-      throw new Error("MONGO_URL is not configured.");
+      throw new Error(
+        "MongoDB is not configured. Set MONGO_URL or set MONGO_USER, MONGO_DB, and MONGO_PW.",
+      );
     }
 
     const connectionTimeoutMs = 5000;
@@ -153,6 +163,22 @@ class App {
         maxAge: inactivityWindowMs,
       },
     };
+  }
+
+  private resolveMongoUrl(): string {
+    if (env.MONGO_URL) {
+      return env.MONGO_URL;
+    }
+
+    if (env.MONGO_USER && env.MONGO_DB && env.MONGO_PW) {
+      const username = encodeURIComponent(env.MONGO_USER);
+      const password = encodeURIComponent(env.MONGO_PW);
+      const database = encodeURIComponent(env.MONGO_DB);
+
+      return `mongodb://${username}:${password}@127.0.0.1:27017/${database}`;
+    }
+
+    return "";
   }
 }
 

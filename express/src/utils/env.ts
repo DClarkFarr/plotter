@@ -4,6 +4,9 @@ export interface EnvConfig {
   readonly PORT: number;
   readonly MODE: AppMode;
   readonly MONGO_URL: string;
+  readonly MONGO_USER: string;
+  readonly MONGO_DB: string;
+  readonly MONGO_PW: string;
   readonly SESSION_SECRET: string;
   readonly SESSION_COOKIE_NAME: string;
 }
@@ -12,6 +15,9 @@ const DEFAULT_ENV: EnvConfig = {
   PORT: 1000,
   MODE: "development",
   MONGO_URL: "",
+  MONGO_USER: "",
+  MONGO_DB: "",
+  MONGO_PW: "",
   SESSION_SECRET: "",
   SESSION_COOKIE_NAME: "plotter.sid",
 };
@@ -31,6 +37,9 @@ export interface ConfigureEnvInput {
   PORT?: number | string | undefined;
   MODE?: AppMode | string | undefined;
   MONGO_URL?: string | undefined;
+  MONGO_USER?: string | undefined;
+  MONGO_DB?: string | undefined;
+  MONGO_PW?: string | undefined;
   SESSION_SECRET?: string | undefined;
   SESSION_COOKIE_NAME?: string | undefined;
 }
@@ -66,6 +75,30 @@ const parseMongoUrl = (value: string | undefined): string => {
   return DEFAULT_ENV.MONGO_URL;
 };
 
+const parseMongoUser = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MONGO_USER;
+};
+
+const parseMongoDb = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MONGO_DB;
+};
+
+const parseMongoPw = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MONGO_PW;
+};
+
 const parseSessionSecret = (value: string | undefined): string => {
   if (typeof value === "string" && value.trim().length > 0) {
     return value.trim();
@@ -89,6 +122,9 @@ export const configureEnv = (
     PORT: parsePort(input.PORT),
     MODE: parseMode(input.MODE),
     MONGO_URL: parseMongoUrl(input.MONGO_URL),
+    MONGO_USER: parseMongoUser(input.MONGO_USER),
+    MONGO_DB: parseMongoDb(input.MONGO_DB),
+    MONGO_PW: parseMongoPw(input.MONGO_PW),
     SESSION_SECRET: parseSessionSecret(input.SESSION_SECRET),
     SESSION_COOKIE_NAME: parseSessionCookieName(input.SESSION_COOKIE_NAME),
   };
