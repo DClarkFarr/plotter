@@ -295,6 +295,12 @@ export interface ImportOutlineParseTag {
   isDefaultPlot: boolean | undefined;
 }
 
+export interface ImportOutlineParsePlot {
+  id: string;
+  name: string;
+  color: string | null;
+}
+
 export interface ImportOutlineParseCharacter {
   id: string;
   name: string;
@@ -326,6 +332,7 @@ export interface ImportOutlineParseSceneElement {
   title: string;
   povCharacterId: string | null;
   tagIds: string[];
+  plotIds?: string[];
   characterIds: string[];
   content: string[];
 }
@@ -343,6 +350,7 @@ export interface ImportOutlineResponse {
   storyId?: string | null;
   elements?: ImportOutlineParseElement[];
   tags?: ImportOutlineParseTag[];
+  plots?: ImportOutlineParsePlot[];
   characters?: ImportOutlineParseCharacter[];
   issues?: ImportOutlineParseIssue[];
 }

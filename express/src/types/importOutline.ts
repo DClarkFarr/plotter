@@ -14,6 +14,12 @@ export type Tag = {
   color: string | null;
 };
 
+export type ImportPlot = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
 export type Character = {
   id: string;
   name: string;
@@ -48,6 +54,7 @@ export interface SceneElement extends BaseElementType<"scene"> {
   title: string;
   povCharacterId: string | null;
   tagIds: string[];
+  plotIds: string[];
   characterIds: string[];
   snippets: Snippet[];
   content: string[];
@@ -58,6 +65,7 @@ export type Element = ActElement | ChapterElement | SceneElement;
 export type ImportParseResult = {
   elements: Element[];
   tags: Tag[];
+  plots: ImportPlot[];
   characters: Character[];
   issues: ImportIssue[];
 };

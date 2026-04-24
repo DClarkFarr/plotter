@@ -25,6 +25,7 @@ export type ImportOutlineResult = {
   storyName: string;
   elements?: ImportParseResult["elements"];
   tags?: ImportParseResult["tags"];
+  plots?: ImportParseResult["plots"];
   characters?: ImportParseResult["characters"];
   issues?: ImportParseResult["issues"];
 };
@@ -60,6 +61,7 @@ export const importOutlineForStory = async (
       storyName,
       elements: parsed.elements,
       tags: parsed.tags,
+      plots: parsed.plots,
       characters: parsed.characters,
       issues: parsed.issues,
     };
@@ -72,6 +74,7 @@ export const importOutlineForStory = async (
       storyName,
       elements: parsed.elements,
       tags: parsed.tags,
+      plots: parsed.plots,
       characters: parsed.characters,
       issues: parsed.issues,
     };
@@ -260,8 +263,14 @@ export const importOutlineForStory = async (
           verticalIndex: verticalIndex++,
         });
       } else if (element.type === "scene") {
-        // T027: Separate tagIds into plot refs and normal tag refs
-        const plotTagRefs = element.tagIds.filter((id) => plotMap.has(id));
+        // T027: Prefer explicit scene.plotIds, while keeping legacy tag->plot conversion fallback.
+        const plotRefsFromScene = element.plotIds.filter((id) =>
+          plotMap.has(id),
+        );
+        const plotTagRefs =
+          plotRefsFromScene.length > 0
+            ? plotRefsFromScene
+            : element.tagIds.filter((id) => plotMap.has(id));
         const normalTagRefs = element.tagIds.filter((id) => !plotMap.has(id));
 
         // Determine which plot this scene belongs to

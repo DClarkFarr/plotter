@@ -70,6 +70,7 @@ const getNodeIndentTwips = (node: OfficeContentNode): number => {
 const createEmptyResult = (): ImportParseResult => ({
   elements: [],
   tags: [],
+  plots: [],
   characters: [],
   issues: [],
 });
@@ -308,6 +309,7 @@ export const parseImportOutlineLegacyDocx = async (
         title: sceneTitle,
         povCharacterId,
         tagIds: sceneTagIds,
+        plotIds: [],
         characterIds: sceneCharacterIds,
         snippets: [],
         content: [],

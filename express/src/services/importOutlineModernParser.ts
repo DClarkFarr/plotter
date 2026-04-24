@@ -17,6 +17,7 @@ import type {
   Element,
   ElementType,
   ImportIssue,
+  ImportPlot,
   ImportParseResult,
   SceneElement,
   Snippet,
@@ -33,6 +34,7 @@ const SNIPPET_HEADING_SIZE = 5;
 const createEmptyResult = (): ImportParseResult => ({
   elements: [],
   tags: [],
+  plots: [],
   characters: [],
   issues: [],
 });
@@ -139,6 +141,28 @@ const ensureTag = (
   return created;
 };
 
+const ensurePlot = (
+  result: ImportParseResult,
+  plotMap: Map<string, ImportPlot>,
+  name: string,
+  color: string | null,
+): ImportPlot => {
+  const plotKey = buildTagKey(name, null);
+  const existing = plotMap.get(plotKey);
+  if (existing) {
+    return existing;
+  }
+
+  const created: ImportPlot = {
+    id: `plot_${plotMap.size + 1}`,
+    name,
+    color,
+  };
+  plotMap.set(plotKey, created);
+  result.plots.push(created);
+  return created;
+};
+
 const getNodeText = (node: OfficeContentNode): string =>
   collectTextRuns(node)
     .map((run) => run.text)
@@ -214,6 +238,7 @@ export const parseImportOutlineModernDocx = async (
 
   const result = createEmptyResult();
   const tagMap = new Map<string, Tag>();
+  const plotMap = new Map<string, ImportPlot>();
   const characterMap = new Map<string, Character>();
 
   let actIndex = 0;
@@ -223,7 +248,7 @@ export const parseImportOutlineModernDocx = async (
 
   let currentElement: Element | null = null;
   let currentSnippet: Snippet | null = null;
-  let pendingPlotTagId: string | null = null;
+  let pendingPlotId: string | null = null;
   let expectingTagRowForScene = false;
   let pendingSnippetHeading: string | null = null;
 
@@ -269,22 +294,12 @@ export const parseImportOutlineModernDocx = async (
       continue;
     }
 
-    if (headingLevel === PLOT_HEADING_SIZE) {
+    const headingText = getHeadingText(node);
+
+    if (headingLevel === PLOT_HEADING_SIZE || headingText.startsWith("|")) {
       finishCurrentSnippet();
       pendingSnippetHeading = null;
       expectingTagRowForScene = false;
-
-      const headingText = getHeadingText(node);
-      if (!headingText.startsWith("|")) {
-        addIssue(
-          result.issues,
-          "warning",
-          "Modern plot heading should start with '|'.",
-          headingText,
-        );
-        pendingPlotTagId = null;
-        continue;
-      }
 
       const plotTitle = headingText
         .replace(/^\|+\s*/, "")
@@ -292,7 +307,7 @@ export const parseImportOutlineModernDocx = async (
         .trim();
 
       if (!plotTitle) {
-        pendingPlotTagId = null;
+        pendingPlotId = null;
         addIssue(
           result.issues,
           "warning",
@@ -303,9 +318,9 @@ export const parseImportOutlineModernDocx = async (
       }
 
       const plotColor = resolveTokenColor(collectTextRuns(node), "|");
-      const plotTag = ensureTag(result, tagMap, plotTitle, null, plotColor);
+      const plot = ensurePlot(result, plotMap, plotTitle, plotColor);
 
-      if (pendingPlotTagId) {
+      if (pendingPlotId) {
         addIssue(
           result.issues,
           "warning",
@@ -313,7 +328,7 @@ export const parseImportOutlineModernDocx = async (
           headingText,
         );
       }
-      pendingPlotTagId = plotTag.id;
+      pendingPlotId = plot.id;
       continue;
     }
 
@@ -348,10 +363,10 @@ export const parseImportOutlineModernDocx = async (
         sceneCharacterIds.push(povCharacterId);
       }
 
-      const sceneTagIds: string[] = [];
-      if (pendingPlotTagId) {
-        sceneTagIds.push(pendingPlotTagId);
-        pendingPlotTagId = null;
+      const scenePlotIds: string[] = [];
+      if (pendingPlotId) {
+        scenePlotIds.push(pendingPlotId);
+        pendingPlotId = null;
       } else {
         addIssue(
           result.issues,
@@ -366,7 +381,8 @@ export const parseImportOutlineModernDocx = async (
         type: "scene",
         title: sceneTitle,
         povCharacterId,
-        tagIds: sceneTagIds,
+        tagIds: [],
+        plotIds: scenePlotIds,
         characterIds: sceneCharacterIds,
         snippets: [],
         content: [],
@@ -403,6 +419,35 @@ export const parseImportOutlineModernDocx = async (
 
       pendingSnippetHeading = snippetHeadingText;
       continue;
+    }
+
+    if (!isElementType(currentElement, "scene") && node.type === "paragraph") {
+      const rawNodeText = getNodeText(node);
+      if (rawNodeText.startsWith("|")) {
+        const plotTitle = rawNodeText
+          .replace(/^\|+\s*/, "")
+          .replace(/:\s*$/, "")
+          .trim();
+
+        if (!plotTitle) {
+          pendingPlotId = null;
+          addIssue(
+            result.issues,
+            "warning",
+            "Modern plot heading is missing a plot title.",
+            rawNodeText,
+          );
+          continue;
+        }
+
+        const plotColor = resolveTokenColor(collectTextRuns(node), "|");
+        const plot = ensurePlot(result, plotMap, plotTitle, plotColor);
+        pendingPlotId = plot.id;
+        expectingTagRowForScene = false;
+        pendingSnippetHeading = null;
+        finishCurrentSnippet();
+        continue;
+      }
     }
 
     if (node.type !== "paragraph" && !isListNode(node)) {

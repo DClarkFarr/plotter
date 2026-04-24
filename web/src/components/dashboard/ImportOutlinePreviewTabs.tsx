@@ -3,6 +3,7 @@ import type {
   ImportCustomizations,
   ImportOutlineParseCharacter,
   ImportOutlineParseElement,
+  ImportOutlineParsePlot,
   ImportOutlineParseTag,
   ImportPlotCustomization,
 } from "../../api/types";
@@ -13,6 +14,7 @@ export type ImportOutlinePreviewTabsProps = {
   characters: ImportOutlineParseCharacter[];
   elements: ImportOutlineParseElement[];
   tags: ImportOutlineParseTag[];
+  plots: ImportOutlineParsePlot[];
   customizations: ImportCustomizations;
   onCustomizationChange: (next: ImportCustomizations) => void;
 };
@@ -171,9 +173,15 @@ type ElementsTabProps = {
   elements: ImportOutlineParseElement[];
   characters: ImportOutlineParseCharacter[];
   tags: ImportOutlineParseTag[];
+  plots: ImportOutlineParsePlot[];
 };
 
-const ElementsTab = ({ elements, characters, tags }: ElementsTabProps) => {
+const ElementsTab = ({
+  elements,
+  characters,
+  tags,
+  plots,
+}: ElementsTabProps) => {
   if (elements.length === 0) {
     return (
       <p className="text-sm text-slate-500">
@@ -213,16 +221,30 @@ const ElementsTab = ({ elements, characters, tags }: ElementsTabProps) => {
           .map((id) => tags.find((t) => t.id === id))
           .filter((t): t is ImportOutlineParseTag => t !== undefined);
 
+        const scenePlots = (element.plotIds ?? [])
+          .map((id) => plots.find((plot) => plot.id === id))
+          .filter((plot): plot is ImportOutlineParsePlot => plot !== undefined);
+
         return (
           <li key={element.id} className="pl-8">
             <span className="text-sm text-slate-700">{element.title}</span>
-            {(povCharacter || sceneTags.length > 0) && (
+            {(povCharacter ||
+              sceneTags.length > 0 ||
+              scenePlots.length > 0) && (
               <div className="mt-0.5 flex flex-wrap items-center gap-1">
                 {povCharacter && (
                   <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
                     {povCharacter.name}
                   </span>
                 )}
+                {scenePlots.map((plot) => (
+                  <span
+                    key={plot.id}
+                    className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700"
+                  >
+                    {plot.name}
+                  </span>
+                ))}
                 {sceneTags.map((tag) => (
                   <span
                     key={tag.id}
@@ -395,7 +417,8 @@ const PlotsTab = ({ customizations, onCustomizationChange }: PlotsTabProps) => {
   if (plots.length === 0) {
     return (
       <p className="text-sm text-slate-500">
-        No plots configured. Convert tags to plots in the Tags tab.
+        No plots configured. Plots detected during import appear here. You can
+        also convert tags to plots in the Tags tab.
       </p>
     );
   }
@@ -449,6 +472,7 @@ export const ImportOutlinePreviewTabs = ({
   characters,
   elements,
   tags,
+  plots,
   customizations,
   onCustomizationChange,
 }: ImportOutlinePreviewTabsProps) => {
@@ -462,7 +486,12 @@ export const ImportOutlinePreviewTabs = ({
         />
       </TabItem>
       <TabItem title="Elements">
-        <ElementsTab elements={elements} characters={characters} tags={tags} />
+        <ElementsTab
+          elements={elements}
+          characters={characters}
+          tags={tags}
+          plots={plots}
+        />
       </TabItem>
       <TabItem title="Tags">
         <TagsTab

@@ -10,11 +10,13 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ApiError,
   ImportCustomizations,
+  ImportOutlineParsePlot,
   ImportOutlineType,
   ImportOutlineResponse,
 } from "../../api/types";
 import { useImportOutlineMutation } from "../../queries/story/story-mutations";
 import { ImportOutlinePreviewTabs } from "./ImportOutlinePreviewTabs";
+import { DEFAULT_PALETTE_COLORS } from "../../types/color";
 
 export type ImportOutlineModalProps = {
   isOpen: boolean;
@@ -131,12 +133,24 @@ export const ImportOutlineModal = ({
         importType,
         file: selectedFile,
       });
+      const parserPlots = (result.plots ?? []).map(
+        (plot: ImportOutlineParsePlot, index) => ({
+          id: plot.id,
+          name: plot.name,
+          color:
+            plot.color ??
+            DEFAULT_PALETTE_COLORS[index % DEFAULT_PALETTE_COLORS.length] ??
+            "#729cfd",
+          isDefaultPlot: false,
+          ignored: false,
+        }),
+      );
       setStoryName(result.storyName);
       setPreviewData(result);
       setCustomizations({
         ignoredCharacterIds: [],
         characterMerges: {},
-        plots: [{ ...DEFAULT_MAIN_PLOT }],
+        plots: [{ ...DEFAULT_MAIN_PLOT }, ...parserPlots],
       });
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
@@ -316,6 +330,7 @@ export const ImportOutlineModal = ({
               characters={previewData?.characters ?? []}
               elements={previewData?.elements ?? []}
               tags={previewData?.tags ?? []}
+              plots={previewData?.plots ?? []}
               customizations={customizations}
               onCustomizationChange={setCustomizations}
             />
