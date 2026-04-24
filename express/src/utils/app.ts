@@ -31,6 +31,11 @@ class App {
       throw new Error("SESSION_SECRET is not configured.");
     }
 
+    if (env.MODE === "production") {
+      // Trust the first reverse proxy hop so secure cookies can be set over HTTPS.
+      this.api.set("trust proxy", 1);
+    }
+
     const sessionOptions = this.getSessionOptions();
 
     this.api.use(session(sessionOptions));
@@ -153,6 +158,7 @@ class App {
       name: env.SESSION_COOKIE_NAME,
       secret: env.SESSION_SECRET,
       store: new MongoSessionStore(),
+      proxy: env.MODE === "production",
       resave: false,
       saveUninitialized: false,
       rolling: true,
