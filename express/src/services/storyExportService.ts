@@ -93,7 +93,7 @@ const buildDocxParagraphs = (
             : String(scene.pov),
         );
         if (charInfo) {
-          povPrefix = new TextRun({ text: charInfo.name });
+          povPrefix = new TextRun({ text: charInfo.name + ": " });
         }
       }
 
