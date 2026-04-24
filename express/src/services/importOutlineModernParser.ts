@@ -489,17 +489,7 @@ export const parseImportOutlineModernDocx = async (
       const isSnippetBlock = indentTwips >= snippetIndentThresholdTwips;
       const nodeText = getNodeText(node);
 
-      console.log("in scene element", {
-        indentTwips,
-        nodeText: nodeText.slice(0, 30),
-      });
-
       if (isSnippetBlock) {
-        console.log("in snippet block", nodeText, {
-          indentTwips,
-          headingLevel,
-          endsWithColon: nodeText.endsWith(":"),
-        });
         if (headingLevel === SNIPPET_HEADING_SIZE || nodeText.endsWith(":")) {
           finishCurrentSnippet();
           const snippetHeadingText = getHeadingText(node);
@@ -513,7 +503,6 @@ export const parseImportOutlineModernDocx = async (
           };
           snippetOrder += 1;
           currentElement.snippets.push(currentSnippet);
-          console.log("adding new snippet with heaing", snippetHeadingText);
           continue;
         }
 

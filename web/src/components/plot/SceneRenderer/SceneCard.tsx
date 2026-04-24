@@ -63,8 +63,6 @@ export const SceneCard = memo(
       },
     });
 
-    // console.log("render SceneCard", plotIndex, sceneIndex);
-
     const isDropTarget = false; // disabling dropping animation
 
     const povCharacter = findCharacterById(characters, scene.pov);

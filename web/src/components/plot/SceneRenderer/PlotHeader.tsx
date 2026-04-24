@@ -89,7 +89,6 @@ export const PlotHeader = memo(
 
     const onChangeTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
       setDraftTitle(event.target.value);
-      console.log("setting draft title", event.target.value);
       onSaveDebounced({
         title: event.target.value,
       });

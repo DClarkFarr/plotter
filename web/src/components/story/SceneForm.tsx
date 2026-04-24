@@ -497,7 +497,6 @@ export const SceneForm = () => {
                       <input
                         value={snippet.label ?? ""}
                         onChange={(event) => {
-                          console.log("index label", event.target.value);
                           updateSnippet(index, { label: event.target.value });
                         }}
                         onKeyDown={(event) => {
