@@ -24,11 +24,11 @@ import type {
 } from "../types/importOutline";
 
 const snippetIndentThresholdTwips = 600;
-const ACT_HEADING_SIZE = 2;
-const CHAPTER_HEADING_SIZE = 3;
-const SCENE_HEADING_SIZE = 4;
-const PLOT_HEADING_SIZE = 5;
-const SNIPPET_HEADING_SIZE = 6;
+const ACT_HEADING_SIZE = 1;
+const CHAPTER_HEADING_SIZE = 2;
+const SCENE_HEADING_SIZE = 3;
+const PLOT_HEADING_SIZE = 4;
+const SNIPPET_HEADING_SIZE = 5;
 
 const createEmptyResult = (): ImportParseResult => ({
   elements: [],
