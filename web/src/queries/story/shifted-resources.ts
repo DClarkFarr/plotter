@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Scene, Section, ShiftedResources } from "../../api/types";
-import { shiftScenesInRange, sortScenes } from "../scene/scene-helpers";
+import { sortScenes } from "../scene/scene-helpers";
 import { shiftSectionsInRange, sortSections } from "../section/section-helpers";
 import { useStoryScenesQuery } from "./story-queries";
 import { useStorySectionsQuery } from "../section/section-queries";

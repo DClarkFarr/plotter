@@ -36,6 +36,7 @@ export function Topbar() {
           <>
             <Link
               to="/login"
+              search={{ redir: "" }}
               className="text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 px-3 py-2"
             >
               Log In

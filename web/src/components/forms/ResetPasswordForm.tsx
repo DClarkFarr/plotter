@@ -25,7 +25,11 @@ export function ResetPasswordForm({
             <span>If the account exists, instructions have been sent.</span>
           </Alert>
           <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link
+              to="/login"
+              search={{ redir: "" }}
+              className="text-blue-600 hover:underline"
+            >
               Back to Log In
             </Link>
           </p>
@@ -74,7 +78,11 @@ export function ResetPasswordForm({
           </Button>
 
           <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link
+              to="/login"
+              search={{ redir: "" }}
+              className="text-blue-600 hover:underline"
+            >
               Back to Log In
             </Link>
           </p>
