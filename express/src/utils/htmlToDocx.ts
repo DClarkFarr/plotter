@@ -14,6 +14,7 @@ import { parse, HTMLElement, TextNode } from "node-html-parser";
 export { Document, Paragraph, TextRun, HeadingLevel };
 
 export const SNIPPET_LEFT_INDENT_TWIPS = 720;
+const PARAGRAPH_MARGIN_BOTTOM_TWIPS = 120;
 
 // ── Contrast color ────────────────────────────────────────────────────────────
 
@@ -158,6 +159,10 @@ const blockToParagraph = (
             SNIPPET_LEFT_INDENT_TWIPS * listLevel,
         }
       : {},
+    // Add breathing room between prose paragraphs but keep list rows tight.
+    ...(listRef === undefined
+      ? { spacing: { after: PARAGRAPH_MARGIN_BOTTOM_TWIPS } }
+      : {}),
     children: runs,
     ...(listRef !== undefined
       ? { numbering: { reference: listRef, level: listLevel } }
