@@ -513,7 +513,7 @@ export const parseImportOutlineModernDocx = async (
           };
           snippetOrder += 1;
           currentElement.snippets.push(currentSnippet);
-          console.log("adding new snippet with heading", snippetHeadingText);
+          console.log("adding new snippet with heaing", snippetHeadingText);
           continue;
         }
 

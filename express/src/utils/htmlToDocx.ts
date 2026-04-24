@@ -202,11 +202,11 @@ const nodesToParagraphs = (
       nodesToParagraphs(
         node.childNodes as (HTMLElement | TextNode)[],
         inherited,
-        listDepth + (isSnippet ? 1 : 0),
+        listDepth,
         ref,
         paragraphs,
         fontOverride,
-        // isSnippet,
+        isSnippet,
       );
     } else if (tag === "li") {
       const inlineNodes: (HTMLElement | TextNode)[] = [];

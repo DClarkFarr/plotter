@@ -50,7 +50,7 @@ export const ImportOutlineModal = ({
   const [createdStoryId, setCreatedStoryId] = useState<string | null>(null);
   const [storyName, setStoryName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
-  const [importType, setImportType] = useState<ImportOutlineType>("legacy");
+  const [importType, setImportType] = useState<ImportOutlineType>("modern");
   const [customizations, setCustomizations] = useState<ImportCustomizations>(
     () => ({
       ignoredCharacterIds: [],
