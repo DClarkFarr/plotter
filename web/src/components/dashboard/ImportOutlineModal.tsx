@@ -205,8 +205,8 @@ export const ImportOutlineModal = ({
                   }
                   disabled={importMutation.isPending}
                 >
-                  <option value="legacy">Legacy outline</option>
                   <option value="modern">Modern outline</option>
+                  <option value="legacy">Legacy outline</option>
                 </select>
               </div>
               <p className="text-sm text-slate-600">

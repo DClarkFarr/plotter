@@ -348,6 +348,7 @@ export const parseImportOutlineLegacyDocx = async (
           currentSnippet = {
             id: `${currentElement.id}_snippet_${snippetOrder}`,
             order: snippetOrder,
+            label: `Snippet ${snippetOrder + 1}`,
             content: [],
           };
           snippetOrder += 1;

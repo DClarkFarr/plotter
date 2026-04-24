@@ -409,34 +409,6 @@ export const parseImportOutlineModernDocx = async (
       continue;
     }
 
-    if (headingLevel === SNIPPET_HEADING_SIZE) {
-      if (!isElementType(currentElement, "scene")) {
-        addIssue(
-          result.issues,
-          "warning",
-          "Snippet heading found outside a scene; ignored.",
-          getHeadingText(node),
-        );
-        continue;
-      }
-
-      finishCurrentSnippet();
-      const snippetHeadingText = getHeadingText(node);
-      if (!snippetHeadingText.endsWith(":")) {
-        pendingSnippetHeading = null;
-        addIssue(
-          result.issues,
-          "warning",
-          "Snippet heading must end with ':' in modern format.",
-          snippetHeadingText,
-        );
-        continue;
-      }
-
-      pendingSnippetHeading = snippetHeadingText;
-      continue;
-    }
-
     if (!isElementType(currentElement, "scene") && node.type === "paragraph") {
       const rawNodeText = getNodeText(node);
       if (rawNodeText.startsWith("|")) {
@@ -466,7 +438,11 @@ export const parseImportOutlineModernDocx = async (
       }
     }
 
-    if (node.type !== "paragraph" && !isListNode(node)) {
+    if (
+      node.type !== "paragraph" &&
+      !isListNode(node) &&
+      headingLevel !== SNIPPET_HEADING_SIZE
+    ) {
       addIssue(
         result.issues,
         "warning",
@@ -511,16 +487,33 @@ export const parseImportOutlineModernDocx = async (
     if (isElementType(currentElement, "scene")) {
       const indentTwips = getNodeIndentTwips(node);
       const isSnippetBlock = indentTwips >= snippetIndentThresholdTwips;
+      const nodeText = getNodeText(node);
+
+      console.log("in scene element", {
+        indentTwips,
+        nodeText: nodeText.slice(0, 30),
+      });
 
       if (isSnippetBlock) {
-        if (!pendingSnippetHeading) {
-          addIssue(
-            result.issues,
-            "warning",
-            "Indented snippet content found without a preceding H5 snippet heading; treating as scene content.",
-            currentElement.id,
-          );
-          currentElement.content.push(html);
+        console.log("in snippet block", nodeText, {
+          indentTwips,
+          headingLevel,
+          endsWithColon: nodeText.endsWith(":"),
+        });
+        if (headingLevel === SNIPPET_HEADING_SIZE || nodeText.endsWith(":")) {
+          finishCurrentSnippet();
+          const snippetHeadingText = getHeadingText(node);
+          pendingSnippetHeading = snippetHeadingText;
+
+          currentSnippet = {
+            id: `${currentElement.id}_snippet_${snippetOrder}`,
+            order: snippetOrder,
+            label: snippetHeadingText || `Snippet ${snippetOrder + 1}`,
+            content: [],
+          };
+          snippetOrder += 1;
+          currentElement.snippets.push(currentSnippet);
+          console.log("adding new snippet with heading", snippetHeadingText);
           continue;
         }
 
@@ -528,39 +521,20 @@ export const parseImportOutlineModernDocx = async (
           currentSnippet = {
             id: `${currentElement.id}_snippet_${snippetOrder}`,
             order: snippetOrder,
+            label: pendingSnippetHeading || `Snippet ${snippetOrder + 1}`,
             content: [],
           };
           snippetOrder += 1;
           currentElement.snippets.push(currentSnippet);
+          console.log(
+            "creating new snippet for indented block with pending heading",
+            { pendingSnippetHeading, html },
+          );
         }
 
         currentSnippet.content.push(html);
         continue;
       }
-
-      if (pendingSnippetHeading && !currentSnippet) {
-        addIssue(
-          result.issues,
-          "warning",
-          "Snippet heading was not followed by an indented snippet block.",
-          pendingSnippetHeading,
-        );
-      }
-
-      pendingSnippetHeading = null;
-      finishCurrentSnippet();
-      currentElement.content.push(html);
-      continue;
-    }
-
-    if (pendingSnippetHeading && !currentSnippet) {
-      addIssue(
-        result.issues,
-        "warning",
-        "Snippet heading was not followed by an indented snippet block.",
-        pendingSnippetHeading,
-      );
-      pendingSnippetHeading = null;
     }
 
     if (currentElement) {

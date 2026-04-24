@@ -321,7 +321,7 @@ export const importOutlineForStory = async (
           pov,
           todo: [],
           snippets: element.snippets.map((s, i) => ({
-            label: `Unamed snippet ${i + 1}`,
+            label: s.label,
             text: s.content.join(""),
           })),
           verticalIndex: verticalIndex++,

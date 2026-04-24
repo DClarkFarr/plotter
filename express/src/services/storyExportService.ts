@@ -24,6 +24,7 @@ import {
   contrastColor,
   htmlToDocxParagraphs,
   NUMBERING_CONFIG,
+  SNIPPET_LEFT_INDENT_TWIPS,
 } from "../utils/htmlToDocx";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -205,6 +206,7 @@ const buildDocxParagraphs = (
           paragraphs.push(
             new Paragraph({
               heading: HeadingLevel.HEADING_5,
+              indent: { left: SNIPPET_LEFT_INDENT_TWIPS },
               children: [
                 new TextRun({
                   text: `${snippetLabel}:`,

@@ -13,7 +13,7 @@ import { parse, HTMLElement, TextNode } from "node-html-parser";
 // Re-export Document for use in the service
 export { Document, Paragraph, TextRun, HeadingLevel };
 
-const SNIPPET_LEFT_INDENT_TWIPS = 720;
+export const SNIPPET_LEFT_INDENT_TWIPS = 720;
 
 // ── Contrast color ────────────────────────────────────────────────────────────
 

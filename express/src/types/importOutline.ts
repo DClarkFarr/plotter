@@ -28,6 +28,7 @@ export type Character = {
 export type Snippet = {
   id: string;
   order: number;
+  label: string;
   content: string[];
 };
 
