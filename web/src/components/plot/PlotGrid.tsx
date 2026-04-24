@@ -399,29 +399,12 @@ const PlotGridBody = ({
                       key={`section-dz-${rowVerticalIndex}`}
                       verticalIndex={rowVerticalIndex}
                       draggingSection={draggingSection}
-                      hasSectionAtRow={sectionsHorizontalIndexMap.has(
-                        rowVerticalIndex,
-                      )}
+                      hasSectionAtRow={false}
                     />
                   </>
                 )}
                 {row.map((cell) => {
-                  if (
-                    cell.type === "col-header" ||
-                    cell.type === "corner" ||
-                    cell.type === "plot" ||
-                    cell.type === "section" ||
-                    cell.type === "section-spacer"
-                  ) {
-                    return (
-                      <div
-                        className="nbsp"
-                        key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
-                        data-r={cell.verticalIndex}
-                        data-c={cell.horizontalIndex}
-                      ></div>
-                    );
-                  } else {
+                  if (cell.type === "scene") {
                     return (
                       <SceneActionsCard
                         key={`actions-${cell.horizontalIndex}-${cell.verticalIndex}`}
@@ -445,6 +428,15 @@ const PlotGridBody = ({
                           !plotsHorizontalIndexMap.get(cell.horizontalIndex)
                         }
                       />
+                    );
+                  } else {
+                    return (
+                      <div
+                        className="nbsp"
+                        key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
+                        data-r={cell.verticalIndex}
+                        data-c={cell.horizontalIndex}
+                      ></div>
                     );
                   }
                 })}
