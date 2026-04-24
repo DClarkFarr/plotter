@@ -42,7 +42,7 @@ const getParagraphIndentTwips = (node: OfficeContentNode): number => {
     return 0;
   }
 
-  const match = node.rawContent.match(/w:ind[^>]*w:left="(\d+)"/);
+  const match = node.rawContent.match(/w:ind\b[^>]*\bw:left=['"](\d+)['"]/i);
   if (!match) {
     return 0;
   }

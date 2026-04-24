@@ -60,18 +60,34 @@ const getHeadingLevel = (node: OfficeContentNode): number | null => {
 const getHeadingText = (node: OfficeContentNode): string =>
   (node.text ?? "").trim();
 
-const getParagraphIndentTwips = (node: OfficeContentNode): number => {
-  if (!node.rawContent) {
-    return 0;
-  }
+const getIndentAttributeTwips = (
+  rawContent: string,
+  attributeName: "left" | "start" | "firstLine" | "hanging",
+): number => {
+  const match = rawContent.match(
+    new RegExp(`w:ind\\b[^>]*\\bw:${attributeName}=['\"](\\d+)['\"]`, "i"),
+  );
 
-  const match = node.rawContent.match(/w:ind[^>]*w:left="(\d+)"/);
   if (!match) {
     return 0;
   }
 
   const value = Number(match[1]);
   return Number.isFinite(value) ? value : 0;
+};
+
+const getParagraphIndentTwips = (node: OfficeContentNode): number => {
+  if (!node.rawContent) {
+    return 0;
+  }
+
+  // Word may serialize paragraph indentation as left/start or as first-line/hanging.
+  const leftIndent = getIndentAttributeTwips(node.rawContent, "left");
+  const startIndent = getIndentAttributeTwips(node.rawContent, "start");
+  const firstLineIndent = getIndentAttributeTwips(node.rawContent, "firstLine");
+  const hangingIndent = getIndentAttributeTwips(node.rawContent, "hanging");
+
+  return Math.max(leftIndent, startIndent, firstLineIndent, hangingIndent, 0);
 };
 
 const getNodeIndentTwips = (node: OfficeContentNode): number => {

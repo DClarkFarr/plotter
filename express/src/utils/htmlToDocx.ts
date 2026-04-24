@@ -13,6 +13,8 @@ import { parse, HTMLElement, TextNode } from "node-html-parser";
 // Re-export Document for use in the service
 export { Document, Paragraph, TextRun, HeadingLevel };
 
+const SNIPPET_LEFT_INDENT_TWIPS = 720;
+
 // ── Contrast color ────────────────────────────────────────────────────────────
 
 /**
@@ -148,7 +150,7 @@ const blockToParagraph = (
   }
 
   return new Paragraph({
-    indent: isSnippet ? { left: `0.5in` } : {},
+    indent: isSnippet ? { left: SNIPPET_LEFT_INDENT_TWIPS } : {},
     children: runs,
     ...(listRef !== undefined
       ? { numbering: { reference: listRef, level: listLevel } }
@@ -174,7 +176,7 @@ const nodesToParagraphs = (
       if (text) {
         paragraphs.push(
           new Paragraph({
-            indent: isSnippet ? { left: `0.5in` } : {},
+            indent: isSnippet ? { left: SNIPPET_LEFT_INDENT_TWIPS } : {},
             children: [makeTextRun(text, inherited)],
           }),
         );
@@ -269,7 +271,7 @@ const nodesToParagraphs = (
         new Paragraph({
           heading,
           children: runs,
-          indent: isSnippet ? { left: `0.5in` } : {},
+          indent: isSnippet ? { left: SNIPPET_LEFT_INDENT_TWIPS } : {},
         }),
       );
     } else {
