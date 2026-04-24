@@ -150,15 +150,14 @@ const blockToParagraph = (
     collectRuns(child as HTMLElement | TextNode, inherited, runs, fontOverride);
   }
 
+  const snippetIndentLeft = isSnippet
+    ? listRef === undefined
+      ? SNIPPET_LEFT_INDENT_TWIPS
+      : 400 + SNIPPET_LEFT_INDENT_TWIPS * (listLevel + 1)
+    : undefined;
+
   return new Paragraph({
-    indent: isSnippet
-      ? {
-          left:
-            500 +
-            SNIPPET_LEFT_INDENT_TWIPS +
-            SNIPPET_LEFT_INDENT_TWIPS * listLevel,
-        }
-      : {},
+    indent: snippetIndentLeft !== undefined ? { left: snippetIndentLeft } : {},
     // Add breathing room between prose paragraphs but keep list rows tight.
     ...(listRef === undefined
       ? { spacing: { after: PARAGRAPH_MARGIN_BOTTOM_TWIPS } }
