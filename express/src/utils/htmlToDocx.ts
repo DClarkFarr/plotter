@@ -150,7 +150,14 @@ const blockToParagraph = (
   }
 
   return new Paragraph({
-    indent: isSnippet ? { left: SNIPPET_LEFT_INDENT_TWIPS } : {},
+    indent: isSnippet
+      ? {
+          left:
+            500 +
+            SNIPPET_LEFT_INDENT_TWIPS +
+            SNIPPET_LEFT_INDENT_TWIPS * listLevel,
+        }
+      : {},
     children: runs,
     ...(listRef !== undefined
       ? { numbering: { reference: listRef, level: listLevel } }
