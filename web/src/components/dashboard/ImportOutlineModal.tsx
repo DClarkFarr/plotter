@@ -214,73 +214,39 @@ export const ImportOutlineModal = ({
                 Upload a .docx outline to preview what will be created.
               </p>
             </div>
-            <div className="space-y-4 text-sm text-slate-600">
-              {importType === "legacy" ? (
-                <>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Heading map
-                    </p>
-                    <ul className="list-disc space-y-1 pl-5">
-                      <li>H1 headings become act separators.</li>
-                      <li>H2 headings become chapter breaks.</li>
-                      <li>H4 headings become scenes.</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      POV syntax
-                    </p>
-                    <p>
-                      Use{" "}
-                      <span className="font-semibold">POV: Character Name</span>
-                      to mark a scene POV.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Tag syntax
-                    </p>
-                    <p>
-                      Use{" "}
-                      <span className="font-semibold">
-                        Tags: #tag-one, #tag-two
-                      </span>
-                      to attach scene tags.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Modern heading map
-                    </p>
-                    <ul className="list-disc space-y-1 pl-5">
-                      <li>H1 headings become act separators.</li>
-                      <li>H2 headings become chapter breaks.</li>
-                      <li>H4 lines starting with | define plot context.</li>
-                      <li>Scene heading follows the plot marker line.</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Tags and snippets
-                    </p>
-                    <p>
-                      Put tags on the line after scene heading using bracket
-                      tokens like <span className="font-semibold">[Tag]</span>{" "}
-                      or <span className="font-semibold">[Tag:Variant]</span>.
-                    </p>
-                    <p>
-                      Snippets use a title line ending with : (for example{" "}
-                      <span className="font-semibold">Draft:</span>) followed by
-                      an indented snippet block.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+
+            {importType === "legacy" ? (
+              <LegacyImportInstructions />
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Modern heading map
+                  </p>
+                  <ul className="list-disc space-y-1 pl-5">
+                    <li>H1 headings become act separators.</li>
+                    <li>H2 headings become chapter breaks.</li>
+                    <li>H4 lines starting with | define plot context.</li>
+                    <li>Scene heading follows the plot marker line.</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Tags and snippets
+                  </p>
+                  <p>
+                    Put tags on the line after scene heading using bracket
+                    tokens like <span className="font-semibold">[Tag]</span> or{" "}
+                    <span className="font-semibold">[Tag:Variant]</span>.
+                  </p>
+                  <p>
+                    Snippets use a title line ending with : (for example{" "}
+                    <span className="font-semibold">Draft:</span>) followed by
+                    an indented snippet block.
+                  </p>
+                </div>
+              </>
+            )}
           </>
         ) : null}
         {resolvedError ? (
@@ -461,5 +427,289 @@ const NormalizationSummary = ({ report }: NormalizationSummaryProps) => {
         </div>
       </div>
     </details>
+  );
+};
+
+const LegacyImportInstructions = () => {
+  return (
+    <div className="text-sm text-slate-600">
+      <h1 className="text-xl text-slate-950">
+        Outline Layout: Acts, Scenes and Chapters
+      </h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              The core of your outline is scenes. To help organize them, you can
+              use headings to define acts and chapters.
+            </p>
+
+            <ul className="list-disc space-y-1 pl-5">
+              <li>H2 headings become Acts.</li>
+              <li>H3 headings become chapter breaks.</li>
+              <li>H4 headings become scenes.</li>
+            </ul>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Layout Example:</p>
+            <p className="text-xl font-semibold">
+              (H2) Act 1 - Building the team
+            </p>
+            <p className="mb-6">Paragraph content is act's description</p>
+
+            <p className="text-lg font-semibold">
+              (H3) Chapter 1 - Loki portals through the teseract
+            </p>
+            <p className="mb-6">Paragraph content is chapter's description</p>
+
+            <p className="text-md font-semibold">
+              (H4) Nick Fury: Scene 1 - Investigates the Tesseract activity
+            </p>
+            <p>Paragraph content is scene's description</p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Scene Character POV</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Each scene can have a POV character assigned. Later you can filter
+              and search scenes by POV character.
+            </p>
+            <p>The POV character should be at the start of a scene title.</p>
+            <div>
+              <p>
+                <span>Use the following syntax: </span>
+              </p>
+              <p className="flex gap-1">
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  Character Name
+                </code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">:</code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  The Scene title or description
+                </code>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">POV Example:</p>
+            <span className="font-semibold text-white">Tony Stark:</span>
+            <span> Faces off with Thor</span>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Scene Tags</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Add tags to scenes to make them easily search or filter by custom
+              subplots, features, or themes. It's up to you!
+            </p>
+            <p>
+              There are 2 kinds of tags:{" "}
+              <span className="font-semibold">Basic Tags</span> and{" "}
+              <span className="font-semibold">Variant Tags</span>
+            </p>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-6">
+              Basic Tags
+            </p>
+            <p>
+              Variant tags are for grouping scenes together, so they can all be
+              searched as one, or by sub-category.
+            </p>
+
+            <p className="flex gap-1">
+              <span>Use the following syntax: </span>
+              <code className="bg-pink-100 text-pink-700 px-0.5">[</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">Tag Name</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">]</code>
+            </p>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-6">
+              Variant Tags
+            </p>
+            <p>
+              Variant tags are basically a tag with optional sub-categories.
+            </p>
+            <div>
+              <p>
+                <span>
+                  For <span className="font-semibold"> Variant Tags </span>, use
+                  the following syntax:{" "}
+                </span>
+              </p>
+              <p className="flex gap-1">
+                <code className="bg-pink-100 text-pink-700 px-0.5">[</code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  Tag Name
+                </code>
+
+                <code className="bg-pink-100 text-pink-700 px-0.5">:</code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  Sub Category Name
+                </code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">]</code>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">
+              Basic Tag Example (We want to tag all our action scenes):
+            </p>
+            <span>Tony Stark: </span>
+            <span className="font-semibold text-white">[Action]</span>
+            <span> Faces off with Thor</span>
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Multiple Tags Example:</p>
+            <span>Gamora: </span>
+            <span className="font-semibold text-white">[Suspense]</span>{" "}
+            <span className="font-semibold text-white">[Plot Twist]</span>
+            <span> Learns the truth about Thanos</span>
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">
+              Variant Tag Example (For action scenes that end differently):
+            </p>
+            <p>
+              <span>Loki: </span>
+              <span className="font-semibold text-white">
+                [Action: Victory]
+              </span>
+              <span> Fights guards and steals tesseract</span>
+            </p>
+            <p>
+              <span>Loki: </span>
+              <span className="font-semibold text-white">[Action: Defeat]</span>
+              <span> Gets smashed by hulk</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Plots</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              If tags are for categorization, plots are for grouping scenes into
+              storylines. You can use them to create rows in the story grid, and
+              visually separate different subplots.
+            </p>
+
+            <p>
+              Plots are different than tags. While a scene can have multiple
+              tags, a scene
+              <span className="font-semibold"> belongs </span> to a single plot.
+            </p>
+            <p>
+              Each plot is a row of scenes. Together, the plots and scenes make
+              up story grids
+            </p>
+
+            <p>
+              Plots use the same syntax as tags. But during the upload step,
+              you'll have a chance to pick which tags should actually be plots.
+            </p>
+            <p>
+              Any scene with that plot tag, will be added to that plot's row in
+              the story grid.
+            </p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Plot Tags Example:</p>
+            <p>
+              <span>Natasha: </span>
+              <span className="font-semibold text-white">[main]</span>{" "}
+              <span>Recruits Bruce Banner</span>
+            </p>
+            <p>
+              <span>Loki: </span>
+              <span className="font-semibold text-white">[villain]</span>{" "}
+              <span>Plots where to get uranium</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Snippets</h1>
+
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Any paragraphs following a Scene (HR) heading will become that
+              scene's description. But sometimes we might want to add extra
+              thoughts or even small written snippets of dialog.
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-6">
+              The problem
+            </p>
+            <p>
+              We might want to be able to add extra thoughts, without bloating
+              the short scene description.
+            </p>
+            <p className="text-semibold">That's what snippets are for!</p>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-6">
+              Snippet Syntax
+            </p>
+            <p>
+              To mark sections of text as snippets, indent the entire section at
+              least 0.5 inch.
+            </p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+              <p className="font-thin mb-1 uppercase">
+                Scene With Snippet Example:
+              </p>
+
+              <p className="text-md font-semibold mb-2">
+                (H4) Nick Fury: Scene 1 - Investigates the Tesseract activity
+              </p>
+              <p className="mb-2">
+                Paragraph content is scene's description. Nick Fury discusses
+                recent Tesseract activity with Clint and Dr. Selvig. Loki
+                arrives, theatens them, and then attacks.
+              </p>
+
+              <p className="ml-12 mb-2">
+                Start Snippet: This indented paragraph becomes a snippet
+                attached to the scene.
+              </p>
+              <p className="ml-12 mb-2">
+                Fury: You say pease, but I kind of think you mean the other
+                thing.
+              </p>
+              <p className="ml-12 mb-2">Loki: Do I make you deserpate?</p>
+              <p className="ml-12 mb-2">
+                Fury: You're making me very deserate. You might not be glad that
+                you did.
+              </p>
+              <p className="mb-2">End Snippet. Back to more description.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
