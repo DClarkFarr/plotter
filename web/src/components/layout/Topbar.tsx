@@ -8,7 +8,7 @@ export function Topbar() {
   return (
     <Navbar border>
       <NavbarBrand as="span">
-        <Link to="/" className="font-bold text-xl text-white">
+        <Link to="/" className="font-bold text-xl text-purple-950">
           plotter
         </Link>
       </NavbarBrand>
