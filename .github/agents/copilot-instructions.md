@@ -73,6 +73,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-24
 - MongoDB (backend only; no schema changes required) (045-drag-section-headings)
 - TypeScript 5.x + officeparser (docx AST), docx (export), Express, React, TanStack Query, Flowbite React, Zustand (046-import-outline-versions)
 - MongoDB (not directly affected) (046-import-outline-versions)
+- TypeScript 5.9 (Node.js backend, React frontend) + Express, MongoDB driver, officeparser, TanStack Query/Router, Flowbite Reac (049-normalize-import-names)
+- MongoDB (`tags`, `characters`, `scenes`, `stories` via import workflow) (049-normalize-import-names)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -92,9 +94,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 049-normalize-import-names: Added TypeScript 5.9 (Node.js backend, React frontend) + Express, MongoDB driver, officeparser, TanStack Query/Router, Flowbite Reac
 - 046-import-outline-versions: Added TypeScript 5.x + officeparser (docx AST), docx (export), Express, React, TanStack Query, Flowbite React, Zustand
 - 045-drag-section-headings: Added TypeScript 5.x (frontend + backend) + React 18, dnd-kit (`@dnd-kit/react`, `@dnd-kit/dom`, `@dnd-kit/abstract`), Zustand, TanStack Query, Tailwind CSS, Flowbite React, unplugin-icons
-- 044-scene-form-keyboard-ux: Added TypeScript 5.x + React 18, TipTap (`@tiptap/react`, `@tiptap/starter-kit`), dnd-ki
 
 
 <!-- MANUAL ADDITIONS START -->

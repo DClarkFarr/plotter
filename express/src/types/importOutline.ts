@@ -12,6 +12,7 @@ export type Tag = {
   name: string;
   variant: string | null;
   color: string | null;
+  rawVariants?: string[];
 };
 
 export type ImportPlot = {
@@ -23,6 +24,27 @@ export type ImportPlot = {
 export type Character = {
   id: string;
   name: string;
+  rawVariants?: string[];
+};
+
+export type ImportNormalizationItem = {
+  canonicalName: string;
+  rawVariants: string[];
+  consolidatedCount: number;
+  reusedExisting: boolean;
+};
+
+export type ImportNormalizationCounts = {
+  tagVariantsConsolidated: number;
+  characterVariantsConsolidated: number;
+  newNamesCreated: number;
+  existingNamesReused: number;
+};
+
+export type ImportNormalizationReport = {
+  tags: ImportNormalizationItem[];
+  characters: ImportNormalizationItem[];
+  counts: ImportNormalizationCounts;
 };
 
 export type Snippet = {

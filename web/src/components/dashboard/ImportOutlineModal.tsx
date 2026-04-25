@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ApiError,
   ImportCustomizations,
+  ImportOutlineNormalizationItem,
   ImportOutlineParsePlot,
   ImportOutlineType,
   ImportOutlineResponse,
@@ -334,6 +335,9 @@ export const ImportOutlineModal = ({
               customizations={customizations}
               onCustomizationChange={setCustomizations}
             />
+            {previewData?.normalization ? (
+              <NormalizationSummary report={previewData.normalization} />
+            ) : null}
             <div className="flex items-center justify-end gap-2">
               <Button
                 color="light"
@@ -364,6 +368,9 @@ export const ImportOutlineModal = ({
                 </div>
               ) : null}
             </div>
+            {previewData?.normalization ? (
+              <NormalizationSummary report={previewData.normalization} />
+            ) : null}
             <div className="flex items-center justify-end">
               <Button color="dark" type="button" onClick={handleClose}>
                 Done
@@ -373,5 +380,70 @@ export const ImportOutlineModal = ({
         ) : null}
       </ModalBody>
     </Modal>
+  );
+};
+
+type NormalizationSummaryProps = {
+  report: NonNullable<ImportOutlineResponse["normalization"]>;
+};
+
+const NormalizationSummary = ({ report }: NormalizationSummaryProps) => {
+  const renderList = (
+    title: string,
+    entries: ImportOutlineNormalizationItem[],
+  ) => (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+        {title}
+      </p>
+      {entries.length === 0 ? (
+        <p className="text-sm text-slate-600">No consolidation detected.</p>
+      ) : (
+        <div className="space-y-2">
+          {entries.map((entry) => (
+            <div
+              key={`${title}-${entry.canonicalName}`}
+              className="rounded-md border border-slate-200 bg-white p-2 text-sm"
+            >
+              <div className="font-medium text-slate-800">
+                {entry.canonicalName}
+              </div>
+              <div className="text-xs text-slate-500">
+                Variants ({entry.consolidatedCount}):{" "}
+                {entry.rawVariants.join(", ")}
+              </div>
+              {entry.reusedExisting ? (
+                <div className="text-xs text-emerald-700">
+                  Reused existing name
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-3">
+      <p className="text-sm font-semibold text-indigo-900">
+        Normalization summary
+      </p>
+      <div className="grid gap-2 text-xs text-indigo-900 sm:grid-cols-2">
+        <div>
+          Tag variants consolidated: {report.counts.tagVariantsConsolidated}
+        </div>
+        <div>
+          Character variants consolidated:{" "}
+          {report.counts.characterVariantsConsolidated}
+        </div>
+        <div>New names created: {report.counts.newNamesCreated}</div>
+        <div>Existing names reused: {report.counts.existingNamesReused}</div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {renderList("Tags", report.tags)}
+        {renderList("Characters", report.characters)}
+      </div>
+    </div>
   );
 };

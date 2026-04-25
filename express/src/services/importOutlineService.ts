@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type {
   ImportCustomizations,
+  ImportNormalizationReport,
   ImportOutlineType,
   ImportParseResult,
 } from "../types/importOutline";
@@ -13,6 +14,12 @@ import { createTag } from "../models/tags";
 import { createCharacter } from "../models/characters";
 import { ensureObjectId } from "../models/types";
 import { getClient } from "../utils/mongo";
+import {
+  buildCharacterKey,
+  buildTagKey,
+  canonicalizeDisplayName,
+  canonicalizeTag,
+} from "../utils/importNormalization";
 import type { ObjectId } from "mongodb";
 
 export type ImportOutlineMode = "preview" | "create";
@@ -28,6 +35,7 @@ export type ImportOutlineResult = {
   plots?: ImportParseResult["plots"];
   characters?: ImportParseResult["characters"];
   issues?: ImportParseResult["issues"];
+  normalization?: ImportNormalizationReport;
 };
 
 export type ImportOutlinePayload = {
@@ -39,6 +47,60 @@ export type ImportOutlinePayload = {
   customizations?: ImportCustomizations | null;
 };
 
+const toSortedArray = (values: Set<string>): string[] =>
+  Array.from(values).sort((a, b) => a.localeCompare(b));
+
+const buildNormalizationReport = (
+  parsed: ImportParseResult,
+): ImportNormalizationReport => {
+  const tags = parsed.tags
+    .map((tag) => {
+      const rawVariants =
+        tag.rawVariants && tag.rawVariants.length > 0
+          ? Array.from(new Set(tag.rawVariants))
+          : [tag.variant ? `${tag.name}:${tag.variant}` : tag.name];
+      return {
+        canonicalName: tag.variant ? `${tag.name}: ${tag.variant}` : tag.name,
+        rawVariants,
+        consolidatedCount: rawVariants.length,
+        reusedExisting: false,
+      };
+    })
+    .sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+
+  const characters = parsed.characters
+    .map((character) => {
+      const rawVariants =
+        character.rawVariants && character.rawVariants.length > 0
+          ? Array.from(new Set(character.rawVariants))
+          : [character.name];
+      return {
+        canonicalName: character.name,
+        rawVariants,
+        consolidatedCount: rawVariants.length,
+        reusedExisting: false,
+      };
+    })
+    .sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+
+  return {
+    tags,
+    characters,
+    counts: {
+      tagVariantsConsolidated: tags.reduce(
+        (sum, entry) => sum + Math.max(entry.consolidatedCount - 1, 0),
+        0,
+      ),
+      characterVariantsConsolidated: characters.reduce(
+        (sum, entry) => sum + Math.max(entry.consolidatedCount - 1, 0),
+        0,
+      ),
+      newNamesCreated: 0,
+      existingNamesReused: 0,
+    },
+  };
+};
+
 export const importOutlineForStory = async (
   payload: ImportOutlinePayload,
 ): Promise<ImportOutlineResult> => {
@@ -48,6 +110,7 @@ export const importOutlineForStory = async (
   );
   const summary = buildImportSummary(parsed);
   const hasErrorIssues = parsed.issues.some((issue) => issue.level === "error");
+  const normalization = buildNormalizationReport(parsed);
 
   const storyName =
     (payload.storyName?.trim() || payload.file.originalname)
@@ -64,6 +127,7 @@ export const importOutlineForStory = async (
       plots: parsed.plots,
       characters: parsed.characters,
       issues: parsed.issues,
+      normalization,
     };
   }
 
@@ -77,6 +141,7 @@ export const importOutlineForStory = async (
       plots: parsed.plots,
       characters: parsed.characters,
       issues: parsed.issues,
+      normalization,
     };
   }
 
@@ -95,6 +160,7 @@ export const importOutlineForStory = async (
           location: null,
         },
       ],
+      normalization,
     };
   }
 
@@ -117,6 +183,33 @@ export const importOutlineForStory = async (
     );
     const characterMerges = payload.customizations?.characterMerges ?? {};
     const plotCustomizations = payload.customizations?.plots ?? [];
+
+    const normalizationTagsByKey = new Map<
+      string,
+      ImportNormalizationReport["tags"][number]
+    >();
+    parsed.tags.forEach((tag, index) => {
+      const entry = normalization.tags[index];
+      if (!entry) {
+        return;
+      }
+      normalizationTagsByKey.set(buildTagKey(tag.name, tag.variant), entry);
+    });
+
+    const normalizationCharactersByKey = new Map<
+      string,
+      ImportNormalizationReport["characters"][number]
+    >();
+    parsed.characters.forEach((character, index) => {
+      const entry = normalization.characters[index];
+      if (!entry) {
+        return;
+      }
+      normalizationCharactersByKey.set(
+        buildCharacterKey(character.name),
+        entry,
+      );
+    });
 
     // Build ordered, non-ignored plot list.
     // The entry with isDefaultPlot:true (and not ignored) gets horizontalIndex 0.
@@ -187,37 +280,71 @@ export const importOutlineForStory = async (
 
     // T026: Create tags — skip IDs that are in plotMap (already became plots)
     const tagIdMap = new Map<string, ObjectId>();
+    const canonicalVariantByTagId = new Map<string, string | null>();
     const tagGroupMap = new Map<
       string,
-      { color: string; variants: string[]; ids: string[] }
+      {
+        canonicalName: string;
+        canonicalVariant: string | null;
+        color: string;
+        variants: Set<string>;
+        ids: string[];
+        rawVariants: Set<string>;
+      }
     >();
     for (const tag of parsed.tags) {
       if (plotMap.has(tag.id)) {
         // This tag is a plot — skip tag document creation
         continue;
       }
-      const existing = tagGroupMap.get(tag.name);
+      const key = buildTagKey(tag.name, tag.variant);
+      const canonical = canonicalizeTag(tag.name, tag.variant);
+      const canonicalName = canonical.name || tag.name.trim();
+      const canonicalVariant = canonical.variant;
+      canonicalVariantByTagId.set(tag.id, canonicalVariant);
+      const existing = tagGroupMap.get(key);
+      const rawVariants =
+        tag.rawVariants && tag.rawVariants.length > 0
+          ? tag.rawVariants
+          : [tag.variant ? `${tag.name}:${tag.variant}` : tag.name];
+
       if (existing) {
-        if (tag.variant && !existing.variants.includes(tag.variant)) {
-          existing.variants.push(tag.variant);
+        if (canonicalVariant) {
+          existing.variants.add(canonicalVariant);
         }
         existing.ids.push(tag.id);
+        for (const raw of rawVariants) {
+          existing.rawVariants.add(raw);
+        }
       } else {
-        tagGroupMap.set(tag.name, {
+        tagGroupMap.set(key, {
+          canonicalName,
+          canonicalVariant,
           color: tag.color ?? "#000000",
-          variants: tag.variant ? [tag.variant] : [],
+          variants: canonicalVariant ? new Set([canonicalVariant]) : new Set(),
           ids: [tag.id],
+          rawVariants: new Set(rawVariants),
         });
       }
     }
-    for (const [name, group] of tagGroupMap) {
+
+    for (const [key, group] of tagGroupMap) {
       const created = await createTag({
         storyId: story._id,
-        name,
+        name: group.canonicalName,
         color: group.color,
-        variant: group.variants.length > 0,
-        variants: group.variants,
+        variant: group.variants.size > 0,
+        variants: toSortedArray(group.variants),
       });
+      normalization.counts.newNamesCreated += 1;
+      const tagEntry = normalizationTagsByKey.get(key);
+      if (tagEntry) {
+        tagEntry.canonicalName = group.canonicalVariant
+          ? `${group.canonicalName}: ${group.canonicalVariant}`
+          : group.canonicalName;
+        tagEntry.rawVariants = toSortedArray(group.rawVariants);
+        tagEntry.consolidatedCount = tagEntry.rawVariants.length;
+      }
       for (const id of group.ids) {
         tagIdMap.set(id, created._id);
       }
@@ -225,15 +352,54 @@ export const importOutlineForStory = async (
 
     // T011+T016: Create characters — skip ignored IDs and merge-source IDs
     const charIdMap = new Map<string, ObjectId>();
+    const characterGroupMap = new Map<
+      string,
+      { canonicalName: string; ids: string[]; rawVariants: Set<string> }
+    >();
     for (const character of parsed.characters) {
-      if (characterSkipIds.has(character.id)) {
+      const key = buildCharacterKey(character.name);
+      const canonicalName = canonicalizeDisplayName(character.name);
+      const existing = characterGroupMap.get(key);
+      const rawVariants =
+        character.rawVariants && character.rawVariants.length > 0
+          ? character.rawVariants
+          : [character.name];
+
+      if (existing) {
+        existing.ids.push(character.id);
+        for (const raw of rawVariants) {
+          existing.rawVariants.add(raw);
+        }
+      } else {
+        characterGroupMap.set(key, {
+          canonicalName: canonicalName || character.name.trim(),
+          ids: [character.id],
+          rawVariants: new Set(rawVariants),
+        });
+      }
+    }
+
+    for (const [key, group] of characterGroupMap) {
+      const activeIds = group.ids.filter((id) => !characterSkipIds.has(id));
+      if (activeIds.length === 0) {
         continue;
       }
+
       const created = await createCharacter({
         storyId: story._id,
-        title: character.name,
+        title: group.canonicalName,
       });
-      charIdMap.set(character.id, created._id);
+      normalization.counts.newNamesCreated += 1;
+      const characterEntry = normalizationCharactersByKey.get(key);
+      if (characterEntry) {
+        characterEntry.canonicalName = group.canonicalName;
+        characterEntry.rawVariants = toSortedArray(group.rawVariants);
+        characterEntry.consolidatedCount = characterEntry.rawVariants.length;
+      }
+
+      for (const id of activeIds) {
+        charIdMap.set(id, created._id);
+      }
     }
     // Apply merge remappings: scenes referencing a merge-source ID resolve to the target
     for (const [fromId, toId] of Object.entries(characterMerges)) {
@@ -296,11 +462,11 @@ export const importOutlineForStory = async (
         const tagVariants = normalTagRefs
           .map((id) => {
             const tagDbId = tagIdMap.get(id);
-            const parsedTag = parsed.tags.find((t) => t.id === id);
-            if (!tagDbId || !parsedTag?.variant) {
+            const canonicalVariant = canonicalVariantByTagId.get(id);
+            if (!tagDbId || !canonicalVariant) {
               return null;
             }
-            return { tagId: tagDbId, variant: parsedTag.variant };
+            return { tagId: tagDbId, variant: canonicalVariant };
           })
           .filter(
             (entry): entry is { tagId: ObjectId; variant: string } =>
@@ -335,6 +501,7 @@ export const importOutlineForStory = async (
       message: "Import completed",
       storyId: story._id.toHexString(),
       storyName,
+      normalization,
     };
   } catch (err) {
     // T009: Write failed — attempt to remove partially-created story
@@ -353,6 +520,7 @@ export const importOutlineForStory = async (
       summary,
       storyName,
       message: "Import failed. No data was saved.",
+      normalization,
     };
   }
 };

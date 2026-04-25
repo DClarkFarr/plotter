@@ -9,7 +9,12 @@ import {
   isListNode,
   renderNodeToHtml,
 } from "../utils/docxHtml";
-import { buildCharacterKey, buildTagKey } from "../utils/importNormalization";
+import {
+  buildCharacterKey,
+  buildTagKey,
+  canonicalizeDisplayName,
+  canonicalizeTag,
+} from "../utils/importNormalization";
 import type {
   ActElement,
   ChapterElement,
@@ -265,14 +270,21 @@ export const parseImportOutlineLegacyDocx = async (
         const existing = characterMap.get(characterKey) ?? null;
 
         if (!existing) {
+          const canonicalName = canonicalizeDisplayName(parsedHeading.povName);
           const character: Character = {
             id: `character_${characterMap.size + 1}`,
-            name: parsedHeading.povName,
+            name: canonicalName || parsedHeading.povName.trim(),
+            rawVariants: [parsedHeading.povName],
           };
           characterMap.set(characterKey, character);
           result.characters.push(character);
           povCharacterId = character.id;
         } else {
+          const variants = existing.rawVariants ?? [];
+          if (!variants.includes(parsedHeading.povName)) {
+            variants.push(parsedHeading.povName);
+            existing.rawVariants = variants;
+          }
           povCharacterId = existing.id;
         }
 
@@ -289,15 +301,26 @@ export const parseImportOutlineLegacyDocx = async (
 
         const tagKey = buildTagKey(tagEntry.name, tagEntry.variant);
         let tag = tagMap.get(tagKey);
+        const rawToken = tagEntry.variant
+          ? `${tagEntry.name}:${tagEntry.variant}`
+          : tagEntry.name;
         if (!tag) {
+          const canonical = canonicalizeTag(tagEntry.name, tagEntry.variant);
           tag = {
             id: `tag_${tagMap.size + 1}`,
-            name: tagEntry.name,
-            variant: tagEntry.variant,
+            name: canonical.name || tagEntry.name.trim(),
+            variant: canonical.variant,
             color: tagEntry.color,
+            rawVariants: [rawToken],
           };
           tagMap.set(tagKey, tag);
           result.tags.push(tag);
+        } else {
+          const variants = tag.rawVariants ?? [];
+          if (!variants.includes(rawToken)) {
+            variants.push(rawToken);
+            tag.rawVariants = variants;
+          }
         }
 
         sceneTagIds.push(tag.id);

@@ -9,7 +9,12 @@ import {
   isListNode,
   renderNodeToHtml,
 } from "../utils/docxHtml";
-import { buildCharacterKey, buildTagKey } from "../utils/importNormalization";
+import {
+  buildCharacterKey,
+  buildTagKey,
+  canonicalizeDisplayName,
+  canonicalizeTag,
+} from "../utils/importNormalization";
 import type {
   ActElement,
   ChapterElement,
@@ -143,14 +148,24 @@ const ensureTag = (
   const tagKey = buildTagKey(name, variant);
   const existing = tagMap.get(tagKey);
   if (existing) {
+    const rawToken = variant ? `${name}:${variant}` : name;
+    const variants = existing.rawVariants ?? [];
+    if (!variants.includes(rawToken)) {
+      variants.push(rawToken);
+      existing.rawVariants = variants;
+    }
     return existing;
   }
 
+  const canonical = canonicalizeTag(name, variant);
+  const rawToken = variant ? `${name}:${variant}` : name;
+
   const created: Tag = {
     id: `tag_${tagMap.size + 1}`,
-    name,
-    variant,
+    name: canonical.name || name.trim(),
+    variant: canonical.variant,
     color,
+    rawVariants: [rawToken],
   };
   tagMap.set(tagKey, created);
   result.tags.push(created);
@@ -363,14 +378,21 @@ export const parseImportOutlineModernDocx = async (
         const characterKey = buildCharacterKey(parsedHeading.povName);
         const existing = characterMap.get(characterKey) ?? null;
         if (!existing) {
+          const canonicalName = canonicalizeDisplayName(parsedHeading.povName);
           const created: Character = {
             id: `character_${characterMap.size + 1}`,
-            name: parsedHeading.povName,
+            name: canonicalName || parsedHeading.povName.trim(),
+            rawVariants: [parsedHeading.povName],
           };
           characterMap.set(characterKey, created);
           result.characters.push(created);
           povCharacterId = created.id;
         } else {
+          const variants = existing.rawVariants ?? [];
+          if (!variants.includes(parsedHeading.povName)) {
+            variants.push(parsedHeading.povName);
+            existing.rawVariants = variants;
+          }
           povCharacterId = existing.id;
         }
       }

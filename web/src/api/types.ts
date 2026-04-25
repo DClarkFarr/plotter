@@ -342,6 +342,26 @@ export type ImportOutlineParseElement =
   | ImportOutlineParseChapterElement
   | ImportOutlineParseSceneElement;
 
+export interface ImportOutlineNormalizationItem {
+  canonicalName: string;
+  rawVariants: string[];
+  consolidatedCount: number;
+  reusedExisting: boolean;
+}
+
+export interface ImportOutlineNormalizationCounts {
+  tagVariantsConsolidated: number;
+  characterVariantsConsolidated: number;
+  newNamesCreated: number;
+  existingNamesReused: number;
+}
+
+export interface ImportOutlineNormalizationReport {
+  tags: ImportOutlineNormalizationItem[];
+  characters: ImportOutlineNormalizationItem[];
+  counts: ImportOutlineNormalizationCounts;
+}
+
 export interface ImportOutlineResponse {
   mode: ImportOutlineMode;
   storyName: string;
@@ -353,6 +373,7 @@ export interface ImportOutlineResponse {
   plots?: ImportOutlineParsePlot[];
   characters?: ImportOutlineParseCharacter[];
   issues?: ImportOutlineParseIssue[];
+  normalization?: ImportOutlineNormalizationReport;
 }
 
 export interface CharactersResponse {
