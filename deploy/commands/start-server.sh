@@ -22,6 +22,7 @@ mkdir -p "${LOG_DIR}"
 
 if ! pm2 start "${REPO_ROOT}/express/dist/src/server.js" \
     --name "plotter-server" \
+    --cwd "${REPO_ROOT}/express" \
     --instances 1 \
     --max-restarts 10 \
     --watch false \
