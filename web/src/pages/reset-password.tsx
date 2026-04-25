@@ -42,7 +42,7 @@ export function ResetPasswordPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+      <h2 className="text-2xl font-bold text-white text-center">
         Password updated
       </h2>
 
@@ -50,7 +50,7 @@ export function ResetPasswordPage() {
         <span>Your password was updated successfully.</span>
       </Alert>
 
-      <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-center text-gray-400">
         <Link
           to="/login"
           search={{ redir: "" }}

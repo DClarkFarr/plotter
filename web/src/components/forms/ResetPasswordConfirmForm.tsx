@@ -20,11 +20,11 @@ export function ResetPasswordConfirmForm({
 }: ResetPasswordConfirmFormViewProps) {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+      <h2 className="text-2xl font-bold text-white text-center">
         Enter reset code
       </h2>
 
-      <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-sm text-gray-400 text-center">
         Check your email for the 6-digit code, then set a new password.
       </p>
 
@@ -109,7 +109,7 @@ export function ResetPasswordConfirmForm({
         Request a new code
       </button>
 
-      <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-center text-gray-400">
         <Link
           to="/login"
           search={{ redir: "" }}

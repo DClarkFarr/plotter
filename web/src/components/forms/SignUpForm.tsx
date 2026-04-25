@@ -13,7 +13,7 @@ export function SignUpForm({
 }: SignUpFormProps) {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+      <h2 className="text-2xl font-bold text-white text-center">
         Create an account
       </h2>
 
@@ -110,7 +110,7 @@ export function SignUpForm({
         Create account
       </Button>
 
-      <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-center text-gray-400">
         Already have an account?{" "}
         <a href="/login" className="text-blue-600 hover:underline">
           Log in

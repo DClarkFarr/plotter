@@ -77,7 +77,7 @@ export function LoginForm({
         Log in
       </Button>
 
-      <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-center text-gray-400">
         Don&apos;t have an account?{" "}
         <Link to="/sign-up" className="text-blue-600 hover:underline">
           Sign up

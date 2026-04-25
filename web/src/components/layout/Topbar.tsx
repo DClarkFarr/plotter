@@ -8,10 +8,7 @@ export function Topbar() {
   return (
     <Navbar border>
       <NavbarBrand as="span">
-        <Link
-          to="/"
-          className="font-bold text-xl text-gray-900 dark:text-white"
-        >
+        <Link to="/" className="font-bold text-xl text-white">
           plotter
         </Link>
       </NavbarBrand>
@@ -20,7 +17,7 @@ export function Topbar() {
           <>
             <Link
               to="/dashboard"
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 px-3 py-2"
+              className="text-sm font-medium text-gray-300 hover:text-blue-600 px-3 py-2"
             >
               Dashboard
             </Link>
