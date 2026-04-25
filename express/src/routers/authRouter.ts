@@ -91,7 +91,8 @@ const applyAuthRoutes = () => {
     handleAsync(async (req, res) => {
       const ipAddress = req.ip ?? "unknown";
       await confirmPasswordReset({
-        token: req.body?.token,
+        email: req.body?.email,
+        code: req.body?.code,
         password: req.body?.password,
         ipAddress,
       });

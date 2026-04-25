@@ -9,6 +9,10 @@ export interface EnvConfig {
   readonly MONGO_PW: string;
   readonly SESSION_SECRET: string;
   readonly SESSION_COOKIE_NAME: string;
+  readonly MAILER_GMAIL_USER: string;
+  readonly MAILER_GMAIL_PASS: string;
+  readonly MAILER_FROM_EMAIL: string;
+  readonly MAILER_FROM_NAME: string;
 }
 
 const DEFAULT_ENV: EnvConfig = {
@@ -20,6 +24,10 @@ const DEFAULT_ENV: EnvConfig = {
   MONGO_PW: "",
   SESSION_SECRET: "",
   SESSION_COOKIE_NAME: "plotter.sid",
+  MAILER_GMAIL_USER: "",
+  MAILER_GMAIL_PASS: "",
+  MAILER_FROM_EMAIL: "no-reply@plotter.danielsjunk.com",
+  MAILER_FROM_NAME: "Team Plotter",
 };
 
 let currentEnv: EnvConfig = { ...DEFAULT_ENV };
@@ -42,6 +50,10 @@ export interface ConfigureEnvInput {
   MONGO_PW?: string | undefined;
   SESSION_SECRET?: string | undefined;
   SESSION_COOKIE_NAME?: string | undefined;
+  MAILER_GMAIL_USER?: string | undefined;
+  MAILER_GMAIL_PASS?: string | undefined;
+  MAILER_FROM_EMAIL?: string | undefined;
+  MAILER_FROM_NAME?: string | undefined;
 }
 
 const parsePort = (value: number | string | undefined): number => {
@@ -115,6 +127,38 @@ const parseSessionCookieName = (value: string | undefined): string => {
   return DEFAULT_ENV.SESSION_COOKIE_NAME;
 };
 
+const parseMailerGmailUser = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MAILER_GMAIL_USER;
+};
+
+const parseMailerGmailPass = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MAILER_GMAIL_PASS;
+};
+
+const parseMailerFromEmail = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MAILER_FROM_EMAIL;
+};
+
+const parseMailerFromName = (value: string | undefined): string => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return DEFAULT_ENV.MAILER_FROM_NAME;
+};
+
 export const configureEnv = (
   input: ConfigureEnvInput = {},
 ): Readonly<EnvConfig> => {
@@ -127,6 +171,10 @@ export const configureEnv = (
     MONGO_PW: parseMongoPw(input.MONGO_PW),
     SESSION_SECRET: parseSessionSecret(input.SESSION_SECRET),
     SESSION_COOKIE_NAME: parseSessionCookieName(input.SESSION_COOKIE_NAME),
+    MAILER_GMAIL_USER: parseMailerGmailUser(input.MAILER_GMAIL_USER),
+    MAILER_GMAIL_PASS: parseMailerGmailPass(input.MAILER_GMAIL_PASS),
+    MAILER_FROM_EMAIL: parseMailerFromEmail(input.MAILER_FROM_EMAIL),
+    MAILER_FROM_NAME: parseMailerFromName(input.MAILER_FROM_NAME),
   };
 
   return env;

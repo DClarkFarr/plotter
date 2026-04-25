@@ -74,6 +74,26 @@ export async function resetPasswordRequest(
   }
 }
 
+export interface ResetPasswordConfirmInput {
+  email: string;
+  code: string;
+  password: string;
+}
+
+export async function resetPasswordConfirm(
+  input: ResetPasswordConfirmInput,
+): Promise<MessageResponse> {
+  try {
+    const { data } = await apiClient.post<MessageResponse>(
+      "/auth/reset-password/confirm",
+      input,
+    );
+    return data;
+  } catch (err) {
+    throw await toApiError(err);
+  }
+}
+
 // ─── Get Current User ─────────────────────────────────────────────────────────
 
 export async function getMe(): Promise<AuthUser> {

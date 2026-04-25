@@ -15,7 +15,7 @@ export function ResetPasswordForm({
 }: ResetPasswordFormProps) {
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+      <h2 className="text-2xl font-bold text-gray-900 text-center">
         Reset password
       </h2>
 
@@ -24,7 +24,7 @@ export function ResetPasswordForm({
           <Alert color="success">
             <span>If the account exists, instructions have been sent.</span>
           </Alert>
-          <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-center text-gray-500">
             <Link
               to="/login"
               search={{ redir: "" }}
@@ -40,8 +40,8 @@ export function ResetPasswordForm({
           noValidate
           className="flex flex-col gap-4"
         >
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-            Enter your email address and we&apos;ll send reset instructions.
+          <p className="text-sm text-gray-500 text-center">
+            Enter your email address and we&apos;ll send a 6-digit reset code.
           </p>
 
           {formError && (
@@ -74,10 +74,10 @@ export function ResetPasswordForm({
             disabled={isSubmitting}
             className="w-full"
           >
-            Send reset instructions
+            Send reset code
           </Button>
 
-          <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-center text-gray-500">
             <Link
               to="/login"
               search={{ redir: "" }}

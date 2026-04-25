@@ -78,6 +78,16 @@ export const validateToken = (value: unknown): string => {
   return token;
 };
 
+export const validateResetCode = (value: unknown): string => {
+  const code = requireString(value, "code");
+
+  if (!/^\d{6}$/.test(code)) {
+    throw new ValidationError("code", "Code must be a 6-digit number");
+  }
+
+  return code;
+};
+
 type SessionWithUser = Request & {
   session?: {
     userId?: string;

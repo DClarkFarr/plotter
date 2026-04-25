@@ -4,7 +4,8 @@ import { ObjectId } from "mongodb";
 import { getUserByEmail, getUserById } from "../models/users";
 import {
   createPasswordReset,
-  getPasswordResetByTokenHash,
+  getLatestActivePasswordResetByUserId,
+  invalidateActivePasswordResetsByUserId,
   markPasswordResetUsed,
 } from "../models/passwordResets";
 import { createUser, updateUserById } from "./userService";
@@ -19,9 +20,11 @@ import {
   validateEmail,
   validateName,
   validatePassword,
-  validateToken,
+  validateResetCode,
 } from "../utils/validators";
 import { recordAuditEvent } from "../utils/audit";
+import { sendEmail } from "./emailService";
+import { buildPasswordResetEmail } from "./emailTemplates/passwordResetEmail";
 
 export class AuthError extends Error {
   public readonly status: number;
@@ -83,8 +86,29 @@ const saveSession = (sessionData: AuthSession): Promise<void> =>
 
 const getResetExpiry = (): Date => new Date(Date.now() + 60 * 60 * 1000);
 
-const hashToken = (token: string): string =>
-  crypto.createHash("sha256").update(token).digest("hex");
+const RESET_CODE_LENGTH = 6;
+
+const hashResetCode = (code: string): string =>
+  crypto.createHash("sha256").update(code).digest("hex");
+
+const generateResetCode = (): string =>
+  crypto
+    .randomInt(0, 10 ** RESET_CODE_LENGTH)
+    .toString()
+    .padStart(6, "0");
+
+const isCodeMatch = (expectedHash: string, providedCode: string): boolean => {
+  const providedHash = hashResetCode(providedCode);
+
+  const expected = Buffer.from(expectedHash, "hex");
+  const provided = Buffer.from(providedHash, "hex");
+
+  if (expected.length !== provided.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expected, provided);
+};
 
 export interface SignupInput {
   firstName: string;
@@ -194,13 +218,28 @@ export const requestPasswordReset = async (
     return;
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
-  const tokenHash = hashToken(token);
+  await invalidateActivePasswordResetsByUserId(user._id);
+
+  const code = generateResetCode();
+  const codeHash = hashResetCode(code);
 
   await createPasswordReset({
     userId: user._id,
-    tokenHash,
+    codeHash,
     expiresAt: getResetExpiry(),
+  });
+
+  const resetEmail = buildPasswordResetEmail({
+    firstName: user.firstName,
+    resetCode: code,
+    expiresInMinutes: 60,
+  });
+
+  await sendEmail({
+    to: user.email,
+    subject: resetEmail.subject,
+    text: resetEmail.text,
+    html: resetEmail.html,
   });
 
   recordAuditEvent({
@@ -211,12 +250,13 @@ export const requestPasswordReset = async (
   });
 
   if (process.env.MODE !== "production") {
-    console.info("Password reset token", { email, token });
+    console.info("Password reset code", { email, code });
   }
 };
 
 export interface ResetConfirmInput {
-  token: string;
+  email: string;
+  code: string;
   password: string;
   ipAddress?: string;
 }
@@ -224,18 +264,26 @@ export interface ResetConfirmInput {
 export const confirmPasswordReset = async (
   input: ResetConfirmInput,
 ): Promise<void> => {
-  const token = validateToken(input.token);
+  const email = validateEmail(input.email);
+  const code = validateResetCode(input.code);
   const password = validatePassword(input.password);
-  const tokenHash = hashToken(token);
+  const ipAddress = input.ipAddress ?? "unknown";
 
-  const reset = await getPasswordResetByTokenHash(tokenHash);
-  if (!reset || reset.usedAt || reset.expiresAt <= new Date()) {
-    throw new AuthError("Invalid or expired token", 401);
+  await assertAuthAttemptAllowed(email, ipAddress, "reset");
+  await recordAuthAttempt(email, ipAddress, "reset");
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    throw new AuthError("Invalid or expired code", 401);
   }
 
-  const user = await getUserById(reset.userId);
-  if (!user) {
-    throw new AuthError("Invalid or expired token", 401);
+  const reset = await getLatestActivePasswordResetByUserId(user._id);
+  if (!reset || reset.usedAt || reset.expiresAt <= new Date()) {
+    throw new AuthError("Invalid or expired code", 401);
+  }
+
+  if (!isCodeMatch(reset.codeHash, code)) {
+    throw new AuthError("Invalid or expired code", 401);
   }
 
   const passwordHash = await hashPassword(password);
@@ -246,6 +294,7 @@ export const confirmPasswordReset = async (
     passwordChangedAt,
   });
 
+  await resetAuthAttempt(email, ipAddress, "reset");
   await markPasswordResetUsed(reset._id);
   await endSessionsByUserId(user._id);
 

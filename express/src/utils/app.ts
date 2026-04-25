@@ -100,6 +100,10 @@ class App {
       MONGO_PW: process.env.MONGO_PW,
       SESSION_SECRET: process.env.SESSION_SECRET,
       SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME,
+      MAILER_GMAIL_USER: process.env.MAILER_GMAIL_USER,
+      MAILER_GMAIL_PASS: process.env.MAILER_GMAIL_PASS,
+      MAILER_FROM_EMAIL: process.env.MAILER_FROM_EMAIL,
+      MAILER_FROM_NAME: process.env.MAILER_FROM_NAME,
     });
   }
 

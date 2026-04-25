@@ -12,7 +12,7 @@ import {
 
 export interface PasswordResetDefinition extends BaseModelBlueprint {
   userId: ObjectId;
-  tokenHash: string;
+  codeHash: string;
   expiresAt: Date;
   usedAt?: Date;
 }
@@ -26,13 +26,14 @@ export const getPasswordResetsCollection =
 
 export const ensurePasswordResetIndexes = async (): Promise<void> => {
   const collection = getPasswordResetsCollection();
-  await collection.createIndex({ tokenHash: 1 }, { unique: true });
+  await collection.createIndex({ codeHash: 1 });
+  await collection.createIndex({ userId: 1, createdAt: -1 });
   await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 };
 
 export interface CreatePasswordResetInput {
   userId: string | ObjectId;
-  tokenHash: string;
+  codeHash: string;
   expiresAt: Date;
 }
 
@@ -44,7 +45,7 @@ export const createPasswordReset = async (
 
   const payload: ModelInsertInput<PasswordResetDefinition> = {
     userId,
-    tokenHash: input.tokenHash,
+    codeHash: input.codeHash,
     expiresAt: input.expiresAt,
     ...createTimestamps(),
   };
@@ -56,11 +57,42 @@ export const createPasswordReset = async (
   return { ...payload, _id: result.insertedId };
 };
 
-export const getPasswordResetByTokenHash = async (
-  tokenHash: string,
+export const getLatestActivePasswordResetByUserId = async (
+  userId: string | ObjectId,
 ): Promise<PasswordResetDocument | null> => {
   const collection = getPasswordResetsCollection();
-  return collection.findOne({ tokenHash });
+  const userObjectId = ensureObjectId(userId, "userId");
+
+  return collection.findOne(
+    {
+      userId: userObjectId,
+      usedAt: { $exists: false },
+    },
+    { sort: { createdAt: -1 } },
+  );
+};
+
+export const invalidateActivePasswordResetsByUserId = async (
+  userId: string | ObjectId,
+): Promise<number> => {
+  const collection = getPasswordResetsCollection();
+  const userObjectId = ensureObjectId(userId, "userId");
+  const usedAt = new Date();
+
+  const result = await collection.updateMany(
+    {
+      userId: userObjectId,
+      usedAt: { $exists: false },
+    },
+    {
+      $set: {
+        usedAt,
+        ...touchTimestamps(),
+      },
+    },
+  );
+
+  return result.modifiedCount;
 };
 
 export const markPasswordResetUsed = async (
