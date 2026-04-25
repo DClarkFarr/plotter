@@ -71,12 +71,15 @@ const toAuthUser = (user: {
 
 const saveSession = (sessionData: AuthSession): Promise<void> =>
   new Promise((resolve, reject) => {
+    console.log("saving session", sessionData);
     sessionData.save((error: Error | null) => {
       if (error) {
+        console.log("save reject", error);
         reject(error);
         return;
       }
 
+      console.log("save success");
       resolve();
     });
   });
