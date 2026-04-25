@@ -1,6 +1,6 @@
 # plotter Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-24
+Auto-generated from all feature plans. Last updated: 2026-04-25
 
 ## Active Technologies
 - Node.js + TypeScript 5.9 + Express 5.2, MongoDB driver 6.16, ts-node, nodemon (002-database-structure)
@@ -75,6 +75,7 @@ Auto-generated from all feature plans. Last updated: 2026-04-24
 - MongoDB (not directly affected) (046-import-outline-versions)
 - TypeScript 5.9 (Node.js backend, React frontend) + Express, MongoDB driver, officeparser, TanStack Query/Router, Flowbite Reac (049-normalize-import-names)
 - MongoDB (`tags`, `characters`, `scenes`, `stories` via import workflow) (049-normalize-import-names)
+- TypeScript 5.x + React, Tailwind CSS, Flowbite React (modal shell only — no new components needed) (050-import-syntax-guide)
 
 - TypeScript 5.9 (Node.js) + Express 5.2, MongoDB Node driver 6.16 (002-database-structure)
 
@@ -94,9 +95,9 @@ npm test && npm run lint
 TypeScript 5.9 (Node.js): Follow standard conventions
 
 ## Recent Changes
+- 050-import-syntax-guide: Added TypeScript 5.x + React, Tailwind CSS, Flowbite React (modal shell only — no new components needed)
 - 049-normalize-import-names: Added TypeScript 5.9 (Node.js backend, React frontend) + Express, MongoDB driver, officeparser, TanStack Query/Router, Flowbite Reac
 - 046-import-outline-versions: Added TypeScript 5.x + officeparser (docx AST), docx (export), Express, React, TanStack Query, Flowbite React, Zustand
-- 045-drag-section-headings: Added TypeScript 5.x (frontend + backend) + React 18, dnd-kit (`@dnd-kit/react`, `@dnd-kit/dom`, `@dnd-kit/abstract`), Zustand, TanStack Query, Tailwind CSS, Flowbite React, unplugin-icons
 
 
 <!-- MANUAL ADDITIONS START -->

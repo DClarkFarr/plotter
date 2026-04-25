@@ -218,34 +218,7 @@ export const ImportOutlineModal = ({
             {importType === "legacy" ? (
               <LegacyImportInstructions />
             ) : (
-              <>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    Modern heading map
-                  </p>
-                  <ul className="list-disc space-y-1 pl-5">
-                    <li>H1 headings become act separators.</li>
-                    <li>H2 headings become chapter breaks.</li>
-                    <li>H4 lines starting with | define plot context.</li>
-                    <li>Scene heading follows the plot marker line.</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    Tags and snippets
-                  </p>
-                  <p>
-                    Put tags on the line after scene heading using bracket
-                    tokens like <span className="font-semibold">[Tag]</span> or{" "}
-                    <span className="font-semibold">[Tag:Variant]</span>.
-                  </p>
-                  <p>
-                    Snippets use a title line ending with : (for example{" "}
-                    <span className="font-semibold">Draft:</span>) followed by
-                    an indented snippet block.
-                  </p>
-                </div>
-              </>
+              <ModernImportInstructions />
             )}
           </>
         ) : null}
@@ -427,6 +400,290 @@ const NormalizationSummary = ({ report }: NormalizationSummaryProps) => {
         </div>
       </div>
     </details>
+  );
+};
+
+const ModernImportInstructions = () => {
+  return (
+    <div className="text-sm text-slate-600">
+      <h1 className="text-xl text-slate-950">
+        Outline Layout: Acts, Chapters and Scenes
+      </h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              The modern format uses heading levels to define your story
+              structure. A plot heading must appear directly before each scene.
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>H1 headings become acts.</li>
+              <li>H2 headings become chapters.</li>
+              <li>
+                A plot heading (H4 or a line starting with{" "}
+                <code className="bg-pink-100 text-pink-700 px-0.5">|</code>)
+                comes before each scene.
+              </li>
+              <li>H3 headings become scenes.</li>
+            </ul>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Layout Example:</p>
+            <p className="text-xl font-semibold mb-4">
+              (H1) Act 1 — Into the Storm
+            </p>
+            <p className="text-lg font-semibold mb-4">
+              (H2) Chapter 1 — Arrival
+            </p>
+            <p className="mb-1">| Main (plot thread name)</p>
+            <p className="text-md font-semibold">
+              (H3) Nick Fury: Scene opens at the facility
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Scene Character POV</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Each scene can have an optional POV character assigned. Place the
+              character name at the start of the H3 scene heading, followed by a
+              colon.
+            </p>
+            <div>
+              <p>
+                <span>POV syntax: </span>
+              </p>
+              <p className="flex gap-1">
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  Character Name
+                </code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">:</code>
+                <code className="bg-pink-100 text-pink-700 px-0.5">
+                  Scene title
+                </code>
+              </p>
+            </div>
+            <p>Without a POV, just use a bare scene title as the H3 heading.</p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">POV Example:</p>
+            <p>
+              <span className="font-semibold text-white">Nick Fury:</span>
+              <span> Investigates the Tesseract activity</span>
+            </p>
+          </div>
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">No POV Example:</p>
+            <p>The Tesseract activates on its own</p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Plots</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Plots group scenes into storylines and become rows in the story
+              grid. Each scene belongs to exactly one plot.
+            </p>
+            <p>
+              A plot heading must appear directly before its scene heading. Two
+              forms are accepted:
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Form 1 — Pipe prefix paragraph
+            </p>
+            <p className="flex gap-1">
+              <code className="bg-pink-100 text-pink-700 px-0.5">|</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">
+                Plot Name
+              </code>
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Form 2 — Heading 4
+            </p>
+            <p>Format the line as an H4 heading (the | prefix is optional).</p>
+            <p className="mt-2 text-slate-500 text-xs">
+              Tip: the text color of the{" "}
+              <code className="bg-pink-100 text-pink-700 px-0.5">|</code>{" "}
+              character in your document is captured as the plot&apos;s color on
+              import.
+            </p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Plots Example:</p>
+            <p className="mb-1">| (H4) Main Journey</p>
+            <p className="font-semibold mb-4">
+              (H3) Nick Fury: Investigates the Tesseract activity
+            </p>
+            <p className="mb-1">| (H4) Villain Arc</p>
+            <p className="font-semibold">
+              (H3) Loki: Portals through the Tesseract
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Scene Tags</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Add tags to scenes to make them searchable and filterable by
+              theme, subplot, or any custom category.
+            </p>
+            <p>
+              Place the tag row as the{" "}
+              <span className="font-semibold">
+                first paragraph after the scene heading
+              </span>
+              .
+            </p>
+            <p>
+              There are 2 kinds of tags:{" "}
+              <span className="font-semibold">Basic Tags</span> and{" "}
+              <span className="font-semibold">Variant Tags</span>
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Basic Tags
+            </p>
+            <p className="flex gap-1">
+              <span>Syntax: </span>
+              <code className="bg-pink-100 text-pink-700 px-0.5">[</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">Tag Name</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">]</code>
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Variant Tags
+            </p>
+            <p>A tag with an optional sub-category.</p>
+            <p className="flex gap-1">
+              <span>Syntax: </span>
+              <code className="bg-pink-100 text-pink-700 px-0.5">[</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">Tag Name</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">:</code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">
+                Sub Category
+              </code>
+              <code className="bg-pink-100 text-pink-700 px-0.5">]</code>
+            </p>
+            <p className="mt-2 text-slate-500 text-xs">
+              Tip: the text or highlight color of a{" "}
+              <code className="bg-pink-100 text-pink-700 px-0.5">[Tag]</code>{" "}
+              token in your document is preserved as the tag&apos;s color on
+              import.
+            </p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Basic Tag Example:</p>
+            <p className="font-semibold mb-1">
+              (H3) Nick Fury: Investigates the Tesseract activity
+            </p>
+            <span className="font-semibold text-white">[Action]</span>
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Variant Tag Example:</p>
+            <p className="font-semibold mb-1">
+              (H3) Loki: Fights guards and steals the Tesseract
+            </p>
+            <span className="font-semibold text-white">[Action:Victory]</span>
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+            <p className="font-thin mb-1 uppercase">Multiple Tags Example:</p>
+            <p className="font-semibold mb-1">
+              (H3) Gamora: Learns the truth about Thanos
+            </p>
+            <span className="font-semibold text-white">[Suspense]</span>{" "}
+            <span className="font-semibold text-white">[Plot Twist]</span>
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-xl text-slate-950">Snippets</h1>
+      <div className="lg:flex gap-6 mb-10 space-y-4">
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <p>
+              Paragraphs inside a scene can become attached snippets — useful
+              for draft dialog, notes, or any extra content you don&apos;t want
+              mixed into the scene description.
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Snippet Syntax
+            </p>
+            <p>
+              Indent any paragraph at least{" "}
+              <span className="font-semibold">0.5in</span> inside your scene and
+              it becomes snippet content.
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mt-4">
+              Labelling a Snippet
+            </p>
+            <p>
+              To give a snippet a label, add a heading line immediately before
+              the indented block using either:
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                A <span className="font-semibold">Heading 5</span>, or
+              </li>
+              <li>
+                An indented paragraph whose text ends with{" "}
+                <code className="bg-pink-100 text-pink-700 px-0.5">:</code>{" "}
+                (e.g. <span className="font-semibold">Draft:</span>)
+              </li>
+            </ul>
+            <p>
+              Indented paragraphs without a preceding label are grouped into an
+              auto-named snippet.
+            </p>
+          </div>
+        </div>
+        <div className="lg:w-1/2">
+          <div className="space-y-2">
+            <div className="bg-slate-800 p-4 rounded-lg text-slate-200 mb-2">
+              <p className="font-thin mb-1 uppercase">
+                Scene With Snippet Example:
+              </p>
+              <p className="font-semibold mb-1">
+                (H3) Nick Fury: Investigates the Tesseract activity
+              </p>
+              <p className="mb-2">[Action]</p>
+              <p className="mb-4">
+                Nick Fury discusses Tesseract activity with Clint and Dr.
+                Selvig.
+              </p>
+              <p className="ml-8 mb-1 font-semibold">
+                (H5) Dialog Draft (Snippet label):
+              </p>
+              <p className="ml-8 mb-1">
+                Fury: You say peace, but I kind of think you mean the other
+                thing.
+              </p>
+              <p className="ml-8 mb-1">Loki: Do I make you desperate?</p>
+              <p className="ml-8 mb-4">
+                Fury: You&apos;re making me very desperate.
+              </p>
+              <p>Back to scene description.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
