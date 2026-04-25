@@ -314,7 +314,6 @@ main() {
         --name "plotter-server" \
         --instances 1 \
         --max-restarts 10 \
-        --min-uptime 10s \
         --watch false >/dev/null 2>&1; then
         log_error "Server restart failed"
         return "$EXIT_RESTART_FAILED"
