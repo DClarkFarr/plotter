@@ -618,7 +618,6 @@ const applyStoryRoutes = () => {
 
       const updated = await updateStoryById(storyId, toSet);
 
-      console.log("got updated", updated, "from", toSet);
       if (!updated) {
         res.status(404).json({ error: "Story not found" });
         return;

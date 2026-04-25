@@ -12,7 +12,6 @@ export class CustomSensitivityModifier extends Modifier {
   }
 
   public apply(operation: DragOperation): Coordinates {
-    // console.log("got operation", operation);
     if (this.disabled) return operation.transform;
 
     const { xModifier = 1, yModifier = 1 } = this.options ?? {};

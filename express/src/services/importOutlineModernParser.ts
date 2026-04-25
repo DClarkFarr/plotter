@@ -515,10 +515,6 @@ export const parseImportOutlineModernDocx = async (
           };
           snippetOrder += 1;
           currentElement.snippets.push(currentSnippet);
-          console.log(
-            "creating new snippet for indented block with pending heading",
-            { pendingSnippetHeading, html },
-          );
         }
 
         currentSnippet.content.push(html);

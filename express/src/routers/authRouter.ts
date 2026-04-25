@@ -49,17 +49,6 @@ const applyAuthRoutes = () => {
         sessionData,
       );
 
-      console.log({
-        secure: req.secure,
-        protocol: req.protocol,
-        forwardedProto: req.get("x-forwarded-proto"),
-        sessionId: req.sessionID,
-        sessionCookie: req.session.cookie,
-      });
-      console.log("After saveSession:");
-      console.log("Headers:", res.getHeaders());
-      console.log("Set-Cookie:", res.getHeader("set-cookie"));
-
       res.status(200).json({ user });
     }),
   );
