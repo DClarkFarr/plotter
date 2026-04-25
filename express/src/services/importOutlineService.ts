@@ -297,12 +297,13 @@ export const importOutlineForStory = async (
         // This tag is a plot — skip tag document creation
         continue;
       }
-      const key = buildTagKey(tag.name, tag.variant);
+      // Group by name only (not variant) so all variants of one tag collapse into one document
+      const nameKey = buildTagKey(tag.name, null);
       const canonical = canonicalizeTag(tag.name, tag.variant);
       const canonicalName = canonical.name || tag.name.trim();
       const canonicalVariant = canonical.variant;
       canonicalVariantByTagId.set(tag.id, canonicalVariant);
-      const existing = tagGroupMap.get(key);
+      const existing = tagGroupMap.get(nameKey);
       const rawVariants =
         tag.rawVariants && tag.rawVariants.length > 0
           ? tag.rawVariants
@@ -317,7 +318,7 @@ export const importOutlineForStory = async (
           existing.rawVariants.add(raw);
         }
       } else {
-        tagGroupMap.set(key, {
+        tagGroupMap.set(nameKey, {
           canonicalName,
           canonicalVariant,
           color: tag.color ?? "#000000",
@@ -328,7 +329,7 @@ export const importOutlineForStory = async (
       }
     }
 
-    for (const [key, group] of tagGroupMap) {
+    for (const [nameKey, group] of tagGroupMap) {
       const created = await createTag({
         storyId: story._id,
         name: group.canonicalName,
@@ -337,11 +338,9 @@ export const importOutlineForStory = async (
         variants: toSortedArray(group.variants),
       });
       normalization.counts.newNamesCreated += 1;
-      const tagEntry = normalizationTagsByKey.get(key);
+      const tagEntry = normalizationTagsByKey.get(nameKey);
       if (tagEntry) {
-        tagEntry.canonicalName = group.canonicalVariant
-          ? `${group.canonicalName}: ${group.canonicalVariant}`
-          : group.canonicalName;
+        tagEntry.canonicalName = group.canonicalName;
         tagEntry.rawVariants = toSortedArray(group.rawVariants);
         tagEntry.consolidatedCount = tagEntry.rawVariants.length;
       }
