@@ -15,6 +15,7 @@ export function ResetPasswordPage() {
   const formProps = useResetPasswordForm({
     onResetSuccess: (email) => {
       setRequestEmail(email);
+      confirmFormProps.setFields((prev) => ({ ...prev, email }));
       setStep("confirm");
     },
   });

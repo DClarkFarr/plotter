@@ -55,25 +55,27 @@ function mapApiError(err: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
-export interface UseResetPasswordConfirmFormOptions {
+export interface UseResetPasswordConfirmFormProps {
   initialEmail?: string;
   onConfirmSuccess: () => void;
 }
 
-export interface ResetPasswordConfirmFormProps {
+export interface ResetPasswordConfirmForm {
   fields: Fields;
   fieldErrors: FieldErrors;
   touched: Touched;
   formError: string | null;
   isSubmitting: boolean;
+  emailFieldReadonly: boolean;
+  setFields: React.Dispatch<React.SetStateAction<Fields>>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent) => void;
 }
 
 export function useResetPasswordConfirmForm(
-  opts: UseResetPasswordConfirmFormOptions,
-): ResetPasswordConfirmFormProps {
+  opts: UseResetPasswordConfirmFormProps,
+): ResetPasswordConfirmForm {
   const [fields, setFields] = useState<Fields>({
     email: opts.initialEmail ?? "",
     code: "",
@@ -130,6 +132,7 @@ export function useResetPasswordConfirmForm(
   };
 
   return {
+    emailFieldReadonly: Boolean(opts.initialEmail),
     fields,
     fieldErrors,
     touched,
@@ -138,5 +141,6 @@ export function useResetPasswordConfirmForm(
     handleChange,
     handleBlur,
     handleSubmit,
+    setFields,
   };
 }

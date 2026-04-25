@@ -1,8 +1,8 @@
 import { Alert, Button, Label, TextInput } from "flowbite-react";
 import { Link } from "@tanstack/react-router";
-import type { ResetPasswordConfirmFormProps } from "../../hooks/useResetPasswordConfirmForm";
+import type { ResetPasswordConfirmForm } from "../../hooks/useResetPasswordConfirmForm";
 
-export interface ResetPasswordConfirmFormViewProps extends ResetPasswordConfirmFormProps {
+export interface ResetPasswordConfirmFormViewProps extends ResetPasswordConfirmForm {
   onBackToRequest: () => void;
 }
 
@@ -12,6 +12,7 @@ export function ResetPasswordConfirmForm({
   touched,
   formError,
   isSubmitting,
+  emailFieldReadonly,
   handleChange,
   handleBlur,
   handleSubmit,
@@ -44,6 +45,7 @@ export function ResetPasswordConfirmForm({
           onChange={handleChange}
           onBlur={handleBlur}
           color={touched.email && fieldErrors.email ? "failure" : undefined}
+          disabled={emailFieldReadonly}
           className="mt-1"
         />
         {touched.email && fieldErrors.email && (
