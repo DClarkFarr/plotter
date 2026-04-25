@@ -61,10 +61,15 @@ detect_changed_projects() {
     
     local changed_projects=""
     local projects=("web" "express")
+
+    # Run diff checks from repository root and use repository-relative pathspecs.
+    local original_dir
+    original_dir="$(pwd)"
+    cd "$repo_root"
     
     for project in "${projects[@]}"; do
         # Check if files in this project path changed
-        if git diff-index --quiet "$before_commit" "$after_commit" -- "$repo_root/$project/" 2>/dev/null; then
+        if git diff --quiet "$before_commit" "$after_commit" -- "$project/" 2>/dev/null; then
             # No changes in this project
             :
         else
@@ -72,6 +77,8 @@ detect_changed_projects() {
             changed_projects="$changed_projects $project"
         fi
     done
+
+    cd "$original_dir"
     
     # Trim and return
     echo "$changed_projects" | xargs
