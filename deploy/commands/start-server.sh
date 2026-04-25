@@ -7,35 +7,35 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 log_phase "Starting Server"
 
 LOG_DIR="${REPO_ROOT}/deploy/logs"
-RUN_TIMESTAMP="$(date '+%Y-%m-%d-%H%M%S')-$$"
-RUN_LOG="${LOG_DIR}/${RUN_TIMESTAMP}-plotter-server.log"
+LOG_FILE="${LOG_DIR}/$(date '+%Y-%m-%d')-plotter-server.log"
 
 mkdir -p "${LOG_DIR}"
-: > "${RUN_LOG}"
 
 {
     echo ""
+    echo "[========== Server Start Attempt ==========]"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting plotter-server via PM2"
-    echo "Log file: ${RUN_LOG}"
-    echo "Command: pm2 start ${REPO_ROOT}/deploy/commands/run-server.sh --name plotter-server"
-} >> "${RUN_LOG}"
+    echo "Log file: ${LOG_FILE}"
+    echo "Command: pm2 start ${REPO_ROOT}/express/dist/src/server.js --name plotter-server"
+    echo "[========================================]"
+} >> "${LOG_FILE}"
 
-if ! RUN_LOG_FILE="${RUN_LOG}" pm2 start "${REPO_ROOT}/deploy/commands/run-server.sh" \
+if ! pm2 start "${REPO_ROOT}/express/dist/src/server.js" \
     --name "plotter-server" \
     --instances 1 \
     --max-restarts 10 \
     --watch false \
     --time \
     --merge-logs \
-    --output "${RUN_LOG}" \
-    --error "${RUN_LOG}" >> "${RUN_LOG}" 2>&1; then
+    --output "${LOG_FILE}" \
+    --error "${LOG_FILE}" >> "${LOG_FILE}" 2>&1; then
     log_error "Server start failed"
-    log_info "Server log file: ${RUN_LOG}"
+    log_info "Server log file: ${LOG_FILE}"
     log_info "Last 80 lines of the server log:"
-    tail -n 80 "${RUN_LOG}" >&2 || true
+    tail -n 80 "${LOG_FILE}" >&2 || true
     exit "${EXIT_RESTART_FAILED}"
 fi
 
 log_success "Server started successfully"
-log_info "Server log file: ${RUN_LOG}"
+log_info "Server log file: ${LOG_FILE}"
 exit "${EXIT_SUCCESS}"
