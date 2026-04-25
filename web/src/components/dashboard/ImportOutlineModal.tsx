@@ -327,6 +327,9 @@ export const ImportOutlineModal = ({
                 disabled={importMutation.isPending}
               />
             </div>
+            {previewData?.normalization ? (
+              <NormalizationSummary report={previewData.normalization} />
+            ) : null}
             <ImportOutlinePreviewTabs
               characters={previewData?.characters ?? []}
               elements={previewData?.elements ?? []}
@@ -335,9 +338,6 @@ export const ImportOutlineModal = ({
               customizations={customizations}
               onCustomizationChange={setCustomizations}
             />
-            {previewData?.normalization ? (
-              <NormalizationSummary report={previewData.normalization} />
-            ) : null}
             <div className="flex items-center justify-end gap-2">
               <Button
                 color="light"
@@ -371,6 +371,7 @@ export const ImportOutlineModal = ({
             {previewData?.normalization ? (
               <NormalizationSummary report={previewData.normalization} />
             ) : null}
+
             <div className="flex items-center justify-end">
               <Button color="dark" type="button" onClick={handleClose}>
                 Done
@@ -425,25 +426,40 @@ const NormalizationSummary = ({ report }: NormalizationSummaryProps) => {
   );
 
   return (
-    <div className="space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-3">
-      <p className="text-sm font-semibold text-indigo-900">
-        Normalization summary
-      </p>
-      <div className="grid gap-2 text-xs text-indigo-900 sm:grid-cols-2">
-        <div>
-          Tag variants consolidated: {report.counts.tagVariantsConsolidated}
+    <details className="group rounded-lg border border-indigo-200 bg-indigo-50">
+      <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-sm font-semibold text-indigo-900 [&::-webkit-details-marker]:hidden">
+        <span>Normalization summary</span>
+        <svg
+          className="size-4 transition-transform group-open:rotate-180"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </summary>
+      <div className="space-y-3 px-3 pb-3">
+        <div className="grid gap-2 text-xs text-indigo-900 sm:grid-cols-2">
+          <div>
+            Tag variants consolidated: {report.counts.tagVariantsConsolidated}
+          </div>
+          <div>
+            Character variants consolidated:{" "}
+            {report.counts.characterVariantsConsolidated}
+          </div>
+          <div>New names created: {report.counts.newNamesCreated}</div>
+          <div>Existing names reused: {report.counts.existingNamesReused}</div>
         </div>
-        <div>
-          Character variants consolidated:{" "}
-          {report.counts.characterVariantsConsolidated}
+        <div className="grid gap-3 md:grid-cols-2">
+          {renderList("Tags", report.tags)}
+          {renderList("Characters", report.characters)}
         </div>
-        <div>New names created: {report.counts.newNamesCreated}</div>
-        <div>Existing names reused: {report.counts.existingNamesReused}</div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        {renderList("Tags", report.tags)}
-        {renderList("Characters", report.characters)}
-      </div>
-    </div>
+    </details>
   );
 };
