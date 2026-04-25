@@ -27,7 +27,7 @@ export function Topbar() {
             <button
               type="button"
               onClick={clearUser}
-              className="text-sm font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 px-3 py-2"
+              className="text-sm font-medium text-gray-700 hover:text-red-600 px-3 py-2"
             >
               Log Out
             </button>
@@ -37,7 +37,7 @@ export function Topbar() {
             <Link
               to="/login"
               search={{ redir: "" }}
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 px-3 py-2"
+              className="text-sm font-medium text-gray-700 hover:text-blue-600 px-3 py-2"
             >
               Log In
             </Link>
