@@ -214,7 +214,7 @@ capture_before_commit() {
 }
 
 git_pull_origin() {
-    git pull origin 2>&1
+    git pull origin main 2>&1
 }
 
 detect_changed_projects() {
