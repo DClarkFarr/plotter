@@ -8,6 +8,7 @@ import {
   type CreateSceneInput,
   type CreateTagInput,
   type CreateSectionInput,
+  type DeletePlotResponse,
   type DeleteSceneResponse,
   type DeleteSectionResponse,
   type ImportCharactersInput,
@@ -432,6 +433,20 @@ export async function updatePlot(
       input,
     );
     return data.plot;
+  } catch (err) {
+    throw await toApiError(err);
+  }
+}
+
+export async function deletePlot(
+  storyId: string,
+  plotId: string,
+): Promise<DeletePlotResponse> {
+  try {
+    const { data } = await apiClient.delete<DeletePlotResponse>(
+      `/stories/${storyId}/plots/${plotId}`,
+    );
+    return data;
   } catch (err) {
     throw await toApiError(err);
   }

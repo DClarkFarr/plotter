@@ -21,6 +21,7 @@ import {
 } from "../services/tagService";
 import {
   createPlot,
+  deletePlotForStory,
   getPlotForStory,
   updatePlotById,
 } from "../services/plotService";
@@ -585,6 +586,30 @@ const applyStoryRoutes = () => {
       }
 
       res.status(200).json({ plot: toPlotResponse(updated) });
+    }),
+  );
+
+  storyRouter.delete(
+    "/:storyId/plots/:plotId",
+    handleAsync(async (req, res) => {
+      const userId = requireUserId(req);
+      const storyId = assertparamIsString(req.params.storyId, "storyId");
+      const plotId = assertparamIsString(req.params.plotId, "plotId");
+
+      await getStoryForUser(storyId, userId);
+
+      const deleted = await deletePlotForStory(storyId, plotId);
+      if (!deleted.deleted) {
+        if (deleted.reason === "cannot-delete-last-plot") {
+          res.status(409).json({ error: "Cannot delete the only active plot" });
+          return;
+        }
+
+        res.status(404).json({ error: "Plot not found" });
+        return;
+      }
+
+      res.status(200).json(deleted);
     }),
   );
 

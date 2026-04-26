@@ -11,6 +11,8 @@ import { SectionForm } from "../story/SectionForm";
 import { ManageCharactersPanel } from "../story/ManageCharactersPanel";
 import { ManageTagsPanel } from "../story/ManageTagsPanel";
 import { ColorPalettePanel } from "../story/ColorPalettePanel";
+import { PlotForm } from "../story/PlotForm";
+import { usePlotEditorStore } from "../../store/plotEditorStore";
 
 export function DashboardLayout() {
   useAuthRedirect();
@@ -24,6 +26,7 @@ export function DashboardLayout() {
   const selectedSectionId = useSectionEditorStore(
     (state) => state.selectedSectionId,
   );
+  const selectedPlotId = usePlotEditorStore((state) => state.selectedPlotId);
 
   return (
     <div className="x-scroller w-screen overflow-x-hidden relative">
@@ -49,6 +52,7 @@ export function DashboardLayout() {
           </>
         )}
         {currentView === "section" && <SectionForm key={selectedSectionId} />}
+        {currentView === "plot" && <PlotForm key={selectedPlotId} />}
         {currentView === "character" && <ManageCharactersPanel />}
         {currentView === "tag" && <ManageTagsPanel />}
         {currentView === "palette" && <ColorPalettePanel />}

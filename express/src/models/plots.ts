@@ -15,6 +15,7 @@ export interface PlotDefinition extends BaseModelBlueprint {
   color: string;
   storyId: ObjectId;
   horizontalIndex: number;
+  deletedAt?: Date | null;
 }
 
 export type PlotBlueprint = ModelBlueprint<PlotDefinition>;
@@ -28,9 +29,17 @@ export const ensurePlotIndexes = async (): Promise<void> => {
   await collection.createIndex({ storyId: 1 });
   await collection.createIndex(
     { storyId: 1, horizontalIndex: 1 },
-    { unique: true },
+    {
+      unique: true,
+      partialFilterExpression: { deletedAt: { $eq: null } },
+    },
   );
 };
+
+const activePlotFilter = (filter: Record<string, unknown> = {}) => ({
+  ...filter,
+  deletedAt: { $eq: null },
+});
 
 export const shiftPlotIndices = async (
   plot: PlotDocument,
@@ -52,9 +61,28 @@ export const shiftPlotIndices = async (
     _id: { $ne: plot._id },
   };
 
-  await collection.updateMany(filter, {
+  await collection.updateMany(activePlotFilter(filter), {
     $inc: { horizontalIndex: isMovingUp ? -1 : 1 },
   });
+};
+
+export const shiftPlotsLeftFromIndex = async (
+  storyId: string | ObjectId,
+  fromIndexExclusive: number,
+): Promise<number> => {
+  const collection = getPlotsCollection();
+  const result = await collection.updateMany(
+    activePlotFilter({
+      storyId: ensureObjectId(storyId, "storyId"),
+      horizontalIndex: { $gt: fromIndexExclusive },
+    }),
+    {
+      $inc: { horizontalIndex: -1 },
+      $set: { ...touchTimestamps() },
+    },
+  );
+
+  return result.modifiedCount;
 };
 
 export interface CreatePlotInput {
@@ -83,6 +111,7 @@ export const createPlot = async (
     color: input.color,
     storyId,
     horizontalIndex: input.horizontalIndex,
+    deletedAt: null,
     ...createTimestamps(),
   };
 
@@ -105,7 +134,7 @@ export const listPlots = async (
     : {};
 
   return collection
-    .find(filter)
+    .find(activePlotFilter(filter))
     .limit(limit)
     .sort({ horizontalIndex: 1 })
     .toArray();
@@ -117,6 +146,7 @@ export const countPlotsByStoryId = async (
   const collection = getPlotsCollection();
   return collection.countDocuments({
     storyId: ensureObjectId(storyId, "storyId"),
+    deletedAt: { $eq: null },
   });
 };
 
@@ -125,10 +155,9 @@ export const listPlotIdsByStoryId = async (
 ): Promise<ObjectId[]> => {
   const collection = getPlotsCollection();
   const results = await collection
-    .find(
-      { storyId: ensureObjectId(storyId, "storyId") },
-      { projection: { _id: 1 } },
-    )
+    .find(activePlotFilter({ storyId: ensureObjectId(storyId, "storyId") }), {
+      projection: { _id: 1 },
+    })
     .sort({ horizontalIndex: 1 })
     .toArray();
 
@@ -148,7 +177,7 @@ export const listPlotsByIds = async (
   }
 
   return collection
-    .find({ _id: { $in: uniqueIds } })
+    .find(activePlotFilter({ _id: { $in: uniqueIds } }))
     .sort({ horizontalIndex: 1 })
     .toArray();
 };
@@ -157,7 +186,9 @@ export const getPlotById = async (
   id: string | ObjectId,
 ): Promise<PlotDocument | null> => {
   const collection = getPlotsCollection();
-  return collection.findOne({ _id: ensureObjectId(id, "plotId") });
+  return collection.findOne(
+    activePlotFilter({ _id: ensureObjectId(id, "plotId") }),
+  );
 };
 
 export interface UpdatePlotInput {
@@ -201,7 +232,7 @@ export const updatePlotById = async (
   }
 
   const result = await collection.findOneAndUpdate(
-    { _id: plotId },
+    activePlotFilter({ _id: plotId }),
     { $set: { ...updatePayload, ...touchTimestamps() } },
     { returnDocument: "after" },
   );
@@ -213,11 +244,12 @@ export const deletePlotById = async (
   id: string | ObjectId,
 ): Promise<boolean> => {
   const collection = getPlotsCollection();
-  const result = await collection.deleteOne({
-    _id: ensureObjectId(id, "plotId"),
-  });
+  const result = await collection.findOneAndUpdate(
+    activePlotFilter({ _id: ensureObjectId(id, "plotId") }),
+    { $set: { deletedAt: new Date(), ...touchTimestamps() } },
+  );
 
-  return result.deletedCount === 1;
+  return Boolean(result);
 };
 
 export const duplicatePlotsByStory = async (
@@ -230,7 +262,7 @@ export const duplicatePlotsByStory = async (
   const tid = ensureObjectId(targetStoryId, "targetStoryId");
 
   const sourcePlots = await collection
-    .find({ storyId: sid })
+    .find(activePlotFilter({ storyId: sid }))
     .sort({ horizontalIndex: 1 })
     .toArray();
 
@@ -250,6 +282,7 @@ export const duplicatePlotsByStory = async (
       color: plot.color,
       storyId: tid,
       horizontalIndex: plot.horizontalIndex,
+      deletedAt: null,
       ...createTimestamps(),
     };
   });

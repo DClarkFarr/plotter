@@ -157,6 +157,7 @@ export const SidebarToggleButton = ({
     tag: "Manage Tags",
     section: "Manage Sections",
     palette: "Color Palette",
+    plot: "Selected Plot",
   };
 
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);

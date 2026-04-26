@@ -1,6 +1,12 @@
 import { create } from "zustand";
 
-export type SidebarView = "scene" | "section" | "character" | "tag" | "palette";
+export type SidebarView =
+  | "scene"
+  | "section"
+  | "character"
+  | "tag"
+  | "palette"
+  | "plot";
 
 export type SidebarStore = {
   isOpen: boolean;

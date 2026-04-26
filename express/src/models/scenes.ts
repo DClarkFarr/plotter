@@ -500,6 +500,24 @@ export const deleteSceneById = async (
   return Boolean(result);
 };
 
+export const transferScenesToPlot = async (
+  fromPlotId: string | ObjectId,
+  toPlotId: string | ObjectId,
+): Promise<number> => {
+  const collection = getScenesCollection();
+  const result = await collection.updateMany(
+    activeSceneFilter({ plotId: ensureObjectId(fromPlotId, "fromPlotId") }),
+    {
+      $set: {
+        plotId: ensureObjectId(toPlotId, "toPlotId"),
+        ...touchTimestamps(),
+      },
+    },
+  );
+
+  return result.modifiedCount;
+};
+
 export const sceneMoveRequiresShift = (
   targetPlotId: string,
   targetVerticalIndex: number,

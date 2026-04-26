@@ -1,7 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { CreatePlotInput, Plot, UpdatePlotInput } from "../../api/types";
-import { createPlot, updatePlot } from "../../api/stories";
-import { useStoryPlotsQuery } from "../story/story-queries";
+import type {
+  CreatePlotInput,
+  Plot,
+  Scene,
+  UpdatePlotInput,
+} from "../../api/types";
+import { createPlot, deletePlot, updatePlot } from "../../api/stories";
+import {
+  useStoryPlotsQuery,
+  useStoryScenesQuery,
+} from "../story/story-queries";
 import { shiftPlotsForInsert, sortPlots } from "./plot-helpers";
 import { stripEmptyKeys } from "../../utils/object";
 
@@ -128,6 +136,68 @@ export function useUpdatePlotMutation(storyId: string, plotId: string) {
         },
       );
       // queryClient.invalidateQueries({ queryKey: useStoryPlotsQuery.queryKey(storyId) });
+    },
+  });
+}
+
+export function useDeletePlotMutation(storyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (plotId: string) => deletePlot(storyId, plotId),
+    onMutate: async (plotId) => {
+      await queryClient.cancelQueries({
+        queryKey: useStoryPlotsQuery.queryKey(storyId),
+      });
+      const previousPlots = queryClient.getQueryData<Plot[]>(
+        useStoryPlotsQuery.queryKey(storyId),
+      );
+      const previousScenes = queryClient.getQueryData<Scene[]>(
+        useStoryScenesQuery.queryKey(storyId),
+      );
+
+      if (previousPlots) {
+        const removed = previousPlots.find((plot) => plot.id === plotId);
+        const nextPlots = previousPlots
+          .filter((plot) => plot.id !== plotId)
+          .map((plot) => {
+            if (!removed || plot.horizontalIndex < removed.horizontalIndex) {
+              return plot;
+            }
+
+            return { ...plot, horizontalIndex: plot.horizontalIndex - 1 };
+          });
+
+        queryClient.setQueryData<Plot[]>(
+          useStoryPlotsQuery.queryKey(storyId),
+          sortPlots(nextPlots),
+        );
+      }
+
+      return { previousPlots, previousScenes };
+    },
+    onError: (_error, _plotId, context) => {
+      if (context?.previousPlots) {
+        queryClient.setQueryData(
+          useStoryPlotsQuery.queryKey(storyId),
+          context.previousPlots,
+        );
+      }
+
+      if (context?.previousScenes) {
+        queryClient.setQueryData(
+          useStoryScenesQuery.queryKey(storyId),
+          context.previousScenes,
+        );
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: useStoryPlotsQuery.queryKey(storyId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: useStoryScenesQuery.queryKey(storyId),
+      });
     },
   });
 }

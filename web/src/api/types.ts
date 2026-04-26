@@ -432,6 +432,13 @@ export interface DeleteSectionResponse {
   shiftedResources?: ShiftedResources;
 }
 
+export interface DeletePlotResponse {
+  deleted: true;
+  deletedPlotId: string;
+  targetPlotId: string;
+  movedSceneCount: number;
+}
+
 export interface MessageResponse {
   message: string;
 }
