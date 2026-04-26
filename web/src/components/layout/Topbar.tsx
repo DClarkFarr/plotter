@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Navbar, NavbarBrand } from "flowbite-react";
 import { useAuthStore } from "../../store/authStore";
+import Logo from "../../assets/plotstack-logo-h-transparent-sm.min.png";
 
 export function Topbar() {
   const { isAuthenticated, clearUser } = useAuthStore();
@@ -9,7 +10,7 @@ export function Topbar() {
     <Navbar border>
       <NavbarBrand as="span">
         <Link to="/" className="font-bold text-xl text-purple-950">
-          Plotstack
+          <img src={Logo} alt="Plotstack Logo" className="h-12 w-auto" />
         </Link>
       </NavbarBrand>
       <div className="flex items-center gap-2">

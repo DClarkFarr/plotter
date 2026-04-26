@@ -11,6 +11,7 @@ import { useAuthStore } from "../../store/authStore";
 import { deriveAvatarInitials } from "./avatarInitials";
 import { useCallback } from "react";
 import { logout } from "../../api/auth";
+import Logo from "../../assets/plotstack-logo-h-transparent-sm.min.png";
 
 export function DashboardTopbar() {
   const { user, clearUser } = useAuthStore();
@@ -29,7 +30,7 @@ export function DashboardTopbar() {
     >
       <NavbarBrand as="span">
         <Link to="/dashboard" className="text-lg font-semibold text-slate-900">
-          Plotstack
+          <img src={Logo} alt="Plotstack Logo" className="h-12 w-auto" />
         </Link>
       </NavbarBrand>
       <div id="dashboard-topbar" className="mr-auto ml-8"></div>

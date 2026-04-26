@@ -302,13 +302,13 @@ const TagsTab = ({
       // Remove this plot entry; if it was default, restore Main as default
       const removed = customizations.plots.find((p) => p.id === tag.id);
       const wasDefault = removed?.isDefaultPlot ?? false;
-      const nextPlots = customizations.plots.filter((p) => p.id !== tag.id);
-      const finalPlots = wasDefault
-        ? nextPlots.map((p) =>
-            p.id === "main_plot_id" ? { ...p, isDefaultPlot: true } : p,
-          )
-        : nextPlots;
-      onCustomizationChange({ ...customizations, plots: finalPlots });
+      const nextPlots = customizations.plots
+        .filter((p) => p.id !== tag.id)
+        .map((p, i) =>
+          wasDefault && i === 0 ? { ...p, isDefaultPlot: true } : p,
+        );
+
+      onCustomizationChange({ ...customizations, plots: nextPlots });
     } else {
       const idx = customizations.plots.filter(
         (p) => p.id !== "main_plot_id",

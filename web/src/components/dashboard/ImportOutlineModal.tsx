@@ -26,7 +26,6 @@ export type ImportOutlineModalProps = {
   onClose: () => void;
   onImportComplete?: (storyId: string) => void;
 };
-
 const DEFAULT_MAIN_PLOT: ImportCustomizations["plots"][number] = {
   id: "main_plot_id",
   name: "Main",
@@ -52,12 +51,33 @@ export const ImportOutlineModal = ({
   const [storyName, setStoryName] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [importType, setImportType] = useState<ImportOutlineType>("modern");
-  const [customizations, setCustomizations] = useState<ImportCustomizations>(
+  const [customizations, setCustomizationsRaw] = useState<ImportCustomizations>(
     () => ({
       ignoredCharacterIds: [],
       characterMerges: {},
-      plots: [{ ...DEFAULT_MAIN_PLOT }],
+      plots: [],
     }),
+  );
+
+  const setCustomizations = useCallback(
+    (toSet: ImportCustomizations) => {
+      const plotsToSet =
+        toSet.plots.length > 0
+          ? toSet.plots.filter((p) => p.id !== DEFAULT_MAIN_PLOT.id)
+          : [DEFAULT_MAIN_PLOT];
+
+      const hasDefault = plotsToSet.some((p) => p.isDefaultPlot);
+
+      if (!hasDefault) {
+        plotsToSet[0].isDefaultPlot = true;
+      }
+
+      setCustomizationsRaw({
+        ...toSet,
+        plots: plotsToSet,
+      });
+    },
+    [setCustomizationsRaw],
   );
 
   const resolvedError = useMemo(() => {
@@ -82,7 +102,7 @@ export const ImportOutlineModal = ({
     setCustomizations({
       ignoredCharacterIds: [],
       characterMerges: {},
-      plots: [{ ...DEFAULT_MAIN_PLOT }],
+      plots: [],
     });
     importMutation.reset();
   }, [importMutation]);
@@ -146,12 +166,22 @@ export const ImportOutlineModal = ({
           ignored: false,
         }),
       );
+
+      const sortedPlots = parserPlots.sort((a, b) => {
+        if (a.isDefaultPlot !== b.isDefaultPlot) {
+          return a.isDefaultPlot ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
       setStoryName(result.storyName);
-      setPreviewData(result);
+      setPreviewData({
+        ...result,
+      });
       setCustomizations({
         ignoredCharacterIds: [],
         characterMerges: {},
-        plots: [{ ...DEFAULT_MAIN_PLOT }, ...parserPlots],
+        plots: sortedPlots ?? [DEFAULT_MAIN_PLOT],
       });
       setCreatedStoryId(result.storyId ?? null);
       setStep("preview");
