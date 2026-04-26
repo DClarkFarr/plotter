@@ -68,7 +68,7 @@ export const ImportOutlineModal = ({
 
       const hasDefault = plotsToSet.some((p) => p.isDefaultPlot);
 
-      if (!hasDefault) {
+      if (!hasDefault && plotsToSet.length > 0) {
         plotsToSet[0].isDefaultPlot = true;
       }
 
