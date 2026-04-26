@@ -8,7 +8,7 @@ import { useStoryStore } from "../store/storyStore";
 import { useParams } from "@tanstack/react-router";
 import { PlotGrid } from "../components/plot/PlotGrid";
 import { ListView } from "../components/story/ListView";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import IconViewGrid from "~icons/mdi/view-grid";
 import IconMenu from "~icons/mdi/menu";
@@ -48,6 +48,8 @@ export function StoryPage() {
   const addFilter = useStoryStore((state) => state.addFilter);
   const addSidebarView = useSidebarStore((state) => state.addSidebarView);
   const openSidebar = useSidebarStore((state) => state.openSidebar);
+  const closeSidebar = useSidebarStore((state) => state.closeSidebar);
+  const clearAllSidebarViews = useSidebarStore((state) => state.clearAllViews);
   const [isCustomTextOpen, setIsCustomTextOpen] = useState(false);
 
   const story = storyQuery.data;
@@ -67,6 +69,13 @@ export function StoryPage() {
     plotsQuery.error ||
     charactersQuery.error ||
     sectionsQuery.error;
+
+  useEffect(() => {
+    return () => {
+      clearAllSidebarViews();
+      closeSidebar();
+    };
+  }, []);
 
   if (isLoading) {
     return (

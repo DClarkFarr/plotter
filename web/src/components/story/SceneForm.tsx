@@ -32,7 +32,11 @@ import { alert } from "../../utils/alert";
 import IconChevronDown from "~icons/mdi/chevron-down";
 
 export const SceneForm = () => {
-  const { storyId } = useParams({ from: "/dashboard/story/$storyId" });
+  const { storyId: storyIdRaw } = useParams({
+    strict: false,
+  });
+  const storyId = storyIdRaw ?? "";
+
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
   const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const { data: tags = [] } = useStoryTagsQuery(storyId);
