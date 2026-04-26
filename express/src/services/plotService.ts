@@ -10,7 +10,7 @@ import {
   shiftPlotsLeftFromIndex,
   updatePlotById as updatePlotByIdModel,
 } from "../models/plots";
-import { listScenes, updateSceneById } from "../models/scenes";
+import { listScenes, SceneDocument, updateSceneById } from "../models/scenes";
 import { getStoryById } from "../models/stories";
 import { ensureObjectId } from "../models/types";
 
@@ -109,6 +109,70 @@ export type DeletePlotForStoryResult =
       reason: "not-found" | "cannot-delete-last-plot";
     };
 
+const getSecondaryPlot = (
+  plot: PlotDocument,
+  plots: PlotDocument[],
+): PlotDocument | null => {
+  const others = plots.filter(
+    (p) => p._id.toHexString() !== plot._id.toHexString(),
+  );
+
+  // Closest with lower horizontalIndex (highest index below)
+  const lower = others
+    .filter((p) => p.horizontalIndex < plot.horizontalIndex)
+    .sort((a, b) => b.horizontalIndex - a.horizontalIndex)[0];
+
+  if (lower) return lower;
+
+  // Closest with higher horizontalIndex (lowest index above)
+  return (
+    others
+      .filter((p) => p.horizontalIndex > plot.horizontalIndex)
+      .sort((a, b) => a.horizontalIndex - b.horizontalIndex)[0] ?? null
+  );
+};
+
+const combineScenes = async (
+  targetPlotId: ObjectId,
+  incomingScenes: SceneDocument[],
+): Promise<void> => {
+  const targetScenes = await listScenes({ plotId: targetPlotId, limit: 5000 });
+
+  // Track occupied vertical indexes: verticalIndex -> sceneId
+  const occupied = new Map<number, ObjectId>();
+  for (const scene of targetScenes) {
+    occupied.set(scene.verticalIndex, scene._id);
+  }
+
+  const ordered = [...incomingScenes].sort(
+    (a, b) => a.verticalIndex - b.verticalIndex,
+  );
+
+  for (const scene of ordered) {
+    const desiredIndex = scene.verticalIndex;
+
+    if (occupied.has(desiredIndex)) {
+      // Shift all occupied scenes with verticalIndex >= desiredIndex up by 1,
+      // processing from highest to lowest to avoid cascading conflicts.
+      const toShift = [...occupied.entries()]
+        .filter(([idx]) => idx >= desiredIndex)
+        .sort(([a], [b]) => b - a);
+
+      for (const [idx, sceneId] of toShift) {
+        await updateSceneById(sceneId, { verticalIndex: idx + 1 });
+        occupied.delete(idx);
+        occupied.set(idx + 1, sceneId);
+      }
+    }
+
+    await updateSceneById(scene._id, {
+      plotId: targetPlotId,
+      verticalIndex: desiredIndex,
+    });
+    occupied.set(desiredIndex, scene._id);
+  }
+};
+
 export const deletePlotForStory = async (
   storyId: string | ObjectId,
   plotId: string | ObjectId,
@@ -126,41 +190,14 @@ export const deletePlotForStory = async (
   }
 
   const plots = await listPlots({ storyId: storyObjectId, limit: 2000 });
-  const targetPlot =
-    plots.find(
-      (candidate) => candidate.horizontalIndex === plot.horizontalIndex - 1,
-    ) ??
-    plots.find(
-      (candidate) => candidate.horizontalIndex === plot.horizontalIndex + 1,
-    );
+  const targetPlot = getSecondaryPlot(plot, plots);
 
-  if (!targetPlot || targetPlot._id.toHexString() === plot._id.toHexString()) {
+  if (!targetPlot) {
     return { deleted: false, reason: "not-found" };
   }
 
-  const targetScenes = await listScenes({
-    plotId: targetPlot._id,
-    limit: 5000,
-  });
   const sourceScenes = await listScenes({ plotId: plot._id, limit: 5000 });
-
-  let nextVerticalIndex =
-    targetScenes.reduce(
-      (max, scene) => Math.max(max, scene.verticalIndex),
-      -1,
-    ) + 1;
-
-  const orderedSourceScenes = [...sourceScenes].sort(
-    (a, b) => a.verticalIndex - b.verticalIndex,
-  );
-
-  for (const scene of orderedSourceScenes) {
-    await updateSceneById(scene._id, {
-      plotId: targetPlot._id,
-      verticalIndex: nextVerticalIndex,
-    });
-    nextVerticalIndex += 1;
-  }
+  await combineScenes(targetPlot._id, sourceScenes);
 
   const deleted = await deletePlotById(plot._id);
   if (!deleted) {
@@ -173,6 +210,6 @@ export const deletePlotForStory = async (
     deleted: true,
     deletedPlotId: plot._id.toHexString(),
     targetPlotId: targetPlot._id.toHexString(),
-    movedSceneCount: orderedSourceScenes.length,
+    movedSceneCount: sourceScenes.length,
   };
 };
