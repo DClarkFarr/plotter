@@ -9,7 +9,7 @@ export function Topbar() {
     <Navbar border>
       <NavbarBrand as="span">
         <Link to="/" className="font-bold text-xl text-purple-950">
-          plotter
+          Plotstack
         </Link>
       </NavbarBrand>
       <div className="flex items-center gap-2">

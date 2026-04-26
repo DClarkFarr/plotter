@@ -65,7 +65,7 @@ const applyAuthRoutes = () => {
       });
 
       res
-        .clearCookie("plotter.sid")
+        .clearCookie("plotstack.sid")
         .status(200)
         .json({ message: "Logged out" });
     }),

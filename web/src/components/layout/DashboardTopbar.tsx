@@ -29,7 +29,7 @@ export function DashboardTopbar() {
     >
       <NavbarBrand as="span">
         <Link to="/dashboard" className="text-lg font-semibold text-slate-900">
-          plotter
+          Plotstack
         </Link>
       </NavbarBrand>
       <div id="dashboard-topbar" className="mr-auto ml-8"></div>

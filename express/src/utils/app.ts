@@ -148,7 +148,7 @@ class App {
 
   private getCorsAllowedOrigins(): string[] {
     if (env.MODE === "production") {
-      return ["https://plotter.danielsjunk.com"];
+      return ["https://plotstack.danielsjunk.com"];
     }
 
     return ["http://localhost:5173", "http://localhost:4000"];

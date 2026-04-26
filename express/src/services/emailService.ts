@@ -35,7 +35,7 @@ const getTransport = () => {
 };
 
 const getFromAddress = (): string => {
-  const fromName = env.MAILER_FROM_NAME || "Plotter";
+  const fromName = env.MAILER_FROM_NAME || "Plotstack";
   return `${fromName} <${env.MAILER_FROM_EMAIL}>`;
 };
 

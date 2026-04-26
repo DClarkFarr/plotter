@@ -23,11 +23,11 @@ const DEFAULT_ENV: EnvConfig = {
   MONGO_DB: "",
   MONGO_PW: "",
   SESSION_SECRET: "",
-  SESSION_COOKIE_NAME: "plotter.sid",
+  SESSION_COOKIE_NAME: "plotstack.sid",
   MAILER_GMAIL_USER: "",
   MAILER_GMAIL_PASS: "",
-  MAILER_FROM_EMAIL: "no-reply@plotter.danielsjunk.com",
-  MAILER_FROM_NAME: "Team Plotter",
+  MAILER_FROM_EMAIL: "no-reply@plotstack.danielsjunk.com",
+  MAILER_FROM_NAME: "Team Plotstack",
 };
 
 let currentEnv: EnvConfig = { ...DEFAULT_ENV };
