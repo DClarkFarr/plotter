@@ -444,7 +444,8 @@ export interface MessageResponse {
 }
 
 export interface ApiErrorResponse {
-  message: string;
+  message?: string;
+  error?: string;
 }
 
 // ─── Error Class ──────────────────────────────────────────────────────────────
@@ -472,10 +473,10 @@ export async function toApiError(err: unknown): Promise<ApiError> {
       const text = await axiosErr.response?.data;
       try {
         const json = JSON.parse(text as unknown as string);
-        if (json?.message) {
+        if (json?.message || json?.error) {
           return new ApiError(
             status,
-            json?.message ?? axiosErr.message ?? "Network error",
+            json?.message ?? json?.error ?? axiosErr.message ?? "Network error",
           );
         }
       } catch {
@@ -483,7 +484,10 @@ export async function toApiError(err: unknown): Promise<ApiError> {
       }
     }
     const message =
-      axiosErr.response?.data?.message ?? axiosErr.message ?? "Network error";
+      axiosErr.response?.data?.message ??
+      axiosErr.response?.data?.error ??
+      axiosErr.message ??
+      "Network error";
     return new ApiError(status, message);
   }
   if (err instanceof ApiError) {

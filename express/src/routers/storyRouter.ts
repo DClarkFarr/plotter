@@ -23,6 +23,7 @@ import {
   createPlot,
   deletePlotForStory,
   getPlotForStory,
+  PLOT_HAS_SCENES_DELETE_MESSAGE,
   updatePlotById,
 } from "../services/plotService";
 import { shiftStoryGrid } from "../services/storyGridService";
@@ -600,8 +601,19 @@ const applyStoryRoutes = () => {
 
       const deleted = await deletePlotForStory(storyId, plotId);
       if (!deleted.deleted) {
+        if (deleted.reason === "plot-has-scenes") {
+          res.status(409).json({
+            error: PLOT_HAS_SCENES_DELETE_MESSAGE,
+            message: PLOT_HAS_SCENES_DELETE_MESSAGE,
+          });
+          return;
+        }
+
         if (deleted.reason === "cannot-delete-last-plot") {
-          res.status(409).json({ error: "Cannot delete the only active plot" });
+          res.status(409).json({
+            error: "Cannot delete the only active plot",
+            message: "Cannot delete the only active plot",
+          });
           return;
         }
 

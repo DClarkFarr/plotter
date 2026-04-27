@@ -156,6 +156,14 @@ export function useDeletePlotMutation(storyId: string) {
         useStoryScenesQuery.queryKey(storyId),
       );
 
+      const hasScenesInCache =
+        previousScenes?.some((scene) => scene.plotId === plotId) ?? false;
+
+      // Skip optimistic removal for in-use plots to avoid UI flicker before a 409 rollback.
+      if (hasScenesInCache) {
+        return { previousPlots, previousScenes };
+      }
+
       if (previousPlots) {
         const removed = previousPlots.find((plot) => plot.id === plotId);
         const nextPlots = previousPlots

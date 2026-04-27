@@ -106,8 +106,11 @@ export type DeletePlotForStoryResult =
     }
   | {
       deleted: false;
-      reason: "not-found" | "cannot-delete-last-plot";
+      reason: "not-found" | "cannot-delete-last-plot" | "plot-has-scenes";
     };
+
+export const PLOT_HAS_SCENES_DELETE_MESSAGE =
+  "Cannot delete a plot that still has scenes. Move or remove its scenes first.";
 
 const getSecondaryPlot = (
   plot: PlotDocument,
@@ -187,6 +190,12 @@ export const deletePlotForStory = async (
   const activePlotCount = await countPlotsByStoryId(storyObjectId);
   if (activePlotCount <= 1) {
     return { deleted: false, reason: "cannot-delete-last-plot" };
+  }
+
+  // Guard before merge/delete path: in-use plots cannot be deleted.
+  const existingScenes = await listScenes({ plotId: plot._id, limit: 1 });
+  if (existingScenes.length > 0) {
+    return { deleted: false, reason: "plot-has-scenes" };
   }
 
   const plots = await listPlots({ storyId: storyObjectId, limit: 2000 });

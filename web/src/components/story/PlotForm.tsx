@@ -9,7 +9,10 @@ import {
   TextInput,
 } from "flowbite-react";
 
-import { useStoryPlotsQuery } from "../../queries/story/story-queries";
+import {
+  useStoryPlotsQuery,
+  useStoryScenesQuery,
+} from "../../queries/story/story-queries";
 import { useUpdatePlotMutation } from "../../queries/plot/plot-mutations";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { usePlotEditorStore } from "../../store/plotEditorStore";
@@ -21,6 +24,7 @@ export const PlotForm = () => {
   const storyId = storyIdRaw ?? "";
 
   const { data: plots = [], isLoading } = useStoryPlotsQuery(storyId);
+  const { data: scenes = [] } = useStoryScenesQuery(storyId);
   const selectedPlotId = usePlotEditorStore((state) => state.selectedPlotId);
   const setSaving = usePlotEditorStore((state) => state.setSaving);
   const error = usePlotEditorStore((state) => state.error);
@@ -57,7 +61,15 @@ export const PlotForm = () => {
     selectedPlotId ?? "",
   );
   const deletePlotMutation = useDeletePlotMutation(storyId);
-  const canDelete = plots.length > 1;
+  const hasScenes = useMemo(() => {
+    if (!selectedPlotId) {
+      return false;
+    }
+
+    return scenes.some((scene) => scene.plotId === selectedPlotId);
+  }, [scenes, selectedPlotId]);
+  const canDeleteOnlyPlot = plots.length > 1;
+  const canDelete = canDeleteOnlyPlot && !hasScenes;
 
   const handleSave = async () => {
     if (!selectedPlot) {
@@ -86,7 +98,7 @@ export const PlotForm = () => {
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedPlot || !selectedPlotId) {
+    if (!selectedPlot || !selectedPlotId || !canDelete) {
       return;
     }
 
@@ -182,9 +194,13 @@ export const PlotForm = () => {
             <div className="text-xs uppercase tracking-[0.2em] text-rose-500">
               Danger Zone
             </div>
-            {!canDelete ? (
+            {!canDeleteOnlyPlot ? (
               <p className="mt-1 text-xs text-rose-600">
                 You cannot delete the only active plot.
+              </p>
+            ) : hasScenes ? (
+              <p className="mt-1 text-xs text-rose-600">
+                You cannot delete a plot that still has scenes.
               </p>
             ) : null}
           </div>
@@ -211,8 +227,9 @@ export const PlotForm = () => {
         <ModalBody>
           <div className="flex flex-col gap-4">
             <p className="text-sm text-slate-600">
-              This will remove the plot from the active story grid and move its
-              scenes to an adjacent plot.
+              {hasScenes
+                ? "This plot cannot be deleted because it still has scenes assigned to it. Move or remove those scenes first."
+                : "This will remove the plot from the active story grid and move its scenes to an adjacent plot."}
             </p>
             <div className="flex items-center justify-end gap-2">
               <Button
@@ -227,7 +244,7 @@ export const PlotForm = () => {
                 type="button"
                 color="red"
                 onClick={handleConfirmDelete}
-                disabled={deletePlotMutation.isPending}
+                disabled={!canDelete || deletePlotMutation.isPending}
               >
                 Yes, delete plot
               </Button>
