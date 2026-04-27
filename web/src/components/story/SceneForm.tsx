@@ -8,6 +8,7 @@ import { SceneTags } from "./SceneTags";
 import { SceneTagsModal } from "./SceneTagsModal";
 import { SceneTodoList } from "./SceneTodoList";
 import { ScenePovSelect } from "./ScenePovSelect";
+import { ScenePlotSelect } from "./ScenePlotSelect";
 import { useDebounce } from "../../utils/useDebounce";
 import type { SceneSnippet, SceneTodoItem } from "../../api/types";
 
@@ -399,26 +400,21 @@ export const SceneForm = () => {
   return (
     <div className="p-2 flex flex-col gap-4 min-h-full">
       <div className="mb-4">
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
-            Plot
-          </p>
-          <select
-            value={selectedScene.plotId}
-            onChange={(event) => void handlePlotChange(event.target.value)}
-            disabled={isMovingScene}
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
-          >
-            {plots.map((plotOption) => (
-              <option key={plotOption.id} value={plotOption.id}>
-                {plotOption.title || `Plot ${plotOption.horizontalIndex + 1}`}
-              </option>
-            ))}
-          </select>
-        </div>
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
           {selectedPlot?.title} - Row {selectedScene.verticalIndex + 1}
         </p>
+
+        <div className="mb-4">
+          <ScenePlotSelect
+            value={selectedPlot}
+            options={plots}
+            isLoading={isLoading}
+            isDisabled={isMovingScene}
+            onChange={(plotOption) =>
+              plotOption ? void handlePlotChange(plotOption.id) : undefined
+            }
+          />
+        </div>
 
         <input
           value={draftTitle}
