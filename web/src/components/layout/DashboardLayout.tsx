@@ -13,12 +13,17 @@ import { ManageTagsPanel } from "../story/ManageTagsPanel";
 import { ColorPalettePanel } from "../story/ColorPalettePanel";
 import { PlotForm } from "../story/PlotForm";
 import { usePlotEditorStore } from "../../store/plotEditorStore";
+import { useShallow } from "zustand/react/shallow";
 
 export function DashboardLayout() {
   useAuthRedirect();
-  const sidebar = useSidebarStore();
-
-  const { isOpen, getCurrentView, views } = sidebar;
+  const { isOpen, getCurrentView, views } = useSidebarStore(
+    useShallow((state) => ({
+      isOpen: state.isOpen,
+      getCurrentView: state.getCurrentView,
+      views: state.views,
+    })),
+  );
 
   const currentView = getCurrentView(views);
 

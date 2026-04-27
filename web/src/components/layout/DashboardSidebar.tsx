@@ -2,8 +2,6 @@ import IconExpandLeft from "~icons/mdi/arrow-expand-left";
 import IconCollapseRight from "~icons/mdi/arrow-collapse-right";
 import { useSidebarStore, type SidebarView } from "../../store/sidebarStore";
 import { useCallback, useRef } from "react";
-import { useDraggable, DragDropProvider } from "@dnd-kit/react";
-import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
 import { useShallow } from "zustand/react/shallow";
 import { Button } from "flowbite-react";
 
@@ -19,41 +17,10 @@ export const DashboardSidebar = ({
   isOpen,
   showOpenButton,
 }: DashboardSidebarProps) => {
-  const width = useSidebarStore((state) => state.width);
-  const setWidth = useSidebarStore((state) => state.setWidth);
-
-  const initialWidthRef = useRef(width);
   return (
-    <DragDropProvider
-      onDragStart={() => {
-        initialWidthRef.current = width;
-      }}
-      onDragMove={(b) => {
-        // const { position } = b.operation;
-        // console.log("Current position:", {
-        //   current: position.current,
-        //   initial: position.initial,
-        //   transformX: b.operation.transform.x,
-        // });
-
-        const toSet = Math.max(
-          Math.min(
-            initialWidthRef.current - b.operation.transform.x,
-            window.innerWidth * 0.8,
-          ),
-          450,
-        );
-        console.log("setting width", toSet);
-        setWidth(toSet);
-      }}
-      onDragEnd={(c) => {
-        console.log(`Dropped`, c);
-      }}
-    >
-      <DashboardSidebarBody showOpenButton={showOpenButton} isOpen={isOpen}>
-        {children}
-      </DashboardSidebarBody>
-    </DragDropProvider>
+    <DashboardSidebarBody showOpenButton={showOpenButton} isOpen={isOpen}>
+      {children}
+    </DashboardSidebarBody>
   );
 };
 
@@ -62,10 +29,10 @@ export const DashboardSidebarBody = ({
   isOpen,
   showOpenButton,
 }: DashboardSidebarProps) => {
-  const { ref: dragRef } = useDraggable({
-    id: "dashboard-sidebar",
-    modifiers: [RestrictToHorizontalAxis],
-  });
+  const setWidth = useSidebarStore((state) => state.setWidth);
+  const initialWidthRef = useRef(useSidebarStore.getState().width);
+  const initialPointerXRef = useRef(0);
+  const activePointerIdRef = useRef<number | null>(null);
 
   const {
     width,
@@ -96,6 +63,54 @@ export const DashboardSidebarBody = ({
     }
   }, [isOpen, openSidebar, closeSidebar, clearAllViews]);
 
+  const onResizePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      initialWidthRef.current = useSidebarStore.getState().width;
+      initialPointerXRef.current = event.clientX;
+      activePointerIdRef.current = event.pointerId;
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    [],
+  );
+
+  const onResizePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - initialPointerXRef.current;
+      const toSet = Math.max(
+        Math.min(initialWidthRef.current - deltaX, window.innerWidth * 0.8),
+        450,
+      );
+
+      setWidth(toSet);
+    },
+    [setWidth],
+  );
+
+  const onResizePointerEnd = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      activePointerIdRef.current = null;
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    },
+    [],
+  );
+
   return (
     <div
       id="dashboard-sidebar"
@@ -116,8 +131,11 @@ export const DashboardSidebarBody = ({
         </div>
       )}
       <div
-        ref={dragRef}
-        className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 hover:w-[6px] transition transition-colors"
+        className="resize-right h-full absolute top-0 bottom-0 left-0 w-[4px] cursor-col-resize z-200 bg-sky-100 hover:bg-sky-300 transition-colors"
+        onPointerDown={onResizePointerDown}
+        onPointerMove={onResizePointerMove}
+        onPointerUp={onResizePointerEnd}
+        onPointerCancel={onResizePointerEnd}
       ></div>
 
       <div className="relative scroll-y overflow-y-auto w-full h-full bg-gradient-to-b from-slate-50 via-white to-emerald-50 p-6">

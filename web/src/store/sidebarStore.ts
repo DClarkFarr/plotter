@@ -30,7 +30,14 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
     })),
   removeSidebarView: (view) =>
     set((state) => ({ views: state.views.filter((v) => v !== view) })),
-  setWidth: (width) => set({ width }),
+  setWidth: (width) =>
+    set((state) =>
+      state.width === width
+        ? state
+        : {
+            width,
+          },
+    ),
   openSidebar: () => set({ isOpen: true }),
   closeSidebar: () => set({ isOpen: false }),
 
