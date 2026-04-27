@@ -309,7 +309,7 @@ export function useDeleteSceneMutation(storyId: string) {
 const useMoveSingleWithinPlot = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isIdle, isPending } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: moveSingleSceneWithinPlot,
 
     onMutate: async (input) => {
@@ -416,7 +416,7 @@ const useMoveSingleWithinPlot = () => {
 
   return {
     moveSingleCardWithinPlot: mutateAsync,
-    isMutating: !isIdle || isPending,
+    isMutating: isPending,
   };
 };
 
