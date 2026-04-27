@@ -190,6 +190,7 @@ export const SceneCard = memo(
                   .filter((p) => p.id !== scene.plotId)
                   .map((targetPlot) => (
                     <DropdownItem
+                      className="min-w-[150px]"
                       key={targetPlot.id}
                       onClick={() => void handleChangePlot(targetPlot.id)}
                     >
