@@ -43,7 +43,7 @@ export const DashboardSidebar = ({
           ),
           450,
         );
-
+        console.log("setting width", toSet);
         setWidth(toSet);
       }}
       onDragEnd={(c) => {

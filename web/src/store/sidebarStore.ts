@@ -22,7 +22,7 @@ export type SidebarStore = {
 };
 export const useSidebarStore = create<SidebarStore>((set) => ({
   isOpen: false,
-  width: Math.max(window.innerWidth * 0.5, 450),
+  width: Math.min(window.innerWidth * 0.5, 450),
   views: [],
   addSidebarView: (view) =>
     set((state) => ({
