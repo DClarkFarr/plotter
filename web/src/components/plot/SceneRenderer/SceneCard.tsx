@@ -7,19 +7,23 @@ import { useGridSizes } from "../../../hooks/use-grid-sizes";
 import { useDescriptionExcerpt } from "../../../hooks/use-description-excerpt";
 import { findCharacterById } from "../../../utils/characterLookup";
 import { CharacterDisplay } from "../../character/CharacterDisplay";
-import { Button } from "flowbite-react";
+import { Button, Dropdown, DropdownItem } from "flowbite-react";
 import {
   useStoryCharactersQuery,
+  useStoryPlotsQuery,
   useStoryTagsQuery,
 } from "../../../queries/story/story-queries";
+import { MoveSceneMutations } from "../../../queries/scene/scene-mutations";
 import { SceneTags } from "../../story/SceneTags";
 import IconArrowAll from "~icons/mdi/arrow-all";
 import IconLeadPencil from "~icons/mdi/lead-pencil";
+import IconSwapHorizontal from "~icons/mdi/swap-horizontal";
 import IconEyeRemove from "~icons/mdi/eye-remove";
 import IconEyeMinus from "~icons/mdi/eye-minus";
 import { memo } from "react";
 import { useDraggable } from "@dnd-kit/react";
 import { CustomTooltip } from "../../helpers/CustomTooltip";
+import { alert } from "../../../utils/alert";
 
 export const SceneCard = memo(
   ({
@@ -35,7 +39,11 @@ export const SceneCard = memo(
     const addSidebarView = useSidebarStore((s) => s.addSidebarView);
     const cardSize = useStoryStore((s) => s.cardSize);
     const filterVisibilityMode = useStoryStore((s) => s.filterVisibilityMode);
+    const selectedSceneId = useSceneEditorStore((s) => s.selectedSceneId);
     const { data: characters = [] } = useStoryCharactersQuery(plot.storyId);
+    const { data: storyPlots = [] } = useStoryPlotsQuery(plot.storyId);
+    const { moveSingleCardWithinPlot, isMutating: isMovingScene } =
+      MoveSceneMutations.useMoveSingleWithinPlot();
 
     const { data } = useStoryTagsQuery(plot.storyId);
 
@@ -86,6 +94,31 @@ export const SceneCard = memo(
       handleSelect();
     };
 
+    const handleChangePlot = async (targetPlotId: string) => {
+      if (targetPlotId === scene.plotId) {
+        return;
+      }
+
+      try {
+        await moveSingleCardWithinPlot({
+          storyId: plot.storyId,
+          sceneId: scene.id,
+          fromPlotId: scene.plotId,
+          toPlotId: targetPlotId,
+          fromIndex: scene.verticalIndex,
+          toIndex: scene.verticalIndex,
+        });
+
+        if (selectedSceneId === scene.id) {
+          useSceneEditorStore.getState().selectScene(scene.id, targetPlotId);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          alert.error(error.message);
+        }
+      }
+    };
+
     if (isFilterExcluded) {
       if (filterVisibilityMode === "hide") {
         return (
@@ -132,6 +165,41 @@ export const SceneCard = memo(
               <IconArrowAll />
             </Button>
           </CustomTooltip>
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="relative"
+          >
+            <CustomTooltip content="Move to Plot">
+              <Dropdown
+                label=""
+                placement="bottom-end"
+                renderTrigger={() => (
+                  <Button
+                    color="blue"
+                    size="xs"
+                    type="button"
+                    disabled={isMovingScene}
+                    aria-label="Change plot"
+                    className="rounded-none!"
+                  >
+                    <IconSwapHorizontal />
+                  </Button>
+                )}
+              >
+                {storyPlots
+                  .filter((p) => p.id !== scene.plotId)
+                  .map((targetPlot) => (
+                    <DropdownItem
+                      key={targetPlot.id}
+                      onClick={() => void handleChangePlot(targetPlot.id)}
+                    >
+                      {targetPlot.title ||
+                        `Plot ${targetPlot.horizontalIndex + 1}`}
+                    </DropdownItem>
+                  ))}
+              </Dropdown>
+            </CustomTooltip>
+          </div>
           <CustomTooltip content="Edit scene">
             <Button color="cyan" size="xs" type="button" onClick={handleEdit}>
               <IconLeadPencil />

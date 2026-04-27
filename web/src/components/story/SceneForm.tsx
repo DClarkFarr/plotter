@@ -24,6 +24,7 @@ import {
 } from "../../queries/story/story-queries";
 import {
   useDeleteSceneMutation,
+  MoveSceneMutations,
   useUpdateSceneMutation,
 } from "../../queries/scene/scene-mutations";
 import { useCreateTagMutation } from "../../queries/tag/tag-mutation";
@@ -44,9 +45,12 @@ export const SceneForm = () => {
     useStoryCharactersQuery(storyId);
   const updateSceneMutation = useUpdateSceneMutation(storyId);
   const deleteSceneMutation = useDeleteSceneMutation(storyId);
+  const { moveSingleCardWithinPlot, isMutating: isMovingScene } =
+    MoveSceneMutations.useMoveSingleWithinPlot();
   const createTagMutation = useCreateTagMutation(storyId);
   const selectedSceneId = useSceneEditorStore((state) => state.selectedSceneId);
   const selectedPlotId = useSceneEditorStore((state) => state.selectedPlotId);
+  const selectScene = useSceneEditorStore((state) => state.selectScene);
   const clearSelection = useSceneEditorStore((state) => state.clearSelection);
   const closeSidebar = useSidebarStore((state) => state.closeSidebar);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -232,6 +236,37 @@ export const SceneForm = () => {
     updateSceneMutation.mutate({ sceneId: selectedScene.id, pov: characterId });
   };
 
+  const handlePlotChange = async (nextPlotId: string) => {
+    if (!selectedScene || nextPlotId === selectedScene.plotId) {
+      return;
+    }
+
+    try {
+      await moveSingleCardWithinPlot({
+        storyId,
+        sceneId: selectedScene.id,
+        fromPlotId: selectedScene.plotId,
+        toPlotId: nextPlotId,
+        fromIndex: selectedScene.verticalIndex,
+        toIndex: selectedScene.verticalIndex,
+      });
+
+      setSelectedScene((prev) =>
+        prev
+          ? {
+              ...prev,
+              plotId: nextPlotId,
+            }
+          : prev,
+      );
+      selectScene(selectedScene.id, nextPlotId);
+    } catch (error) {
+      if (error instanceof Error) {
+        alert.error(error.message);
+      }
+    }
+  };
+
   const handleToggleTodo = (index: number) => {
     if (!selectedScene) {
       return;
@@ -364,6 +399,23 @@ export const SceneForm = () => {
   return (
     <div className="p-2 flex flex-col gap-4 min-h-full">
       <div className="mb-4">
+        <div className="mb-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
+            Plot
+          </p>
+          <select
+            value={selectedScene.plotId}
+            onChange={(event) => void handlePlotChange(event.target.value)}
+            disabled={isMovingScene}
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-200"
+          >
+            {plots.map((plotOption) => (
+              <option key={plotOption.id} value={plotOption.id}>
+                {plotOption.title || `Plot ${plotOption.horizontalIndex + 1}`}
+              </option>
+            ))}
+          </select>
+        </div>
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
           {selectedPlot?.title} - Row {selectedScene.verticalIndex + 1}
         </p>
