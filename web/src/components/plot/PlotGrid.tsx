@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import type { Plot, Scene, Section } from "../../api/types";
 
 import type {
@@ -52,6 +52,7 @@ type GridCellType =
   | {
       type: "empty";
     }
+  | { type: "nbsp" }
   | {
       type: "corner";
     }
@@ -161,11 +162,7 @@ export const PlotGrid = ({
             console.warn("Invalid drag data", { data });
             return;
           }
-          console.log("on drag start", data.scene);
           startDraggingScene(data.scene || null);
-        }}
-        onDragOver={() => {
-          // console.log("on drag over", { event, manager });
         }}
         onDragEnd={(event, manager) => {
           const { target, source } = event.operation;
@@ -220,7 +217,6 @@ export const PlotGrid = ({
               sourcePlot?.id === plot.id &&
               sourceScene?.verticalIndex === verticalIndex
             ) {
-              console.log("dropped in same place, ignoring");
               return;
             }
             handleDragEnd(plot, verticalIndex, sourcePlot, sourceScene);
@@ -244,6 +240,7 @@ const PlotGridBody = ({
 }: PlotGridProps) => {
   const filters = useStoryStore((state) => state.filters);
   const hasFilters = useStoryStore((state) => state.hasFilters());
+  const filterVisibilityMode = useStoryStore((s) => s.filterVisibilityMode);
 
   const draggingSection = useSectionEditorStore(
     (state) => state.draggingSection,
@@ -255,7 +252,7 @@ const PlotGridBody = ({
   const { data: characters = [] } = useStoryCharactersQuery(storyId);
   const { data: sections = [] } = useStorySectionsQuery(storyId);
 
-  const { includedSceneIds } = useMemo(
+  const { includedSceneIds, includedPlotIds } = useMemo(
     () => applyFiltersToPlots(plots, scenes, filters, { tags, characters }),
     [plots, scenes, filters, tags, characters],
   );
@@ -264,6 +261,10 @@ const PlotGridBody = ({
     () => new Set(includedSceneIds),
     [includedSceneIds],
   );
+
+  const includedPlotIdSet = useMemo(() => {
+    return new Set(includedPlotIds);
+  }, [includedPlotIds]);
 
   const gridCols = getGridCols(plots);
   const gridRows = getGridRows(scenes, sections);
@@ -303,6 +304,95 @@ const PlotGridBody = ({
     }
     return plotMap;
   }, [scenes]);
+
+  const filterEmptyGridRows = useCallback(
+    (rows: GridCellVariant[][]): GridCellVariant[][] => {
+      const filteredRows: GridCellVariant[][] = [];
+      const allowedGridCellTypes: GridCellType["type"][] = [
+        "corner",
+        "col-header",
+        "section",
+        "plot",
+      ];
+      const firstRow = rows[0];
+
+      const activeHorizontalIndexes = new Set<number>();
+      if (firstRow.length > 0) {
+        for (const cell of firstRow) {
+          const plot = plotsHorizontalIndexMap.get(cell.horizontalIndex);
+          if (plot && includedPlotIdSet.has(plot.id)) {
+            activeHorizontalIndexes.add(cell.horizontalIndex);
+          }
+        }
+      }
+
+      filteredRows.push(
+        firstRow.filter(
+          (cell) =>
+            cell.horizontalIndex < 0 ||
+            activeHorizontalIndexes.has(cell.horizontalIndex),
+        ),
+      );
+
+      for (const row of rows) {
+        const rowToAdd = row.map((cell) => {
+          /**
+           * Return null for any plots that need to be removed.
+           * Filter them out below.
+           */
+          if (
+            cell.horizontalIndex > -1 &&
+            !activeHorizontalIndexes.has(cell.horizontalIndex)
+          ) {
+            return null;
+          }
+
+          if (allowedGridCellTypes.includes(cell.type)) {
+            /**
+             * Keep the same cell
+             */
+            return cell;
+          }
+
+          if (cell.type === "scene") {
+            const scene = scenesPlotIdVerticalIndexMap
+              .get(plotsHorizontalIndexMap.get(cell.horizontalIndex)?.id || "")
+              ?.get(cell.verticalIndex);
+            if (scene && includedSceneIdSet.has(scene.id)) {
+              return cell;
+            }
+          }
+
+          /**
+           * for anything else, return nbsp
+           */
+          return {
+            type: "nbsp",
+            horizontalIndex: cell.horizontalIndex,
+            verticalIndex: cell.verticalIndex,
+          };
+        });
+
+        if (
+          !rowToAdd.some(
+            (cell) => !!cell && ["scene", "section"].includes(cell.type),
+          )
+        ) {
+          continue;
+        }
+
+        filteredRows.push(rowToAdd.filter(Boolean) as GridCellVariant[]);
+      }
+
+      return filteredRows;
+    },
+    [
+      scenesPlotIdVerticalIndexMap,
+      includedSceneIdSet,
+      plotsHorizontalIndexMap,
+      includedPlotIdSet,
+    ],
+  );
 
   const grid = useMemo(() => {
     const rows: GridCellVariant[][] = [];
@@ -349,7 +439,16 @@ const PlotGridBody = ({
         }
         const currentScene =
           scenesPlotIdVerticalIndexMap.get(plot.id)?.has(r) ?? false;
-        if (currentScene) {
+        if (
+          currentScene &&
+          !(
+            filterVisibilityMode === "matchOnly" &&
+            hasFilters &&
+            !includedSceneIdSet.has(
+              scenesPlotIdVerticalIndexMap.get(plot.id)?.get(r)?.id || "",
+            )
+          )
+        ) {
           row.push({
             type: "scene",
             horizontalIndex: c,
@@ -362,6 +461,10 @@ const PlotGridBody = ({
       rows.push(row);
     }
 
+    if (filterVisibilityMode === "matchOnly" && hasFilters) {
+      return filterEmptyGridRows(rows);
+    }
+
     return rows;
   }, [
     plots,
@@ -369,6 +472,10 @@ const PlotGridBody = ({
     gridRows,
     sectionsHorizontalIndexMap,
     scenesPlotIdVerticalIndexMap,
+    filterVisibilityMode,
+    hasFilters,
+    includedSceneIdSet,
+    filterEmptyGridRows,
   ]);
 
   return (
@@ -390,63 +497,69 @@ const PlotGridBody = ({
       <div className="x-scroller h-full overflow-x-auto">
         <div
           className={`grid story-grid p-6 ${hasFilters && "pt-0"}  plot-grid gap-x-4 gap-y-2 bg-gray-100`}
-          style={{ "--grid-cols": gridCols }}
+          data-grid-length={grid[0].length}
+          data-grid-cols={gridCols}
+          style={{ "--grid-cols": grid[0].length - 1 }}
         >
           {grid.map((row, r) => {
             const rowVerticalIndex = row[0].verticalIndex;
             return (
               <React.Fragment key={`row-${r}`}>
-                {rowVerticalIndex !== -1 && (
-                  <>
-                    <div
-                      className="nbsp"
-                      key={`section-dz-nbsp-${rowVerticalIndex}`}
-                    />
-                    <SectionDropZone
-                      key={`section-dz-${rowVerticalIndex}`}
-                      verticalIndex={rowVerticalIndex}
-                      draggingSection={draggingSection}
-                      hasSectionAtRow={false}
-                    />
-                  </>
-                )}
-                {row.map((cell) => {
-                  if (cell.type === "scene") {
-                    return (
-                      <SceneActionsCard
-                        key={`actions-${cell.horizontalIndex}-${cell.verticalIndex}`}
-                        storyId={storyId}
-                        plot={plotsHorizontalIndexMap.get(cell.horizontalIndex)}
-                        plotIndex={cell.horizontalIndex}
-                        sceneIndex={cell.verticalIndex}
-                        nextScene={scenesPlotIdVerticalIndexMap
-                          .get(
-                            plotsHorizontalIndexMap.get(cell.horizontalIndex)
-                              ?.id || "",
-                          )
-                          ?.get(cell.verticalIndex + 1)}
-                        prevScene={scenesPlotIdVerticalIndexMap
-                          .get(
-                            plotsHorizontalIndexMap.get(cell.horizontalIndex)
-                              ?.id || "",
-                          )
-                          ?.get(cell.verticalIndex - 1)}
-                        isDisabled={
-                          !plotsHorizontalIndexMap.get(cell.horizontalIndex)
-                        }
-                      />
-                    );
-                  } else {
-                    return (
+                {!(filterVisibilityMode === "matchOnly" && hasFilters) &&
+                  rowVerticalIndex !== -1 && (
+                    <>
                       <div
                         className="nbsp"
-                        key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
-                        data-r={cell.verticalIndex}
-                        data-c={cell.horizontalIndex}
-                      ></div>
-                    );
-                  }
-                })}
+                        key={`section-dz-nbsp-${rowVerticalIndex}`}
+                      />
+                      <SectionDropZone
+                        key={`section-dz-${rowVerticalIndex}`}
+                        verticalIndex={rowVerticalIndex}
+                        draggingSection={draggingSection}
+                        hasSectionAtRow={false}
+                      />
+                    </>
+                  )}
+                {!(filterVisibilityMode === "matchOnly" && hasFilters) &&
+                  row.map((cell) => {
+                    if (cell.type === "scene") {
+                      return (
+                        <SceneActionsCard
+                          key={`actions-${cell.horizontalIndex}-${cell.verticalIndex}`}
+                          storyId={storyId}
+                          plot={plotsHorizontalIndexMap.get(
+                            cell.horizontalIndex,
+                          )}
+                          plotIndex={cell.horizontalIndex}
+                          sceneIndex={cell.verticalIndex}
+                          nextScene={scenesPlotIdVerticalIndexMap
+                            .get(
+                              plotsHorizontalIndexMap.get(cell.horizontalIndex)
+                                ?.id || "",
+                            )
+                            ?.get(cell.verticalIndex + 1)}
+                          prevScene={scenesPlotIdVerticalIndexMap
+                            .get(
+                              plotsHorizontalIndexMap.get(cell.horizontalIndex)
+                                ?.id || "",
+                            )
+                            ?.get(cell.verticalIndex - 1)}
+                          isDisabled={
+                            !plotsHorizontalIndexMap.get(cell.horizontalIndex)
+                          }
+                        />
+                      );
+                    } else {
+                      return (
+                        <div
+                          className="nbsp"
+                          key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
+                          data-r={cell.verticalIndex}
+                          data-c={cell.horizontalIndex}
+                        ></div>
+                      );
+                    }
+                  })}
 
                 {row.map((cell) => {
                   if (cell.type === "corner") {
@@ -550,6 +663,15 @@ const PlotGridBody = ({
                         plot={plot}
                         plotIndex={cell.horizontalIndex}
                       />
+                    );
+                  } else if (cell.type === "nbsp") {
+                    return (
+                      <div
+                        className="nbsp"
+                        key={`nbsp-${cell.verticalIndex}-${cell.horizontalIndex}`}
+                        data-r={cell.verticalIndex}
+                        data-c={cell.horizontalIndex}
+                      ></div>
                     );
                   }
 

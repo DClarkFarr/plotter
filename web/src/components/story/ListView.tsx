@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import {
   entryIsScene,
+  entryIsSection,
   orderScenesForListView,
+  type OrderedSceneEntry,
 } from "../../utils/listViewOrdering";
 import { ListViewScene } from "./ListViewScene";
 import { useStoryStore } from "../../store/storyStore";
@@ -43,10 +45,86 @@ export const ListView = ({ storyId }: ListViewProps) => {
     () => new Set(includedSceneIds),
     [includedSceneIds],
   );
-  const orderedScenes = useMemo(
-    () => orderScenesForListView(plots, scenes, sections),
-    [plots, scenes, sections],
-  );
+  const orderedScenes = useMemo(() => {
+    const sorted = orderScenesForListView(plots, scenes, sections);
+
+    const filteredScenes = sorted
+      /**
+       * Filter out excluded scenes
+       */
+      .filter((entry) => {
+        const isExcluded = entryIsScene(entry)
+          ? hasFilters && !includedSceneIdSet.has(entry.scene.id)
+          : false;
+
+        if (filterVisibilityMode === "matchOnly" && hasFilters && isExcluded) {
+          return false;
+        }
+
+        return true;
+      });
+
+    if (!(filterVisibilityMode === "matchOnly" && hasFilters)) {
+      return filteredScenes;
+    }
+
+    /**
+     * Filter out sections that have no included scenes, unless filterVisibilityMode is "minify"
+     */
+
+    let hasFoundScene = false;
+
+    const filteredEntriesEmptyChapters: OrderedSceneEntry[] = [];
+
+    for (let i = filteredScenes.length - 1; i >= 0; i--) {
+      const entry = filteredScenes[i];
+
+      /**
+       * Remove chapters without scenes
+       */
+      if (entryIsSection(entry) && entry.type === "chapter" && !hasFoundScene) {
+        continue;
+      }
+
+      if (entryIsScene(entry)) {
+        hasFoundScene = true;
+      } else {
+        hasFoundScene = false;
+      }
+
+      filteredEntriesEmptyChapters.push(entry);
+    }
+
+    const filteredEntriesEmptyScenes: OrderedSceneEntry[] = [];
+    hasFoundScene = false;
+    for (let i = filteredEntriesEmptyChapters.length - 1; i >= 0; i--) {
+      const entry = filteredEntriesEmptyChapters[i];
+
+      /**
+       * Remove acts without scenes
+       */
+      if (entryIsSection(entry) && !hasFoundScene) {
+        continue;
+      }
+
+      if (entryIsScene(entry)) {
+        hasFoundScene = true;
+      } else if (entry.type === "act") {
+        hasFoundScene = false;
+      }
+
+      filteredEntriesEmptyScenes.push(entry);
+    }
+
+    return filteredEntriesEmptyScenes.reverse();
+  }, [
+    plots,
+    scenes,
+    sections,
+    hasFilters,
+    includedSceneIdSet,
+    filterVisibilityMode,
+  ]);
 
   const isScrolling = useRef(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);

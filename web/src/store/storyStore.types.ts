@@ -8,7 +8,7 @@ export type ListViewDisplayMode = "normal" | "filterExcluded";
 
 export type StoryFilterType = "tag" | "plot" | "character" | "search";
 
-export type FilterVisibilityMode = "hide" | "minify";
+export type FilterVisibilityMode = "hide" | "minify" | "matchOnly";
 
 export interface StoryFilter {
   type: StoryFilterType;

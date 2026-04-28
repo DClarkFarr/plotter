@@ -1,16 +1,26 @@
-import type { Plot, Scene, Section } from "../api/types";
+import type { Plot, Scene, Section, SectionType } from "../api/types";
 
-export type OrderedSceneEntry =
-  | {
-      scene: Scene;
-      plot: Plot;
-    }
-  | { section: Section };
+export type OrderSceneEntryPlot = {
+  scene: Scene;
+  plot: Plot;
+};
+export type OrderSceneEntrySection = {
+  section: Section;
+  type: SectionType;
+};
+
+export type OrderedSceneEntry = OrderSceneEntryPlot | OrderSceneEntrySection;
 
 export const entryIsScene = (
   entry: OrderedSceneEntry,
-): entry is { scene: Scene; plot: Plot } => {
+): entry is OrderSceneEntryPlot => {
   return "scene" in entry;
+};
+
+export const entryIsSection = (
+  entry: OrderedSceneEntry,
+): entry is OrderSceneEntrySection => {
+  return "section" in entry;
 };
 
 const getEntryVerticalIndex = (entry: OrderedSceneEntry) => {
@@ -74,7 +84,7 @@ export const orderScenesForListView = (
   }
 
   for (const section of sections) {
-    entries.push({ section });
+    entries.push({ section, type: section.type });
   }
 
   return entries.sort(compareScenes);

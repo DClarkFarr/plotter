@@ -3,6 +3,7 @@ import type { StoryFilter } from "../store/storyStore.types";
 
 export type FilteredPlotsResult = {
   includedSceneIds: string[];
+  includedPlotIds: string[];
 };
 
 type ApplyFiltersOptions = {
@@ -26,6 +27,7 @@ export const applyFiltersToPlots = (
   if (normalizedFilters.length === 0) {
     return {
       includedSceneIds: scenes.map((scene) => scene.id),
+      includedPlotIds: plots.map((plot) => plot.id),
     };
   }
 
@@ -118,6 +120,7 @@ export const applyFiltersToPlots = (
 
   const plotById = new Map(plots.map((p) => [p.id, p]));
   const includedSceneIds: string[] = [];
+  const includedPlotIdSet = new Set<string>();
   scenes.forEach((scene) => {
     const plot = plotById.get(scene.plotId);
     if (!plot || !matchesPlotFilter(plot)) {
@@ -130,10 +133,12 @@ export const applyFiltersToPlots = (
       matchesSearchFilter(scene);
     if (matches) {
       includedSceneIds.push(scene.id);
+      includedPlotIdSet.add(scene.plotId);
     }
   });
 
   return {
     includedSceneIds,
+    includedPlotIds: [...includedPlotIdSet],
   };
 };

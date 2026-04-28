@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { StoryFilter, StoryFilters, StoryState } from "./storyStore.types";
 
 const defaultFilters: StoryFilters = [];
+const defaultFilterVisibilityMode = "hide";
 
 const isSameFilter = (left: StoryFilter, right: StoryFilter) =>
   left.type === right.type &&
@@ -12,7 +13,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   filters: defaultFilters,
   cardSize: "md",
   cardDisplay: "grid",
-  filterVisibilityMode: "hide",
+  filterVisibilityMode: defaultFilterVisibilityMode,
   story: null,
   setStory: (story) => set({ story }),
   setFilters: (filters) => set({ filters }),
@@ -69,6 +70,6 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       filters: defaultFilters,
       cardSize: "md",
       cardDisplay: "grid",
-      filterVisibilityMode: "hide",
+      filterVisibilityMode: defaultFilterVisibilityMode,
     }),
 }));

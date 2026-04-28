@@ -17,6 +17,7 @@ import IconTag from "~icons/mdi/tag";
 import IconPalette from "~icons/mdi/palette";
 import IconEyeRemove from "~icons/mdi/eye-remove";
 import IconEyeMinus from "~icons/mdi/eye-minus";
+import IconEye from "~icons/mdi/eye";
 import { CustomTooltip } from "../components/helpers/CustomTooltip";
 import {
   useStoryCharactersQuery,
@@ -27,6 +28,33 @@ import {
 import { useStorySectionsQuery } from "../queries/section/section-queries";
 import { useSidebarStore } from "../store/sidebarStore";
 import { CharacterModal } from "../components/character/CharacterModal";
+import type { FilterVisibilityMode } from "../store/storyStore.types";
+
+const getNextFilterVisibilityMode = (
+  mode: FilterVisibilityMode,
+): FilterVisibilityMode => {
+  if (mode === "hide") {
+    return "minify";
+  }
+
+  if (mode === "minify") {
+    return "matchOnly";
+  }
+
+  return "hide";
+};
+
+const getFilterVisibilityModeCopy = (mode: FilterVisibilityMode) => {
+  if (mode === "hide") {
+    return "Hide filtered scenes";
+  }
+
+  if (mode === "minify") {
+    return "Minify filtered scenes";
+  }
+
+  return "Show only matched scenes";
+};
 
 export function StoryPage() {
   const { storyId } = useParams({
@@ -168,17 +196,13 @@ export function StoryPage() {
               />
               <CustomTooltip
                 placement="bottom"
-                content={
-                  filterVisibilityMode === "hide"
-                    ? "Hide filtered scenes"
-                    : "Minify filtered scenes"
-                }
+                content={getFilterVisibilityModeCopy(filterVisibilityMode)}
               >
                 <button
                   type="button"
                   onClick={() =>
                     setFilterVisibilityMode(
-                      filterVisibilityMode === "hide" ? "minify" : "hide",
+                      getNextFilterVisibilityMode(filterVisibilityMode),
                     )
                   }
                   className="button px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600"
@@ -186,8 +210,10 @@ export function StoryPage() {
                 >
                   {filterVisibilityMode === "hide" ? (
                     <IconEyeRemove className="text-base text-slate-600" />
-                  ) : (
+                  ) : filterVisibilityMode === "minify" ? (
                     <IconEyeMinus className="text-base text-slate-600" />
+                  ) : (
+                    <IconEye className="text-base text-slate-600" />
                   )}
                 </button>
               </CustomTooltip>
