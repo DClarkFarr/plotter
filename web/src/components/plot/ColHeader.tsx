@@ -177,7 +177,7 @@ export const ColHeader = memo(
           )}
         </div>
 
-        <h4 className="text-xl uppercase text-gray-500 tracking-[0.2em]">
+        <h4 className="text-xl uppercase text-gray-500 text-center tracking-[0.2em]">
           Row {rowIndex + 1}
         </h4>
       </div>
