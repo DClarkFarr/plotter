@@ -364,6 +364,13 @@ const PlotGridBody = ({
           }
 
           /**
+           * For special elements, return nothing so they are filtered out
+           */
+          if (cell.type === "section-spacer") {
+            return null;
+          }
+
+          /**
            * for anything else, return nbsp
            */
           return {
